@@ -38,6 +38,9 @@ enum AuditAction {
   DELETE
   LOGIN
   LOGOUT
+  REGISTER
+  USER_APPROVED
+  USER_REJECTED
   FILE_UPLOAD
   FILE_DOWNLOAD
   FILE_DELETE
@@ -53,6 +56,12 @@ model User {
   passwordHash  String
   role          Role
 
+  // User approval fields
+  isApproved    Boolean   @default(false)
+  approvedAt    DateTime?
+  approvedById  String?
+  approvedBy    User?     @relation("UserApprovals", fields: [approvedById], references: [id], onDelete: SetNull)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -63,9 +72,11 @@ model User {
   alertsReceived Alert[]  @relation("AlertReceiver")
   filesUploaded File[]
   auditLogs     AuditLog[]
+  approvalsGiven User[]   @relation("UserApprovals")
 
   @@index([email])
   @@index([role])
+  @@index([isApproved])
 }
 
 model Order {
