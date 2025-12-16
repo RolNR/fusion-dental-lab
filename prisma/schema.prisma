@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  DENTIST
+  LAB
+  ADMIN
+}
+
+enum OrderStatus {
+  DRAFT
+  MATERIALS_SENT
+  NEEDS_INFO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ScanType {
+  DIGITAL_SCAN
+  ANALOG_MOLD
+}
+
+enum AlertStatus {
+  UNREAD
+  READ
+  RESOLVED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  FILE_UPLOAD
+  FILE_DOWNLOAD
+  FILE_DELETE
+  STATUS_CHANGE
+  ALERT_SENT
+  ALERT_READ
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          Role
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  ordersCreated Order[]   @relation("DentistOrders")
+  labOrders     Order[]   @relation("LabOrders")
+  alertsSent    Alert[]   @relation("AlertSender")
+  alertsReceived Alert[]  @relation("AlertReceiver")
+  filesUploaded File[]
+  auditLogs     AuditLog[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Order {
+  id              String       @id @default(cuid())
+  orderNumber     String       @unique @default(cuid())
+
+  // Patient information
+  patientName     String
+  patientId       String?
+
+  // Order details
+  description     String?
+  notes           String?
+
+  // Dental-specific fields
+  teethNumbers    String?
+  material        String?
+  materialBrand   String?
+  color           String?
+  scanType        ScanType?
+
+  status          OrderStatus  @default(DRAFT)
+
+  // Relationships
+  dentistId       String
+  dentist         User         @relation("DentistOrders", fields: [dentistId], references: [id], onDelete: Cascade)
+
+  labId           String?
+  lab             User?        @relation("LabOrders", fields: [labId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  materialsSentAt DateTime?
+  completedAt     DateTime?
+
+  // Relations
+  files           File[]
+  alerts          Alert[]
+  auditLogs       AuditLog[]
+
+  @@index([dentistId])
+  @@index([labId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([orderNumber])
+}
+
+model File {
+  id              String    @id @default(cuid())
+
+  // File metadata
+  fileName        String
+  originalName    String
+  fileType        String
+  fileSize        Int
+  mimeType        String
+
+  // Storage info
+  storageKey      String    @unique
+  storageUrl      String
+
+  // Relations
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  uploadedById    String
+  uploadedBy      User      @relation(fields: [uploadedById], references: [id])
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  expiresAt       DateTime?
+  deletedAt       DateTime?
+
+  auditLogs       AuditLog[]
+
+  @@index([orderId])
+  @@index([uploadedById])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([storageKey])
+}
+
+model Alert {
+  id              String       @id @default(cuid())
+
+  // Alert content
+  message         String       @db.Text
+  status          AlertStatus  @default(UNREAD)
+
+  // Relations
+  orderId         String
+  order           Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  senderId        String
+  sender          User         @relation("AlertSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId      String
+  receiver        User         @relation("AlertReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt       DateTime     @default(now())
+  readAt          DateTime?
+  resolvedAt      DateTime?
+
+  auditLogs       AuditLog[]
+
+  @@index([orderId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id              String       @id @default(cuid())
+
+  // Action details
+  action          AuditAction
+  entityType      String
+  entityId        String
+
+  // Change tracking
+  oldValue        String?      @db.Text
+  newValue        String?      @db.Text
+  metadata        Json?
+
+  // User info
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // IP and session tracking
+  ipAddress       String?
+  userAgent       String?
+
+  // Relations (optional, for easier querying)
+  orderId         String?
+  order           Order?       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  fileId          String?
+  file            File?        @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  alertId         String?
+  alert           Alert?       @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  // Timestamp
+  createdAt       DateTime     @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([orderId])
+}
