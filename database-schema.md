@@ -1,4 +1,4 @@
-# Database Schema - Dental Lab Platform
+# Database Schema - LabWiseLink
 
 ## Entity Relationship Diagram
 

@@ -1,4 +1,4 @@
-# Dental Lab Platform
+# LabWiseLink
 
 A production-ready platform for managing dental lab orders between dentists and labs.
 
