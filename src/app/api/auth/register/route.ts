@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { registerSchema } from '@/lib/validations/auth';
+import { logAuthEvent, getAuditContext } from '@/lib/audit';
 import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
@@ -52,19 +53,11 @@ export async function POST(request: NextRequest) {
     });
 
     // Log registration in audit log
-    await prisma.auditLog.create({
-      data: {
-        action: 'REGISTER',
-        entityType: 'User',
-        entityId: user.id,
-        userId: user.id,
-        newValue: JSON.stringify({
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        }),
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        userAgent: request.headers.get('user-agent'),
+    await logAuthEvent('REGISTER', user.id, user.email, {
+      ...getAuditContext(request),
+      metadata: {
+        name: user.name,
+        role: user.role,
       },
     });
 
@@ -87,7 +80,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: error.errors.map((err) => ({
+          details: error.issues.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
           })),

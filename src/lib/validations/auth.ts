@@ -20,7 +20,7 @@ export const registerSchema = z.object({
   password: passwordSchema,
   name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
   role: z.nativeEnum(Role, {
-    errorMap: () => ({ message: 'Role must be DENTIST, LAB, or ADMIN' }),
+    message: 'Role must be DENTIST, LAB, or ADMIN',
   }),
 });
 

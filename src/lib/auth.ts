@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { prisma } from '@/lib/prisma';
+import { logAuthEvent } from '@/lib/audit';
 import bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 
@@ -103,42 +104,20 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user }) {
       // Log successful login to AuditLog
-      try {
-        await prisma.auditLog.create({
-          data: {
-            action: 'LOGIN',
-            entityType: 'User',
-            entityId: user.id,
-            userId: user.id,
-            metadata: {
-              email: user.email,
-              timestamp: new Date().toISOString(),
-            },
-          },
-        });
-      } catch (error) {
-        console.error('Failed to log sign in event:', error);
-      }
+      await logAuthEvent('LOGIN', user.id, user.email || '', {
+        metadata: {
+          name: user.name,
+        },
+      });
     },
     async signOut({ token }) {
       // Log logout event
       if (token?.id) {
-        try {
-          await prisma.auditLog.create({
-            data: {
-              action: 'LOGOUT',
-              entityType: 'User',
-              entityId: token.id as string,
-              userId: token.id as string,
-              metadata: {
-                email: token.email,
-                timestamp: new Date().toISOString(),
-              },
-            },
-          });
-        } catch (error) {
-          console.error('Failed to log sign out event:', error);
-        }
+        await logAuthEvent('LOGOUT', token.id as string, token.email as string, {
+          metadata: {
+            name: token.name,
+          },
+        });
       }
     },
   },

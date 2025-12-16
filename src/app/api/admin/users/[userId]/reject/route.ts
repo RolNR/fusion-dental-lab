@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logAuthEvent, getAuditContext } from '@/lib/audit';
 import { Role } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Check authentication
@@ -24,7 +25,7 @@ export async function POST(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
 
     // Find the user to reject
     const userToReject = await prisma.user.findUnique({
@@ -50,21 +51,14 @@ export async function POST(
     }
 
     // Log rejection BEFORE deleting user (so we have userId available)
-    await prisma.auditLog.create({
-      data: {
-        action: 'USER_REJECTED',
-        entityType: 'User',
-        entityId: userId,
-        userId: session.user.id,
-        oldValue: JSON.stringify({
-          rejectedUserId: userId,
-          rejectedUserEmail: userToReject.email,
-          rejectedUserName: userToReject.name,
-          rejectedUserRole: userToReject.role,
-          rejectedBy: session.user.email,
-        }),
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        userAgent: request.headers.get('user-agent'),
+    await logAuthEvent('USER_REJECTED', userId, userToReject.email, {
+      ...getAuditContext(request),
+      metadata: {
+        rejectedUserId: userId,
+        rejectedUserEmail: userToReject.email,
+        rejectedUserName: userToReject.name,
+        rejectedUserRole: userToReject.role,
+        rejectedBy: session.user.email,
       },
     });
 

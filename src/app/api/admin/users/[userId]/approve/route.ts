@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logAuthEvent, getAuditContext } from '@/lib/audit';
 import { Role } from '@prisma/client';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Check authentication
@@ -24,7 +25,7 @@ export async function POST(
       );
     }
 
-    const { userId } = params;
+    const { userId } = await params;
 
     // Find the user to approve
     const userToApprove = await prisma.user.findUnique({
@@ -62,19 +63,12 @@ export async function POST(
     });
 
     // Log approval in audit log
-    await prisma.auditLog.create({
-      data: {
-        action: 'USER_APPROVED',
-        entityType: 'User',
-        entityId: userId,
-        userId: session.user.id,
-        newValue: JSON.stringify({
-          approvedUserId: userId,
-          approvedUserEmail: updatedUser.email,
-          approvedBy: session.user.email,
-        }),
-        ipAddress: request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip'),
-        userAgent: request.headers.get('user-agent'),
+    await logAuthEvent('USER_APPROVED', userId, updatedUser.email, {
+      ...getAuditContext(request),
+      metadata: {
+        approvedUserId: userId,
+        approvedUserEmail: updatedUser.email,
+        approvedBy: session.user.email,
       },
     });
 
