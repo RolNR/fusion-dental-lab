@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/Button';
 
 export function LoginForm() {
@@ -55,10 +56,9 @@ export function LoginForm() {
           disabled={isLoading}
         />
 
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           label="Contraseña"
           required
           value={formData.password}

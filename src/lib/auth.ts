@@ -29,7 +29,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Missing credentials');
+          throw new Error('Credenciales faltantes');
         }
 
         const { email, password } = credentials;
@@ -40,19 +40,19 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) {
-          throw new Error('Invalid email or password');
+          throw new Error('Correo electrónico o contraseña inválidos');
         }
 
         // Check if user is approved
         if (!user.isApproved) {
-          throw new Error('Your account is pending admin approval. Please check back later.');
+          throw new Error('Tu cuenta está pendiente de aprobación del administrador. Por favor, vuelve más tarde.');
         }
 
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
         if (!isValidPassword) {
-          throw new Error('Invalid email or password');
+          throw new Error('Correo electrónico o contraseña inválidos');
         }
 
         // Return user data for session

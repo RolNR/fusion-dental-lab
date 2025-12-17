@@ -9,24 +9,24 @@ import { Role } from '@prisma/client';
 // - At least one special character
 const passwordSchema = z
   .string()
-  .min(8, 'Password must be at least 8 characters')
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
   .regex(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-    'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)'
+    'La contraseña debe contener mayúscula, minúscula, número y carácter especial (@$!%*?&)'
   );
 
 export const registerSchema = z.object({
-  email: z.string().email('Invalid email address').toLowerCase(),
+  email: z.string().email('Correo electrónico inválido').toLowerCase(),
   password: passwordSchema,
-  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name is too long'),
+  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100, 'El nombre es demasiado largo'),
   role: z.nativeEnum(Role, {
-    message: 'Role must be DENTIST, LAB, or ADMIN',
+    message: 'El rol debe ser DENTIST, LAB o ADMIN',
   }),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Correo electrónico inválido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 // Type exports for TypeScript

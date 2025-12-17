@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Role } from '@prisma/client';
 
@@ -131,34 +133,24 @@ export function RegisterForm() {
           error={errors.email}
         />
 
-        <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-            Tipo de cuenta <span className="text-red-500 ml-1">*</span>
-          </label>
-          <select
-            id="role"
-            name="role"
-            required
-            value={formData.role}
-            onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
-            disabled={isLoading}
-            className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none focus:ring-1 ${
-              errors.role
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            } disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500`}
-          >
-            <option value="">Selecciona un tipo</option>
-            <option value={Role.DENTIST}>Doctor/Dentista</option>
-            <option value={Role.LAB}>Laboratorio Dental</option>
-          </select>
-          {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
-        </div>
+        <Select
+          id="role"
+          name="role"
+          label="Tipo de cuenta"
+          required
+          value={formData.role}
+          onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
+          disabled={isLoading}
+          error={errors.role}
+        >
+          <option value="">Selecciona un tipo</option>
+          <option value={Role.DENTIST}>Doctor/Dentista</option>
+          <option value={Role.LAB}>Laboratorio Dental</option>
+        </Select>
 
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           label="Contraseña"
           required
           value={formData.password}
@@ -169,10 +161,9 @@ export function RegisterForm() {
           helperText="Mínimo 8 caracteres, incluye mayúscula, minúscula, número y carácter especial"
         />
 
-        <Input
+        <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           label="Confirmar contraseña"
           required
           value={formData.confirmPassword}
