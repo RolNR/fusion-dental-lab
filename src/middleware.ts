@@ -7,16 +7,24 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Role-based access control
-    if (path.startsWith('/admin') && token?.role !== Role.ADMIN) {
+    // Role-based access control for new multi-tenant structure
+    if (path.startsWith('/lab-admin') && token?.role !== Role.LAB_ADMIN) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    if (path.startsWith('/doctor') && token?.role !== Role.DENTIST) {
+    if (path.startsWith('/lab-collaborator') && token?.role !== Role.LAB_COLLABORATOR) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    if (path.startsWith('/lab') && token?.role !== Role.LAB) {
+    if (path.startsWith('/clinic-admin') && token?.role !== Role.CLINIC_ADMIN) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+
+    if (path.startsWith('/doctor') && token?.role !== Role.DOCTOR) {
+      return NextResponse.redirect(new URL('/unauthorized', req.url));
+    }
+
+    if (path.startsWith('/assistant') && token?.role !== Role.CLINIC_ASSISTANT) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 

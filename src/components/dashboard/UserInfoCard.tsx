@@ -8,12 +8,16 @@ interface UserInfoCardProps {
 
 const getRoleTitle = (role: Role) => {
   switch (role) {
-    case Role.ADMIN:
-      return 'Administrador';
-    case Role.DENTIST:
-      return 'Doctor/Dentista';
-    case Role.LAB:
-      return 'Laboratorio';
+    case Role.LAB_ADMIN:
+      return 'Administrador del Laboratorio';
+    case Role.LAB_COLLABORATOR:
+      return 'Colaborador del Laboratorio';
+    case Role.CLINIC_ADMIN:
+      return 'Administrador de Clínica';
+    case Role.DOCTOR:
+      return 'Doctor';
+    case Role.CLINIC_ASSISTANT:
+      return 'Asistente de Clínica';
     default:
       return role;
   }

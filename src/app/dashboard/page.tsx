@@ -25,16 +25,24 @@ export default async function DashboardPage() {
           />
         </div>
 
-        {session.user.role === Role.ADMIN && (
-          <ComingSoonCard message="El panel de administración estará disponible próximamente" />
+        {session.user.role === Role.LAB_ADMIN && (
+          <ComingSoonCard message="Panel de administración del laboratorio - Gestiona clínicas y colaboradores" />
         )}
 
-        {session.user.role === Role.DENTIST && (
-          <ComingSoonCard message="El panel de órdenes para dentistas estará disponible próximamente" />
+        {session.user.role === Role.LAB_COLLABORATOR && (
+          <ComingSoonCard message="Panel de colaborador del laboratorio - Ver órdenes de todas las clínicas" />
         )}
 
-        {session.user.role === Role.LAB && (
-          <ComingSoonCard message="El panel de órdenes para laboratorios estará disponible próximamente" />
+        {session.user.role === Role.CLINIC_ADMIN && (
+          <ComingSoonCard message="Panel de administración de clínica - Gestiona doctores y asistentes" />
+        )}
+
+        {session.user.role === Role.DOCTOR && (
+          <ComingSoonCard message="Panel de doctor - Ver y crear tus órdenes" />
+        )}
+
+        {session.user.role === Role.CLINIC_ASSISTANT && (
+          <ComingSoonCard message="Panel de asistente - Crear órdenes para tus doctores asignados" />
         )}
       </div>
     </div>

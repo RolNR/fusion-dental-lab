@@ -8,9 +8,11 @@ datasource db {
 }
 
 enum Role {
-  DENTIST
-  LAB
-  ADMIN
+  LAB_ADMIN        // Super admin of the laboratory (creates clinics, lab collaborators)
+  LAB_COLLABORATOR // Lab employee (views orders, read-only)
+  CLINIC_ADMIN     // Clinic administrator (manages doctors/assistants, views all clinic orders)
+  DOCTOR           // Doctor (creates and views own orders)
+  CLINIC_ASSISTANT // Clinic assistant (creates orders for assigned doctors)
 }
 
 enum OrderStatus {
@@ -48,6 +50,86 @@ enum AuditAction {
   ALERT_READ
 }
 
+// ============================================
+// NEW MULTI-TENANT MODELS
+// ============================================
+
+model Laboratory {
+  id          String   @id @default(cuid())
+  name        String
+
+  // Contact info
+  email       String?
+  phone       String?
+  address     String?
+
+  // Platform subscription
+  isActive    Boolean  @default(true)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  clinics     Clinic[]
+  labAdmins   User[]   @relation("LaboratoryAdmins")
+  labCollaborators User[] @relation("LaboratoryCollaborators")
+
+  @@index([isActive])
+}
+
+model Clinic {
+  id            String   @id @default(cuid())
+  name          String
+
+  // Contact info
+  email         String?
+  phone         String?
+  address       String?
+
+  // Status
+  isActive      Boolean  @default(true)
+
+  // Laboratory relationship
+  laboratoryId  String
+  laboratory    Laboratory @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  clinicAdmins  User[]   @relation("ClinicAdmins")
+  doctors       User[]   @relation("ClinicDoctors")
+  assistants    User[]   @relation("ClinicAssistants")
+  orders        Order[]
+
+  @@index([laboratoryId])
+  @@index([isActive])
+}
+
+model DoctorAssistant {
+  id          String   @id @default(cuid())
+
+  // Relations
+  doctorId    String
+  doctor      User     @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  assistantId String
+  assistant   User     @relation("AssistantAssignments", fields: [assistantId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+
+  @@unique([doctorId, assistantId])
+  @@index([doctorId])
+  @@index([assistantId])
+}
+
+// ============================================
+// UPDATED USER MODEL
+// ============================================
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -55,19 +137,43 @@ model User {
   passwordHash  String
   role          Role
 
+  // Organization relationships (nullable for flexibility)
+  laboratoryId  String?   // For LAB_ADMIN and LAB_COLLABORATOR
+  laboratory    Laboratory? @relation("LaboratoryAdmins", fields: [laboratoryId], references: [id], onDelete: Cascade)
+
+  labCollaboratorId String? // For LAB_COLLABORATOR (separate relation)
+  labCollaborator   Laboratory? @relation("LaboratoryCollaborators", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
+
+  clinicId      String?   // For CLINIC_ADMIN, DOCTOR, and CLINIC_ASSISTANT
+  clinic        Clinic?   @relation("ClinicAdmins", fields: [clinicId], references: [id], onDelete: Cascade)
+
+  doctorClinicId String?  // For DOCTOR (separate relation)
+  doctorClinic   Clinic?  @relation("ClinicDoctors", fields: [doctorClinicId], references: [id], onDelete: Cascade)
+
+  assistantClinicId String? // For CLINIC_ASSISTANT (separate relation)
+  assistantClinic   Clinic? @relation("ClinicAssistants", fields: [assistantClinicId], references: [id], onDelete: Cascade)
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  ordersCreated Order[]   @relation("DentistOrders")
-  labOrders     Order[]   @relation("LabOrders")
+  ordersCreated Order[]   @relation("CreatorOrders")
+  ordersByDoctor Order[]  @relation("DoctorOrders")
   alertsSent    Alert[]   @relation("AlertSender")
   alertsReceived Alert[]  @relation("AlertReceiver")
   filesUploaded File[]
   auditLogs     AuditLog[]
 
+  // Doctor-Assistant relationships
+  assignedDoctors    DoctorAssistant[] @relation("AssistantAssignments")
+  assignedAssistants DoctorAssistant[] @relation("DoctorAssignments")
+
   @@index([email])
   @@index([role])
+  @@index([laboratoryId])
+  @@index([clinicId])
+  @@index([doctorClinicId])
+  @@index([assistantClinicId])
 }
 
 model Order {
@@ -91,12 +197,16 @@ model Order {
 
   status          OrderStatus  @default(DRAFT)
 
-  // Relationships
-  dentistId       String
-  dentist         User         @relation("DentistOrders", fields: [dentistId], references: [id], onDelete: Cascade)
+  // Organization relationships
+  clinicId        String
+  clinic          Clinic       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
 
-  labId           String?
-  lab             User?        @relation("LabOrders", fields: [labId], references: [id], onDelete: SetNull)
+  // User relationships
+  createdById     String       // Who created the order (DOCTOR, CLINIC_ASSISTANT, or CLINIC_ADMIN)
+  createdBy       User         @relation("CreatorOrders", fields: [createdById], references: [id], onDelete: Cascade)
+
+  doctorId        String       // The doctor this order belongs to
+  doctor          User         @relation("DoctorOrders", fields: [doctorId], references: [id], onDelete: Cascade)
 
   // Timestamps
   createdAt       DateTime     @default(now())
@@ -109,8 +219,9 @@ model Order {
   alerts          Alert[]
   auditLogs       AuditLog[]
 
-  @@index([dentistId])
-  @@index([labId])
+  @@index([clinicId])
+  @@index([createdById])
+  @@index([doctorId])
   @@index([status])
   @@index([createdAt])
   @@index([orderNumber])

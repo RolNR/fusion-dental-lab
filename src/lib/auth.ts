@@ -50,12 +50,29 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Correo electrónico o contraseña inválidos');
         }
 
-        // Return user data for session
+        // Return user data for session (determine clinic/lab based on role)
+        let laboratoryId = null;
+        let clinicId = null;
+
+        if (user.role === 'LAB_ADMIN') {
+          laboratoryId = user.laboratoryId;
+        } else if (user.role === 'LAB_COLLABORATOR') {
+          laboratoryId = user.labCollaboratorId;
+        } else if (user.role === 'CLINIC_ADMIN') {
+          clinicId = user.clinicId;
+        } else if (user.role === 'DOCTOR') {
+          clinicId = user.doctorClinicId;
+        } else if (user.role === 'CLINIC_ASSISTANT') {
+          clinicId = user.assistantClinicId;
+        }
+
         return {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          laboratoryId,
+          clinicId,
         };
       },
     }),
@@ -70,6 +87,8 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.email = user.email;
         token.name = user.name;
+        token.laboratoryId = user.laboratoryId;
+        token.clinicId = user.clinicId;
       }
 
       // Handle profile updates
@@ -87,6 +106,8 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as Role;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
+        session.user.laboratoryId = token.laboratoryId as string | null | undefined;
+        session.user.clinicId = token.clinicId as string | null | undefined;
       }
       return session;
     },
