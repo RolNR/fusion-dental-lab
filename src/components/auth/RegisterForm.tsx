@@ -88,11 +88,11 @@ export function RegisterForm() {
   if (success) {
     return (
       <div className="w-full max-w-md">
-        <div className="rounded-md bg-green-50 p-6 text-center">
-          <h3 className="text-lg font-semibold text-green-900 mb-2">
+        <div className="rounded-md bg-success/10 p-6 text-center">
+          <h3 className="text-lg font-semibold text-success mb-2">
             ¡Registro exitoso!
           </h3>
-          <p className="text-sm text-green-800 mb-4">
+          <p className="text-sm text-success mb-4">
             Tu cuenta ha sido creada. Por favor espera la aprobación del administrador para acceder
             al sistema.
           </p>
@@ -174,8 +174,8 @@ export function RegisterForm() {
         />
 
         {errors.general && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{errors.general}</p>
+          <div className="rounded-md bg-danger/10 p-4">
+            <p className="text-sm text-danger">{errors.general}</p>
           </div>
         )}
 
@@ -184,9 +184,9 @@ export function RegisterForm() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-gray-600">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
         ¿Ya tienes una cuenta?{' '}
-        <a href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+        <a href="/auth/login" className="font-medium text-primary hover:text-primary-hover">
           Inicia sesión aquí
         </a>
       </p>

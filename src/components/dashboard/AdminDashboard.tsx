@@ -22,8 +22,8 @@ export function AdminDashboard({ pendingUsers, approvedCount }: AdminDashboardPr
         <StatsCard title="Usuarios Aprobados" value={approvedCount} />
       </div>
 
-      <div className="rounded-lg bg-white p-6 shadow">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Solicitudes Pendientes</h2>
+      <div className="rounded-lg bg-background p-6 shadow border border-border">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">Solicitudes Pendientes</h2>
         <PendingUsers users={pendingUsers} />
       </div>
     </>

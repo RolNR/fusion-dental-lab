@@ -36,7 +36,7 @@ import { Input } from '@/components/ui/Input';
 - Built-in label with required asterisk
 - Error message display
 - Helper text support
-- Consistent styling with `text-gray-900` for text and `placeholder:text-gray-500` for placeholders
+- Semantic color styling (uses design system colors)
 - Disabled states
 
 #### 2. PasswordInput Component (`src/components/ui/PasswordInput.tsx`)
@@ -92,7 +92,7 @@ import { Select } from '@/components/ui/Select';
 - Built-in label with required asterisk
 - Error message display
 - Helper text support
-- Consistent styling with `text-gray-900` for text
+- Semantic color styling (uses design system colors)
 - Disabled states
 
 #### 4. Button Component (`src/components/ui/Button.tsx`)
@@ -114,7 +114,7 @@ import { Button } from '@/components/ui/Button';
 ```
 
 **Features:**
-- Variants: primary (blue), secondary (gray), danger (red), ghost (transparent)
+- Variants: primary, secondary, danger, ghost (all use semantic colors from design system)
 - Sizes: sm, md, lg
 - Built-in loading state with spinner icon
 - Consistent focus states and transitions
@@ -328,9 +328,85 @@ try {
 - `/lab/*` - Lab routes (requires LAB role)
 - `/dashboard` - Main dashboard (authenticated users)
 
+## Design System & Theming
+
+LabWiseLink uses a **semantic color system** with CSS variables for easy theme customization.
+
+### Semantic Color Usage
+
+**ALWAYS use semantic color classes. NEVER use hardcoded color classes.**
+
+#### Correct (Semantic Colors):
+```tsx
+// ✅ DO - Use semantic colors
+<button className="bg-primary text-primary-foreground hover:bg-primary-hover">
+<div className="text-foreground">Main text</div>
+<div className="text-muted-foreground">Secondary text</div>
+<div className="bg-danger/10 text-danger">Error message</div>
+<input className="border-border-input focus:ring-primary" />
+```
+
+#### Incorrect (Hardcoded Colors):
+```tsx
+// ❌ DON'T - Use hardcoded colors
+<button className="bg-blue-600 text-white hover:bg-blue-700">
+<div className="text-gray-900">Main text</div>
+<div className="text-gray-500">Secondary text</div>
+<div className="bg-red-50 text-red-800">Error message</div>
+<input className="border-gray-300 focus:ring-blue-500" />
+```
+
+### Available Semantic Colors
+
+**Primary (brand color):**
+- `bg-primary`, `text-primary`, `border-primary`
+- `bg-primary-hover`, `text-primary-foreground`
+- `focus:ring-primary`
+
+**Secondary:**
+- `bg-secondary`, `text-secondary`, `border-secondary`
+- `bg-secondary-hover`, `text-secondary-foreground`
+
+**Danger (errors, delete actions):**
+- `bg-danger`, `text-danger`, `border-danger`
+- `bg-danger-hover`, `text-danger-foreground`
+- `bg-danger/10` (light error background)
+
+**Success:**
+- `bg-success`, `text-success`, `border-success`
+- `bg-success-hover`, `text-success-foreground`
+- `bg-success/10` (light success background)
+
+**Warning:**
+- `bg-warning`, `text-warning`, `border-warning`
+- `bg-warning-hover`, `text-warning-foreground`
+
+**UI/Neutral colors:**
+- `bg-background`, `text-foreground` (main content)
+- `bg-muted`, `text-muted-foreground` (secondary content)
+- `border-border`, `border-border-input`
+
+### Color Guidelines
+
+1. **Backgrounds**: Use `bg-background` for cards/containers, `bg-muted` for page backgrounds
+2. **Text**: Use `text-foreground` for primary text, `text-muted-foreground` for secondary text
+3. **Borders**: Use `border-border` for general borders, `border-border-input` for form inputs
+4. **States**: Use semantic variants like `bg-danger/10` for light backgrounds with opacity
+5. **Buttons**: Already handled by Button component variants
+
+### Why Semantic Colors?
+
+- **Easy theme changes**: Change one CSS variable to update entire app
+- **Dark mode ready**: Just add `.dark` class styles
+- **Consistent design**: Semantic naming ensures proper color usage
+- **Better maintainability**: Clear purpose for each color
+
+See `docs/design-system-plan.md` for complete implementation details.
+
 ## Remember
 - Middleware protects routes automatically
 - Users must be approved by admin before login
 - JWT sessions last 30 days
 - Prisma 6 is used (not Prisma 7)
 - Next.js 16 with Turbopack for dev
+- **ALWAYS use semantic colors, NEVER hardcoded colors**

@@ -21,20 +21,20 @@ const getRoleTitle = (role: Role) => {
 
 export function UserInfoCard({ name, email, role }: UserInfoCardProps) {
   return (
-    <div className="rounded-lg bg-white p-6 shadow">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la cuenta</h2>
+    <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <h2 className="text-lg font-semibold text-foreground mb-4">Información de la cuenta</h2>
       <dl className="space-y-3">
         <div>
-          <dt className="text-sm font-medium text-gray-500">Nombre</dt>
-          <dd className="mt-1 text-sm text-gray-900">{name}</dd>
+          <dt className="text-sm font-medium text-muted-foreground">Nombre</dt>
+          <dd className="mt-1 text-sm text-foreground">{name}</dd>
         </div>
         <div>
-          <dt className="text-sm font-medium text-gray-500">Correo electrónico</dt>
-          <dd className="mt-1 text-sm text-gray-900">{email}</dd>
+          <dt className="text-sm font-medium text-muted-foreground">Correo electrónico</dt>
+          <dd className="mt-1 text-sm text-foreground">{email}</dd>
         </div>
         <div>
-          <dt className="text-sm font-medium text-gray-500">Tipo de cuenta</dt>
-          <dd className="mt-1 text-sm text-gray-900">{getRoleTitle(role)}</dd>
+          <dt className="text-sm font-medium text-muted-foreground">Tipo de cuenta</dt>
+          <dd className="mt-1 text-sm text-foreground">{getRoleTitle(role)}</dd>
         </div>
       </dl>
     </div>

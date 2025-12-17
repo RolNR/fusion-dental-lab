@@ -68,8 +68,8 @@ export function LoginForm() {
         />
 
         {error && (
-          <div className="rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="rounded-md bg-danger/10 p-4">
+            <p className="text-sm text-danger">{error}</p>
           </div>
         )}
 
@@ -78,9 +78,9 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-sm text-gray-600">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
         ¿No tienes una cuenta?{' '}
-        <a href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
+        <a href="/auth/register" className="font-medium text-primary hover:text-primary-hover">
           Regístrate aquí
         </a>
       </p>

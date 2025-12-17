@@ -16,26 +16,26 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={props.id} className="block text-sm font-medium text-gray-700">
+          <label htmlFor={props.id} className="block text-sm font-medium text-foreground">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-danger ml-1">*</span>}
           </label>
         )}
         <div className="relative">
           <input
             ref={ref}
             type={showPassword ? 'text' : 'password'}
-            className={`mt-1 block w-full rounded-md border px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-1 text-gray-900 placeholder:text-gray-500 ${
+            className={`mt-1 block w-full rounded-md border px-3 py-2 pr-10 shadow-sm focus:outline-none focus:ring-1 text-input-foreground placeholder:text-input-placeholder ${
               error
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            } disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500 ${className}`}
+                ? 'border-danger/50 focus:border-danger focus:ring-danger'
+                : 'border-border-input focus:border-primary focus:ring-primary'
+            } disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground ${className}`}
             {...props}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
             tabIndex={-1}
           >
             {showPassword ? (
@@ -45,8 +45,8 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             )}
           </button>
         </div>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1 text-sm text-gray-500">{helperText}</p>}
+        {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+        {helperText && !error && <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>}
       </div>
     );
   }

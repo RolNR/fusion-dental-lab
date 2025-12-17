@@ -37,22 +37,22 @@ export default async function AdminUsersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-muted py-12 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold text-foreground">Gestión de Usuarios</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Aprobar o rechazar solicitudes de registro de nuevos usuarios
           </p>
         </div>
 
         <div className="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <div className="overflow-hidden rounded-lg bg-white shadow">
+          <div className="overflow-hidden rounded-lg bg-background shadow border border-border">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-1">
-                  <dt className="text-sm font-medium text-gray-500">Usuarios Pendientes</dt>
-                  <dd className="mt-1 text-3xl font-semibold text-gray-900">
+                  <dt className="text-sm font-medium text-muted-foreground">Usuarios Pendientes</dt>
+                  <dd className="mt-1 text-3xl font-semibold text-foreground">
                     {pendingUsers.length}
                   </dd>
                 </div>
@@ -60,20 +60,20 @@ export default async function AdminUsersPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-lg bg-white shadow">
+          <div className="overflow-hidden rounded-lg bg-background shadow border border-border">
             <div className="p-5">
               <div className="flex items-center">
                 <div className="flex-1">
-                  <dt className="text-sm font-medium text-gray-500">Usuarios Aprobados</dt>
-                  <dd className="mt-1 text-3xl font-semibold text-gray-900">{approvedCount}</dd>
+                  <dt className="text-sm font-medium text-muted-foreground">Usuarios Aprobados</dt>
+                  <dd className="mt-1 text-3xl font-semibold text-foreground">{approvedCount}</dd>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-6 shadow">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Solicitudes Pendientes</h2>
+        <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">Solicitudes Pendientes</h2>
           <PendingUsers users={pendingUsers} />
         </div>
       </div>
