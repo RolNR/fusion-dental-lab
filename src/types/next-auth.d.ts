@@ -9,7 +9,6 @@ declare module 'next-auth' {
       role: Role;
       email: string;
       name: string;
-      isApproved: boolean;
     } & DefaultSession['user'];
   }
 
@@ -18,7 +17,6 @@ declare module 'next-auth' {
     role: Role;
     email: string;
     name: string;
-    isApproved: boolean;
   }
 }
 
@@ -28,6 +26,5 @@ declare module 'next-auth/jwt' {
     role: Role;
     email: string;
     name: string;
-    isApproved: boolean;
   }
 }

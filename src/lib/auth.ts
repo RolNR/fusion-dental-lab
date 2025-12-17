@@ -43,11 +43,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Correo electrónico o contraseña inválidos');
         }
 
-        // Check if user is approved
-        if (!user.isApproved) {
-          throw new Error('Tu cuenta está pendiente de aprobación del administrador. Por favor, vuelve más tarde.');
-        }
-
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
@@ -61,7 +56,6 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
-          isApproved: user.isApproved,
         };
       },
     }),
@@ -76,7 +70,6 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.email = user.email;
         token.name = user.name;
-        token.isApproved = user.isApproved;
       }
 
       // Handle profile updates
@@ -94,7 +87,6 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as Role;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
-        session.user.isApproved = token.isApproved as boolean;
       }
       return session;
     },

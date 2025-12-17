@@ -79,7 +79,7 @@ erDiagram
 
     AuditLog {
         string id PK
-        enum action "CREATE, UPDATE, DELETE, LOGIN, LOGOUT, FILE_UPLOAD, FILE_DOWNLOAD, FILE_DELETE, STATUS_CHANGE, ALERT_SENT, ALERT_READ"
+        enum action "CREATE, UPDATE, DELETE, LOGIN, LOGOUT, REGISTER, FILE_UPLOAD, FILE_DOWNLOAD, FILE_DELETE, STATUS_CHANGE, ALERT_SENT, ALERT_READ"
         string entityType
         string entityId
         text oldValue

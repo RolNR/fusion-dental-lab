@@ -23,8 +23,7 @@ export async function POST(request: NextRequest) {
       // Return same message as success for security
       return NextResponse.json(
         {
-          message:
-            'Registration submitted successfully. Please wait for admin approval to access your account.',
+          message: 'Registro exitoso. Ya puedes iniciar sesión.',
         },
         { status: 201 }
       );
@@ -33,21 +32,19 @@ export async function POST(request: NextRequest) {
     // Hash password with bcrypt (12 rounds)
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Create user with isApproved: false
+    // Create user (no approval needed)
     const user = await prisma.user.create({
       data: {
         email,
         name,
         passwordHash,
         role,
-        isApproved: false, // Requires admin approval
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
-        isApproved: true,
         createdAt: true,
       },
     });
@@ -63,8 +60,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message:
-          'Registration submitted successfully. Please wait for admin approval to access your account.',
+        message: 'Registro exitoso. Ya puedes iniciar sesión.',
         user: {
           id: user.id,
           email: user.email,
