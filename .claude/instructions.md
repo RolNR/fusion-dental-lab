@@ -401,7 +401,25 @@ LabWiseLink uses a **semantic color system** with CSS variables for easy theme c
 - **Consistent design**: Semantic naming ensures proper color usage
 - **Better maintainability**: Clear purpose for each color
 
-See `docs/design-system-plan.md` for complete implementation details.
+See `docs/design-system.md` for complete implementation details.
+
+## Design System Review Agent
+
+Before committing new UI work, use the Design System Reviewer agent to validate compliance:
+
+```bash
+# Use the Task tool with the design-system-reviewer agent
+Task: Review design system compliance for recent changes
+Agent: design-system-reviewer
+```
+
+The agent will:
+- Search for hardcoded color violations
+- Verify custom component usage
+- Check icon centralization
+- Provide detailed fix recommendations
+
+See `.claude/agents/design-system-reviewer.md` for details.
 
 ## Remember
 - Middleware protects routes automatically
