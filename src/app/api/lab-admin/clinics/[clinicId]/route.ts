@@ -48,32 +48,11 @@ export async function GET(
         laboratoryId, // Ensure clinic belongs to this laboratory
       },
       include: {
-        clinicAdmins: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            createdAt: true,
-          },
-        },
-        doctors: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            createdAt: true,
-          },
-        },
-        assistants: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            createdAt: true,
-          },
-        },
         _count: {
           select: {
+            clinicAdmins: true,
+            doctors: true,
+            assistants: true,
             orders: true,
           },
         },
