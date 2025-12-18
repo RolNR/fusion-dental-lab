@@ -4,9 +4,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const navItems = [
-  { href: '/lab-admin', label: 'Dashboard', icon: '📊' },
-  { href: '/lab-admin/clinics', label: 'Clínicas', icon: '🏥' },
-  { href: '/lab-admin/users', label: 'Usuarios', icon: '👥' },
+  { href: '/lab-admin', label: 'Dashboard' },
+  { href: '/lab-admin/clinics', label: 'Clínicas' },
+  { href: '/lab-admin/users', label: 'Usuarios' },
 ];
 
 export function LabAdminNav() {
@@ -36,14 +36,13 @@ export function LabAdminNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-primary text-primary-foreground'
                       : 'text-foreground hover:bg-muted'
                   }`}
                 >
-                  <span>{item.icon}</span>
-                  <span>{item.label}</span>
+                  {item.label}
                 </Link>
               );
             })}

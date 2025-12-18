@@ -143,17 +143,17 @@ export default async function LabAdminDashboard() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Link href="/lab-admin/clinics">
             <Button variant="primary" className="w-full">
-              ➕ Nueva Clínica
+              Nueva Clínica
             </Button>
           </Link>
           <Link href="/lab-admin/users">
             <Button variant="primary" className="w-full">
-              ➕ Nuevo Usuario
+              Nuevo Usuario
             </Button>
           </Link>
           <Link href="/lab-admin/clinics">
             <Button variant="secondary" className="w-full">
-              📋 Ver Clínicas
+              Ver Clínicas
             </Button>
           </Link>
         </div>

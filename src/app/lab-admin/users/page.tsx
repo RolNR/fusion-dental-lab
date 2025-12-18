@@ -161,7 +161,7 @@ export default function UsersPage() {
           </p>
         </div>
         <Link href="/lab-admin/users/new">
-          <Button variant="primary">➕ Nuevo Usuario</Button>
+          <Button variant="primary">Nuevo Usuario</Button>
         </Link>
       </div>
 
@@ -185,10 +185,9 @@ export default function UsersPage() {
         data={users}
         keyExtractor={(user) => user.id}
         emptyMessage="No hay usuarios registrados"
-        emptyIcon="👥"
         emptyAction={
           <Link href="/lab-admin/users/new">
-            <Button variant="primary">➕ Crear Primer Usuario</Button>
+            <Button variant="primary">Crear Primer Usuario</Button>
           </Link>
         }
       />

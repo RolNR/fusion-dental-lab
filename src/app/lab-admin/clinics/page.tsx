@@ -161,7 +161,7 @@ export default function ClinicsPage() {
           </p>
         </div>
         <Link href="/lab-admin/clinics/new">
-          <Button variant="primary">➕ Nueva Clínica</Button>
+          <Button variant="primary">Nueva Clínica</Button>
         </Link>
       </div>
 
@@ -171,10 +171,9 @@ export default function ClinicsPage() {
         data={clinics}
         keyExtractor={(clinic) => clinic.id}
         emptyMessage="No hay clínicas registradas"
-        emptyIcon="🏥"
         emptyAction={
           <Link href="/lab-admin/clinics/new">
-            <Button variant="primary">➕ Crear Primera Clínica</Button>
+            <Button variant="primary">Crear Primera Clínica</Button>
           </Link>
         }
       />

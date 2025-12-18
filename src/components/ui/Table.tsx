@@ -14,7 +14,6 @@ interface TableProps<T> {
   data: T[];
   keyExtractor: (row: T) => string | number;
   emptyMessage?: string;
-  emptyIcon?: string;
   emptyAction?: ReactNode;
   onRowClick?: (row: T) => void;
 }
@@ -24,14 +23,12 @@ export function Table<T>({
   data,
   keyExtractor,
   emptyMessage = 'No hay datos para mostrar',
-  emptyIcon = '📋',
   emptyAction,
   onRowClick,
 }: TableProps<T>) {
   if (data.length === 0) {
     return (
       <div className="rounded-lg bg-background p-12 text-center shadow border border-border">
-        <div className="text-6xl mb-4">{emptyIcon}</div>
         <h3 className="text-lg font-medium text-foreground mb-2">
           {emptyMessage}
         </h3>
