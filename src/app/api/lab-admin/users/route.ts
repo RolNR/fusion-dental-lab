@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
 
 // Validation schema for creating users
 const createUserSchema = z.object({
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(validatedData.password, 12);
+    const passwordHash = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
 
     // Build user data based on role
     const userData: any = {

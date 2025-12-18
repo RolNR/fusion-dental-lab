@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
 
 // Validation schema for updating users
 const updateUserSchema = z.object({
@@ -188,7 +189,7 @@ export async function PATCH(
     if (validatedData.name) updateData.name = validatedData.name;
     if (validatedData.email) updateData.email = validatedData.email;
     if (validatedData.password) {
-      updateData.passwordHash = await bcrypt.hash(validatedData.password, 12);
+      updateData.passwordHash = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
     }
 
     // Update user
