@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
@@ -31,7 +31,16 @@ export function LoginForm() {
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
-        router.push('/dashboard');
+        // Fetch session to get user role
+        const response = await fetch('/api/auth/session');
+        const session = await response.json();
+
+        // Redirect based on role
+        if (session?.user?.role === 'LAB_ADMIN') {
+          router.push('/lab-admin');
+        } else {
+          router.push('/dashboard');
+        }
         router.refresh();
       }
     } catch (err) {
