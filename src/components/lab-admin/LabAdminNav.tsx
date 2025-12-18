@@ -15,7 +15,7 @@ export function LabAdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-background border-b border-border">
+    <nav className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -23,13 +23,13 @@ export function LabAdminNav() {
               <span className="text-xl font-bold text-primary">
                 LabWiseLink
               </span>
-              <span className="rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+              <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                 Admin
               </span>
             </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href ||
                 (item.href !== '/lab-admin' && pathname.startsWith(item.href));
@@ -38,9 +38,9 @@ export function LabAdminNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
                       : 'text-foreground hover:bg-muted'
                   }`}
                 >
@@ -52,7 +52,7 @@ export function LabAdminNav() {
 
           <Link
             href="/api/auth/signout"
-            className="rounded-md bg-danger px-3 py-2 text-sm font-medium text-danger-foreground hover:bg-danger/90"
+            className="rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-danger-foreground hover:bg-danger-hover transition-all duration-200 shadow-sm"
           >
             Cerrar sesión
           </Link>

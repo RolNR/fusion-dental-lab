@@ -10,7 +10,7 @@ export default function NewUserPage() {
         </p>
       </div>
 
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <UserForm />
       </div>
     </div>

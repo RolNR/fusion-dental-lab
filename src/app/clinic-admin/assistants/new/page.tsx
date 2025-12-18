@@ -23,7 +23,7 @@ export default function NewAssistantPage() {
       </div>
 
       {/* Form */}
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <StaffForm staffType="assistant" />
       </div>
     </div>

@@ -2,53 +2,59 @@
 
 @layer base {
   :root {
-    /* Primary brand colors */
-    --color-primary: 59 130 246; /* blue-500 */
-    --color-primary-hover: 37 99 235; /* blue-600 */
+    /* Primary brand colors - Soft sky blue */
+    --color-primary: 56 189 248; /* Sky blue (sky-400) */
+    --color-primary-hover: 14 165 233; /* Deeper sky blue (sky-500) */
     --color-primary-foreground: 255 255 255; /* white */
 
-    /* Secondary colors */
-    --color-secondary: 107 114 128; /* gray-500 */
-    --color-secondary-hover: 75 85 99; /* gray-600 */
+    /* Secondary colors - Softer grays */
+    --color-secondary: 142 142 147; /* Apple gray */
+    --color-secondary-hover: 118 118 123; /* Darker gray */
     --color-secondary-foreground: 255 255 255; /* white */
 
-    /* Danger/Error colors */
-    --color-danger: 239 68 68; /* red-500 */
-    --color-danger-hover: 220 38 38; /* red-600 */
+    /* Danger/Error colors - Softer red */
+    --color-danger: 239 68 68; /* Softer red (red-500) */
+    --color-danger-hover: 220 38 38; /* Deeper red (red-600) */
     --color-danger-foreground: 255 255 255; /* white */
 
-    /* Success colors */
-    --color-success: 34 197 94; /* green-500 */
-    --color-success-hover: 22 163 74; /* green-600 */
+    /* Success colors - Teal green */
+    --color-success: 20 184 166; /* Teal (teal-500) */
+    --color-success-hover: 17 148 133; /* Deeper teal (teal-600) */
     --color-success-foreground: 255 255 255; /* white */
 
-    /* Warning colors */
-    --color-warning: 251 191 36; /* amber-400 */
-    --color-warning-hover: 245 158 11; /* amber-500 */
-    --color-warning-foreground: 0 0 0; /* black */
+    /* Warning colors - Amber */
+    --color-warning: 245 158 11; /* Amber (amber-500) */
+    --color-warning-hover: 217 119 6; /* Deeper amber (amber-600) */
+    --color-warning-foreground: 255 255 255; /* white */
 
-    /* Info colors */
-    --color-info: 14 165 233; /* sky-500 */
-    --color-info-hover: 2 132 199; /* sky-600 */
+    /* Info colors - Cyan */
+    --color-info: 6 182 212; /* Cyan (cyan-500) */
+    --color-info-hover: 8 145 178; /* Deeper cyan (cyan-600) */
     --color-info-foreground: 255 255 255; /* white */
 
-    /* Neutral/UI colors */
-    --color-background: 255 255 255; /* white */
-    --color-foreground: 17 24 39; /* gray-900 */
-    --color-muted: 243 244 246; /* gray-100 */
-    --color-muted-foreground: 107 114 128; /* gray-500 */
+    /* Neutral/UI colors - Apple style */
+    --color-background: 255 255 255; /* Pure white */
+    --color-foreground: 28 28 30; /* Apple dark gray */
+    --color-muted: 248 248 248; /* Soft off-white */
+    --color-muted-foreground: 142 142 147; /* Apple gray */
 
-    /* Border colors */
-    --color-border: 229 231 235; /* gray-200 */
-    --color-border-input: 209 213 219; /* gray-300 */
+    /* Border colors - Subtle */
+    --color-border: 235 235 237; /* Very light gray */
+    --color-border-input: 209 209 214; /* Light gray */
 
     /* Input colors */
     --color-input-background: 255 255 255; /* white */
-    --color-input-foreground: 17 24 39; /* gray-900 */
-    --color-input-placeholder: 107 114 128; /* gray-500 */
+    --color-input-foreground: 28 28 30; /* Apple dark gray */
+    --color-input-placeholder: 174 174 178; /* Medium gray */
 
-    /* Focus ring */
-    --color-focus-ring: 59 130 246; /* blue-500 */
+    /* Focus ring - Sky blue */
+    --color-focus-ring: 56 189 248; /* Sky blue */
+
+    /* Shadow colors for depth */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 4px 16px 0 rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 8px 24px 0 rgba(0, 0, 0, 0.15);
   }
 
   /* Dark mode (future) */
@@ -70,8 +76,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
 
   /* Semantic color mappings */
   --color-primary: rgb(var(--color-primary));
@@ -105,7 +110,10 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em; /* Apple's subtle letter spacing */
 }

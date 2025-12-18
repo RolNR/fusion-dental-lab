@@ -173,7 +173,7 @@ export default function OrderDetailPage() {
         {/* Left Column - Order Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Patient & Order Info */}
-          <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">
               Información de la Orden
             </h2>
@@ -228,7 +228,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Dental Details */}
-          <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">
               Detalles Dentales
             </h2>
@@ -296,7 +296,7 @@ export default function OrderDetailPage() {
 
           {/* Files */}
           {order.files.length > 0 && (
-            <div className="rounded-lg bg-background p-6 shadow border border-border">
+            <div className="rounded-xl bg-background p-6 shadow-md border border-border">
               <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Archivos
               </h2>
@@ -333,7 +333,7 @@ export default function OrderDetailPage() {
         {/* Right Column - Clinic & Doctor Info */}
         <div className="space-y-6">
           {/* Clinic Info */}
-          <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">
               Clínica
             </h2>
@@ -380,7 +380,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Doctor Info */}
-          <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">
               Doctor
             </h2>
@@ -405,7 +405,7 @@ export default function OrderDetailPage() {
           </div>
 
           {/* Created By Info */}
-          <div className="rounded-lg bg-background p-6 shadow border border-border">
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">
               Creado Por
             </h2>

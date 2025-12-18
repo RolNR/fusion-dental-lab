@@ -81,7 +81,7 @@ export default function AssistantDetailPage() {
       </div>
 
       {/* Assistant Information */}
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <h2 className="mb-6 text-xl font-semibold text-foreground">
           Información del Asistente
         </h2>

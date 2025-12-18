@@ -128,7 +128,7 @@ export default function ClinicsPage() {
     {
       header: 'Acciones',
       accessor: (clinic) => (
-        <div className="flex gap-4">
+        <div className="flex gap-4 justify-end">
           <Link
             href={`/lab-admin/clinics/${clinic.id}`}
             className="text-primary hover:text-primary/80"

@@ -78,7 +78,7 @@ export default function CollaboratorsPage() {
     {
       header: 'Acciones',
       accessor: (user) => (
-        <div className="flex gap-4">
+        <div className="flex gap-4 justify-end">
           <Link
             href={`/lab-admin/users/${user.id}`}
             className="text-primary hover:text-primary/80"

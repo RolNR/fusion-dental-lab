@@ -77,7 +77,7 @@ export default function EditClinicPage() {
       </div>
 
       {/* Form */}
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <ClinicForm
           clinicId={clinicId}
           initialData={{

@@ -24,7 +24,7 @@ export default function NewCollaboratorPage() {
       </div>
 
       {/* Form */}
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <UserForm
           initialData={{
             role: Role.LAB_COLLABORATOR,

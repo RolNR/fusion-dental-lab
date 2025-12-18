@@ -28,8 +28,8 @@ export function Table<T>({
 }: TableProps<T>) {
   if (data.length === 0) {
     return (
-      <div className="rounded-lg bg-background p-12 text-center shadow border border-border">
-        <h3 className="text-lg font-medium text-foreground mb-2">
+      <div className="rounded-xl bg-background p-12 text-center shadow-md border border-border">
+        <h3 className="text-lg font-semibold text-foreground mb-2">
           {emptyMessage}
         </h3>
         {emptyAction && <div className="mt-6">{emptyAction}</div>}
@@ -38,14 +38,14 @@ export function Table<T>({
   }
 
   return (
-    <div className="rounded-lg bg-background shadow border border-border overflow-hidden">
+    <div className="rounded-xl bg-background shadow-md border border-border overflow-hidden">
       <table className="min-w-full divide-y divide-border">
-        <thead className="bg-muted">
+        <thead className="bg-muted/50">
           <tr>
             {columns.map((column, index) => (
               <th
                 key={index}
-                className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground ${
+                className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground ${
                   column.headerClassName || ''
                 }`}
               >
@@ -59,8 +59,8 @@ export function Table<T>({
             <tr
               key={keyExtractor(row)}
               onClick={() => onRowClick?.(row)}
-              className={`${
-                onRowClick ? 'cursor-pointer hover:bg-muted/50' : 'hover:bg-muted/50'
+              className={`transition-colors duration-150 ${
+                onRowClick ? 'cursor-pointer hover:bg-muted/30' : 'hover:bg-muted/30'
               }`}
             >
               {columns.map((column, index) => {

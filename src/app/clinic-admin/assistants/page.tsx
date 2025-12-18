@@ -75,7 +75,7 @@ export default function AssistantsPage() {
     {
       header: 'Acciones',
       accessor: (assistant) => (
-        <div className="flex gap-4">
+        <div className="flex gap-4 justify-end">
           <Link
             href={`/clinic-admin/assistants/${assistant.id}`}
             className="text-primary hover:text-primary/80"

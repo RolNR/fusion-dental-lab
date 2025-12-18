@@ -76,7 +76,7 @@ export default function ClinicAdminDashboard() {
       </div>
 
       {/* Clinic Info */}
-      <div className="mb-8 rounded-lg bg-background p-6 shadow border border-border">
+      <div className="mb-8 rounded-xl bg-background p-6 shadow-md border border-border">
         <h2 className="text-xl font-semibold text-foreground mb-4">
           Información de la Clínica
         </h2>
@@ -125,7 +125,7 @@ export default function ClinicAdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-lg bg-background p-6 shadow border border-border">
+      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <h2 className="text-xl font-semibold text-foreground mb-4">
           Acciones Rápidas
         </h2>
