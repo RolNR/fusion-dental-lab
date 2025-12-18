@@ -3,19 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-
-const orderSchema = z.object({
-  doctorId: z.string().min(1, 'El doctor es requerido'),
-  patientName: z.string().min(1, 'El nombre del paciente es requerido'),
-  patientId: z.string().optional(),
-  description: z.string().optional(),
-  notes: z.string().optional(),
-  teethNumbers: z.string().optional(),
-  material: z.string().optional(),
-  materialBrand: z.string().optional(),
-  color: z.string().optional(),
-  scanType: z.enum(['DIGITAL', 'PHYSICAL', 'NONE']).optional(),
-});
+import { assistantOrderCreateSchema } from '@/types/order';
 
 // GET /api/assistant/orders - Get orders for doctors assigned to this assistant
 export async function GET(request: NextRequest) {
@@ -86,7 +74,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validatedData = orderSchema.parse(body);
+    const validatedData = assistantOrderCreateSchema.parse(body);
 
     // Verify assistant is assigned to this doctor
     const assignment = await prisma.doctorAssistant.findUnique({
@@ -120,17 +108,8 @@ export async function POST(request: NextRequest) {
 
     const order = await prisma.order.create({
       data: {
-        patientName: validatedData.patientName,
-        patientId: validatedData.patientId,
-        description: validatedData.description,
-        notes: validatedData.notes,
-        teethNumbers: validatedData.teethNumbers,
-        material: validatedData.material,
-        materialBrand: validatedData.materialBrand,
-        color: validatedData.color,
-        scanType: validatedData.scanType,
+        ...validatedData,
         clinicId: doctor.doctorClinicId,
-        doctorId: validatedData.doctorId,
         createdById: session.user.id,
         status: 'DRAFT',
       },
@@ -149,15 +128,15 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ order }, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: error.errors },
+        { error: 'Datos inválidos', details: err.issues },
         { status: 400 }
       );
     }
 
-    console.error('Error creating order:', error);
+    console.error('Error creating order:', err);
     return NextResponse.json(
       { error: 'Error al crear orden' },
       { status: 500 }

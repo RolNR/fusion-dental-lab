@@ -3,24 +3,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-
-const orderUpdateSchema = z.object({
-  patientName: z.string().min(1).optional(),
-  patientId: z.string().optional(),
-  description: z.string().optional(),
-  notes: z.string().optional(),
-  teethNumbers: z.string().optional(),
-  material: z.string().optional(),
-  materialBrand: z.string().optional(),
-  color: z.string().optional(),
-  scanType: z.enum(['DIGITAL', 'PHYSICAL', 'NONE']).optional(),
-  status: z.enum(['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
-});
+import { orderUpdateSchema, type OrderUpdateData } from '@/types/order';
 
 // GET /api/doctor/orders/[orderId] - Get a specific order
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -29,9 +17,11 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const { orderId } = await params;
+
     const order = await prisma.order.findUnique({
       where: {
-        id: params.orderId,
+        id: orderId,
       },
       include: {
         clinic: {
@@ -79,7 +69,7 @@ export async function GET(
 // PATCH /api/doctor/orders/[orderId] - Update an order
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -88,9 +78,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const { orderId } = await params;
+
     // Check if order exists and belongs to this doctor
     const existingOrder = await prisma.order.findUnique({
-      where: { id: params.orderId },
+      where: { id: orderId },
     });
 
     if (!existingOrder) {
@@ -112,9 +104,11 @@ export async function PATCH(
     const body = await request.json();
     const validatedData = orderUpdateSchema.parse(body);
 
+    const updateData: OrderUpdateData = validatedData;
+
     const order = await prisma.order.update({
-      where: { id: params.orderId },
-      data: validatedData,
+      where: { id: orderId },
+      data: updateData,
       include: {
         clinic: {
           select: {
@@ -125,15 +119,15 @@ export async function PATCH(
     });
 
     return NextResponse.json({ order });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
+  } catch (err) {
+    if (err instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Datos inválidos', details: error.errors },
+        { error: 'Datos inválidos', details: err.issues },
         { status: 400 }
       );
     }
 
-    console.error('Error updating order:', error);
+    console.error('Error updating order:', err);
     return NextResponse.json(
       { error: 'Error al actualizar orden' },
       { status: 500 }
@@ -144,7 +138,7 @@ export async function PATCH(
 // DELETE /api/doctor/orders/[orderId] - Delete a draft order
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -153,9 +147,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    const { orderId } = await params;
+
     // Check if order exists and belongs to this doctor
     const existingOrder = await prisma.order.findUnique({
-      where: { id: params.orderId },
+      where: { id: orderId },
     });
 
     if (!existingOrder) {
@@ -175,7 +171,7 @@ export async function DELETE(
     }
 
     await prisma.order.delete({
-      where: { id: params.orderId },
+      where: { id: orderId },
     });
 
     return NextResponse.json({ success: true });
