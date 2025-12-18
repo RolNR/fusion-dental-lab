@@ -7,6 +7,7 @@ const navItems = [
   { href: '/lab-admin', label: 'Dashboard' },
   { href: '/lab-admin/clinics', label: 'Clínicas' },
   { href: '/lab-admin/users', label: 'Usuarios' },
+  { href: '/lab-admin/orders', label: 'Órdenes' },
 ];
 
 export function LabAdminNav() {

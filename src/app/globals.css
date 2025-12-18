@@ -27,6 +27,11 @@
     --color-warning-hover: 245 158 11; /* amber-500 */
     --color-warning-foreground: 0 0 0; /* black */
 
+    /* Info colors */
+    --color-info: 14 165 233; /* sky-500 */
+    --color-info-hover: 2 132 199; /* sky-600 */
+    --color-info-foreground: 255 255 255; /* white */
+
     /* Neutral/UI colors */
     --color-background: 255 255 255; /* white */
     --color-foreground: 17 24 39; /* gray-900 */
@@ -88,6 +93,10 @@
   --color-warning: rgb(var(--color-warning));
   --color-warning-hover: rgb(var(--color-warning-hover));
   --color-warning-foreground: rgb(var(--color-warning-foreground));
+
+  --color-info: rgb(var(--color-info));
+  --color-info-hover: rgb(var(--color-info-hover));
+  --color-info-foreground: rgb(var(--color-info-foreground));
 
   --color-border: rgb(var(--color-border));
   --color-border-input: rgb(var(--color-border-input));
