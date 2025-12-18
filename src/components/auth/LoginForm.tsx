@@ -40,6 +40,10 @@ export function LoginForm() {
           router.push('/lab-admin');
         } else if (session?.user?.role === 'CLINIC_ADMIN') {
           router.push('/clinic-admin');
+        } else if (session?.user?.role === 'DOCTOR') {
+          router.push('/doctor');
+        } else if (session?.user?.role === 'CLINIC_ASSISTANT') {
+          router.push('/assistant');
         } else {
           router.push('/dashboard');
         }
