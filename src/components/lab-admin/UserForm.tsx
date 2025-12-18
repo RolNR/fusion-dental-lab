@@ -10,11 +10,12 @@ import { Role } from '@prisma/client';
 
 interface UserFormProps {
   initialData?: {
-    name: string;
-    email: string;
-    role: Role;
+    name?: string;
+    email?: string;
+    role?: Role;
   };
   userId?: string;
+  roleFixed?: boolean;
   onSuccess?: () => void;
 }
 
@@ -23,7 +24,7 @@ type Clinic = {
   name: string;
 };
 
-export function UserForm({ initialData, userId, onSuccess }: UserFormProps) {
+export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: UserFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -151,7 +152,7 @@ export function UserForm({ initialData, userId, onSuccess }: UserFormProps) {
         placeholder="juan@ejemplo.com"
       />
 
-      {!userId && (
+      {!userId && !roleFixed && (
         <Select
           label="Rol"
           name="role"
@@ -168,6 +169,17 @@ export function UserForm({ initialData, userId, onSuccess }: UserFormProps) {
           <option value="DOCTOR">Doctor</option>
           <option value="CLINIC_ASSISTANT">Asistente de Clínica</option>
         </Select>
+      )}
+
+      {!userId && roleFixed && formData.role && (
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Rol
+          </label>
+          <p className="text-sm text-muted-foreground">
+            Colaborador del Laboratorio
+          </p>
+        </div>
       )}
 
       {!userId && requiresClinic(formData.role) && (
