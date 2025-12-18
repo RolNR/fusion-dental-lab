@@ -38,6 +38,8 @@ export function LoginForm() {
         // Redirect based on role
         if (session?.user?.role === 'LAB_ADMIN') {
           router.push('/lab-admin');
+        } else if (session?.user?.role === 'CLINIC_ADMIN') {
+          router.push('/clinic-admin');
         } else {
           router.push('/dashboard');
         }
@@ -89,7 +91,7 @@ export function LoginForm() {
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
         ¿No tienes una cuenta?{' '}
-        <a href="/auth/register" className="font-medium text-primary hover:text-primary-hover">
+        <a href="/auth/register" className="font-medium text-primary hover:text-primary/80">
           Regístrate aquí
         </a>
       </p>
