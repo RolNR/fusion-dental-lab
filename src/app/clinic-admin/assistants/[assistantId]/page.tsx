@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
+import { DoctorAssignments } from '@/components/clinic-admin/DoctorAssignments';
+import { Doctor } from '@/types/user';
 
 type AssistantDetail = {
   id: string;
   name: string;
   email: string;
   createdAt: string;
+  assignedDoctors: {
+    doctor: Doctor;
+  }[];
 };
 
 export default function AssistantDetailPage() {
@@ -20,22 +25,23 @@ export default function AssistantDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAssistant() {
-      try {
-        const response = await fetch(`/api/clinic-admin/assistants/${assistantId}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar asistente');
-        }
-        const data = await response.json();
-        setAssistant(data.assistant);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setIsLoading(false);
+  async function fetchAssistant() {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/clinic-admin/assistants/${assistantId}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar asistente');
       }
+      const data = await response.json();
+      setAssistant(data.assistant);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchAssistant();
   }, [assistantId]);
 
@@ -106,6 +112,13 @@ export default function AssistantDetailPage() {
           </div>
         </dl>
       </div>
+
+      {/* Doctor Assignments */}
+      <DoctorAssignments
+        assistantId={assistantId}
+        assignedDoctors={assistant.assignedDoctors}
+        onUpdate={fetchAssistant}
+      />
     </div>
   );
 }

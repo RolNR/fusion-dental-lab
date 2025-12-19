@@ -1,6 +1,36 @@
 import { ScanType, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 
+// Order interface for detail pages
+export interface Order {
+  id: string;
+  orderNumber: string;
+  patientName: string;
+  patientId?: string;
+  description?: string;
+  notes?: string;
+  teethNumbers?: string;
+  material?: string;
+  materialBrand?: string;
+  color?: string;
+  scanType?: string;
+  status: OrderStatus;
+  createdAt: string;
+  clinic?: {
+    name: string;
+    email?: string;
+    phone?: string;
+  };
+  doctor?: {
+    name: string;
+    email?: string;
+  };
+  createdBy?: {
+    name: string;
+    role: string;
+  };
+}
+
 // Base schema for creating orders (shared between doctor and assistant)
 export const orderCreateSchema = z.object({
   patientName: z.string().min(1, 'El nombre del paciente es requerido'),

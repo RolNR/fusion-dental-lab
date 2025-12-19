@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { AlertStatus } from '@prisma/client';
+import { Button } from './Button';
 
 interface Alert {
   id: string;
@@ -108,12 +109,13 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, l
             </div>
 
             {alert.status === 'UNREAD' && onMarkAsRead && (
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => onMarkAsRead(alert.id)}
-                className="mt-3 w-full rounded-md bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="mt-3 w-full text-xs"
               >
                 Marcar como leída
-              </button>
+              </Button>
             )}
           </div>
         ))}

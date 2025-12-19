@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { Doctor } from '@/types/user';
 
 interface OrderFormProps {
   initialData?: {
@@ -25,17 +26,12 @@ interface OrderFormProps {
   onSuccess?: () => void;
 }
 
-type Doctor = {
-  id: string;
-  name: string;
-  email: string;
-};
-
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
 
   const [formData, setFormData] = useState({
     patientName: initialData?.patientName || '',
@@ -50,12 +46,26 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     doctorId: initialData?.doctorId || '',
   });
 
-  // Fetch doctors if assistant
+  // Fetch current user info if doctor
   useEffect(() => {
-    if (role === 'assistant') {
+    if (role === 'doctor') {
+      fetchCurrentDoctor();
+    } else if (role === 'assistant') {
       fetchDoctors();
     }
   }, [role]);
+
+  const fetchCurrentDoctor = async () => {
+    try {
+      const response = await fetch('/api/auth/session');
+      const session = await response.json();
+      if (session?.user?.name) {
+        setCurrentDoctorName(session.user.name);
+      }
+    } catch (err) {
+      console.error('Error fetching current doctor:', err);
+    }
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -119,22 +129,41 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       )}
 
-      {role === 'assistant' && (
+      {role === 'doctor' && (
         <Select
           label="Doctor"
           id="doctorId"
-          value={formData.doctorId}
-          onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
-          required
-          disabled={isLoading || !!orderId}
+          value=""
+          onChange={() => {}}
+          disabled={true}
         >
-          <option value="">Seleccionar doctor</option>
-          {doctors.map((doctor) => (
-            <option key={doctor.id} value={doctor.id}>
-              {doctor.name} ({doctor.email})
-            </option>
-          ))}
+          <option value="">{currentDoctorName || 'Cargando...'}</option>
         </Select>
+      )}
+
+      {role === 'assistant' && (
+        <div>
+          <Select
+            label="Doctor"
+            id="doctorId"
+            value={formData.doctorId}
+            onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
+            required
+            disabled={isLoading || !!orderId || doctors.length === 0}
+          >
+            <option value="">Seleccionar doctor</option>
+            {doctors.map((doctor) => (
+              <option key={doctor.id} value={doctor.id}>
+                {doctor.name} ({doctor.email})
+              </option>
+            ))}
+          </Select>
+          {doctors.length === 0 && (
+            <p className="mt-2 text-sm text-warning">
+              No tienes doctores asignados. Contacta al administrador de la clínica para que te asigne doctores.
+            </p>
+          )}
+        </div>
       )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -187,7 +216,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         >
           <option value="NONE">Ninguno</option>
           <option value="DIGITAL">Digital</option>
-          <option value="PHYSICAL">Físico</option>
+          <option value="ANALOG_MOLD">Molde Analógico</option>
         </Select>
       </div>
 

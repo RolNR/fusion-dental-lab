@@ -8,7 +8,7 @@ import { OrderHeader } from '@/components/orders/OrderHeader';
 import { OrderDetails } from '@/components/orders/OrderDetails';
 import { Order } from '@/types/order';
 
-export default function DoctorOrderDetailPage() {
+export default function AssistantOrderDetailPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -30,7 +30,7 @@ export default function DoctorOrderDetailPage() {
 
   const fetchOrder = async () => {
     try {
-      const response = await fetch(`/api/doctor/orders/${orderId}`);
+      const response = await fetch(`/api/assistant/orders/${orderId}`);
       if (!response.ok) throw new Error('Error al cargar orden');
 
       const data = await response.json();
@@ -38,7 +38,7 @@ export default function DoctorOrderDetailPage() {
     } catch (error) {
       console.error('Error fetching order:', error);
       alert('Error al cargar la orden');
-      router.push('/doctor/orders');
+      router.push('/assistant/orders');
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export default function DoctorOrderDetailPage() {
 
     setDeleting(true);
     try {
-      const response = await fetch(`/api/doctor/orders/${orderId}`, {
+      const response = await fetch(`/api/assistant/orders/${orderId}`, {
         method: 'DELETE',
       });
 
@@ -58,7 +58,7 @@ export default function DoctorOrderDetailPage() {
         throw new Error(errorData.error || 'Error al eliminar orden');
       }
 
-      router.push('/doctor/orders');
+      router.push('/assistant/orders');
     } catch (error) {
       console.error('Error deleting order:', error);
       alert(error instanceof Error ? error.message : 'Error al eliminar la orden');
@@ -86,10 +86,10 @@ export default function DoctorOrderDetailPage() {
           orderNumber={order.orderNumber}
           status={order.status}
           createdAt={order.createdAt}
-          backUrl="/doctor/orders"
+          backUrl="/assistant/orders"
         />
 
-        <OrderDetails order={order} showClinicInfo={true} />
+        <OrderDetails order={order} showClinicInfo={false} showDoctorInfo={true} />
 
         {order.status === 'DRAFT' && (
           <div className="mt-6">

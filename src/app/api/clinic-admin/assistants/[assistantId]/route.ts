@@ -41,7 +41,7 @@ export async function GET(
       );
     }
 
-    // Fetch assistant
+    // Fetch assistant with assigned doctors
     const assistant = await prisma.user.findFirst({
       where: {
         id: assistantId,
@@ -54,6 +54,17 @@ export async function GET(
         email: true,
         role: true,
         createdAt: true,
+        assignedDoctors: {
+          include: {
+            doctor: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -136,7 +147,11 @@ export async function PATCH(
     }
 
     // Prepare update data
-    const updateData: any = {
+    const updateData: {
+      name?: string;
+      email?: string;
+      passwordHash?: string;
+    } = {
       name: validatedData.name,
       email: validatedData.email,
     };

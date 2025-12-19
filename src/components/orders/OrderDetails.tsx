@@ -1,33 +1,4 @@
-import { OrderStatus } from '@prisma/client';
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  patientName: string;
-  patientId?: string;
-  description?: string;
-  notes?: string;
-  teethNumbers?: string;
-  material?: string;
-  materialBrand?: string;
-  color?: string;
-  scanType?: string;
-  status: OrderStatus;
-  createdAt: string;
-  clinic?: {
-    name: string;
-    email?: string;
-    phone?: string;
-  };
-  doctor?: {
-    name: string;
-    email?: string;
-  };
-  createdBy?: {
-    name: string;
-    role: string;
-  };
-}
+import { Order } from '@/types/order';
 
 interface OrderDetailsProps {
   order: Order;

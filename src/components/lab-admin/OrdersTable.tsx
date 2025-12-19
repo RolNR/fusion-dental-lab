@@ -14,7 +14,7 @@ type OrderWithRelations = {
     id: string;
     name: string;
   };
-  doctor: {
+  doctor?: {
     id: string;
     name: string;
     email: string;
@@ -29,6 +29,7 @@ type OrderWithRelations = {
 interface OrdersTableProps {
   orders: OrderWithRelations[];
   baseUrl?: string;
+  showDoctorColumn?: boolean;
 }
 
 const getStatusLabel = (status: OrderStatus) => {
@@ -55,7 +56,7 @@ const getStatusColor = (status: OrderStatus) => {
   return colors[status];
 };
 
-export function OrdersTable({ orders, baseUrl = '/lab-admin/orders' }: OrdersTableProps) {
+export function OrdersTable({ orders, baseUrl = '/lab-admin/orders', showDoctorColumn = true }: OrdersTableProps) {
   const columns: TableColumn<OrderWithRelations>[] = [
     {
       header: 'Número de Orden',
@@ -76,12 +77,12 @@ export function OrdersTable({ orders, baseUrl = '/lab-admin/orders' }: OrdersTab
         <span className="text-sm text-foreground">{order.clinic.name}</span>
       ),
     },
-    {
+    ...(showDoctorColumn ? [{
       header: 'Doctor',
-      accessor: (order) => (
-        <span className="text-sm text-foreground">{order.doctor.name}</span>
+      accessor: (order: OrderWithRelations) => (
+        <span className="text-sm text-foreground">{order.doctor?.name || '-'}</span>
       ),
-    },
+    }] : []),
     {
       header: 'Estado',
       accessor: (order) => (

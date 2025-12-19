@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { OrdersTable, type OrderWithRelations } from '@/components/lab-admin/OrdersTable';
 import { Button } from '@/components/ui/Button';
 
-export default function DoctorOrdersPage() {
+export default function AssistantOrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
@@ -25,7 +25,7 @@ export default function DoctorOrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/doctor/orders');
+      const response = await fetch('/api/assistant/orders');
       if (!response.ok) throw new Error('Error al cargar órdenes');
 
       const data = await response.json();
@@ -50,12 +50,12 @@ export default function DoctorOrdersPage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Mis Órdenes</h1>
+            <h1 className="text-3xl font-bold text-foreground">Órdenes</h1>
             <p className="mt-2 text-muted-foreground">
-              Gestiona todas tus órdenes dentales
+              Gestiona las órdenes de los doctores asignados
             </p>
           </div>
-          <Link href="/doctor/orders/new">
+          <Link href="/assistant/orders/new">
             <Button variant="primary">
               Crear Nueva Orden
             </Button>
@@ -63,7 +63,7 @@ export default function DoctorOrdersPage() {
         </div>
 
         <div className="rounded-xl bg-background shadow-md border border-border">
-          <OrdersTable orders={orders} baseUrl="/doctor/orders" showDoctorColumn={false} />
+          <OrdersTable orders={orders} baseUrl="/assistant/orders" />
         </div>
       </div>
     </div>
