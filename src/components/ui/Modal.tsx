@@ -33,10 +33,10 @@ export function Modal({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: 'max-w-[calc(100%-2rem)] sm:max-w-md',
+    md: 'max-w-[calc(100%-2rem)] sm:max-w-md md:max-w-lg',
+    lg: 'max-w-[calc(100%-2rem)] sm:max-w-md md:max-w-lg lg:max-w-2xl',
+    xl: 'max-w-[calc(100%-2rem)] sm:max-w-md md:max-w-2xl lg:max-w-4xl',
   };
 
   return (
@@ -48,25 +48,25 @@ export function Modal({
       />
 
       {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
         <div
-          className={`relative w-full ${sizeClasses[size]} transform rounded-lg bg-background shadow-xl transition-all`}
+          className={`relative w-full ${sizeClasses[size]} transform rounded-lg bg-background shadow-xl transition-all max-h-[90vh] overflow-y-auto`}
         >
           {/* Header */}
-          <div className="border-b border-border px-6 py-4">
+          <div className="border-b border-border px-4 py-3 sm:px-6 sm:py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-foreground">{title}</h3>
               <button
                 onClick={onClose}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                <Icons.x size={24} />
+                <Icons.x size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
 
           {/* Content */}
-          <div className="px-6 py-4">{children}</div>
+          <div className="px-4 py-3 sm:px-6 sm:py-4">{children}</div>
         </div>
       </div>
     </div>
