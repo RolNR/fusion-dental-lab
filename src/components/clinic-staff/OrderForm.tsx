@@ -122,9 +122,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
       {error && (
-        <div className="rounded-lg bg-danger/10 p-4 text-danger">
+        <div className="rounded-lg bg-danger/10 p-3 sm:p-4 text-sm sm:text-base text-danger">
           {error}
         </div>
       )}
@@ -166,7 +166,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
         <Input
           label="Nombre del Paciente"
           type="text"
@@ -197,7 +197,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         placeholder="Descripción del trabajo dental..."
       />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
         <Input
           label="Números de Dientes"
           type="text"
@@ -220,7 +220,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
         <Input
           label="Material"
           type="text"
@@ -259,8 +259,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         placeholder="Instrucciones especiales, observaciones..."
       />
 
-      <div className="flex gap-4">
-        <Button type="submit" variant="primary" isLoading={isLoading}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+        <Button type="submit" variant="primary" isLoading={isLoading} fullWidth className="sm:w-auto">
           {orderId ? 'Actualizar Orden' : 'Crear Orden'}
         </Button>
         <Button
@@ -268,6 +268,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           variant="secondary"
           onClick={() => router.back()}
           disabled={isLoading}
+          fullWidth
+          className="sm:w-auto"
         >
           Cancelar
         </Button>
