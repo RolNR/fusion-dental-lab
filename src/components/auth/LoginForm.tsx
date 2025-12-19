@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/Button';
+import { getRoleBasedRedirect } from '@/lib/redirect-helpers';
+import { Role } from '@prisma/client';
 
 export function LoginForm() {
   const router = useRouter();
@@ -36,16 +38,10 @@ export function LoginForm() {
         const session = await response.json();
 
         // Redirect based on role
-        if (session?.user?.role === 'LAB_ADMIN') {
-          router.push('/lab-admin');
-        } else if (session?.user?.role === 'CLINIC_ADMIN') {
-          router.push('/clinic-admin');
-        } else if (session?.user?.role === 'DOCTOR') {
-          router.push('/doctor');
-        } else if (session?.user?.role === 'CLINIC_ASSISTANT') {
-          router.push('/assistant');
+        if (session?.user?.role) {
+          router.push(getRoleBasedRedirect(session.user.role as Role));
         } else {
-          router.push('/dashboard');
+          router.push('/unauthorized');
         }
         router.refresh();
       }

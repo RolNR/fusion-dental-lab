@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { getCurrentUser } from '@/lib/auth-helpers';
+import { getRoleBasedRedirect } from '@/lib/redirect-helpers';
 
 export const metadata = {
   title: 'Acceso No Autorizado | LabWiseLink',
@@ -9,6 +10,7 @@ export const metadata = {
 
 export default async function UnauthorizedPage() {
   const user = await getCurrentUser();
+  const dashboardUrl = user?.role ? getRoleBasedRedirect(user.role) : '/auth/login';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-12 sm:px-6 lg:px-8">
@@ -23,7 +25,7 @@ export default async function UnauthorizedPage() {
 
         <div className="space-y-3">
           {user ? (
-            <Link href="/dashboard" className="block">
+            <Link href={dashboardUrl} className="block">
               <Button className="w-full">Ir al Panel Principal</Button>
             </Link>
           ) : (

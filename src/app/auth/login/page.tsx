@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { LoginForm } from '@/components/auth/LoginForm';
+import { getRoleBasedRedirect } from '@/lib/redirect-helpers';
 
 export const metadata = {
   title: 'Iniciar Sesión | LabWiseLink',
@@ -12,8 +13,8 @@ export default async function LoginPage() {
   const session = await getServerSession(authOptions);
 
   // Redirect if already logged in
-  if (session) {
-    redirect('/dashboard');
+  if (session?.user?.role) {
+    redirect(getRoleBasedRedirect(session.user.role));
   }
 
   return (
