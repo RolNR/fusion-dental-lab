@@ -74,6 +74,70 @@ import { Icons } from '@/components/ui/Icons';
 <svg>...</svg> {/* Inline SVG */}
 ```
 
+### 4. Check Responsive Design Compliance
+
+Verify that components follow mobile-first responsive patterns:
+
+**Required breakpoints:**
+- `base` (mobile, 320px+) - default styles
+- `sm:` (640px+) - large mobile
+- `md:` (768px+) - tablet **[CRITICAL - must be used]**
+- `lg:` (1024px+) - desktop
+- `xl:` (1280px+) - large desktop
+
+**✅ CORRECT responsive patterns:**
+```tsx
+// Grid layouts - include md: breakpoint
+<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+// Container padding
+<div className="px-4 sm:px-6 lg:px-8">
+
+// Typography scaling
+<h1 className="text-2xl sm:text-3xl lg:text-4xl">
+
+// Button groups - stack on mobile
+<div className="flex flex-col gap-3 sm:flex-row">
+
+// Visibility toggles
+<div className="hidden md:flex"> {/* Desktop only */}
+<div className="md:hidden"> {/* Mobile only */}
+
+// Navigation - mobile menu required
+// Desktop nav: hidden md:flex
+// Mobile button: md:hidden
+```
+
+**❌ WRONG responsive patterns:**
+```tsx
+// Missing md: breakpoint (jumps from sm to lg)
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+
+// Fixed padding (not responsive)
+<div className="px-4">
+
+// Fixed text size (not responsive)
+<h1 className="text-3xl">
+
+// No mobile handling for navigation
+<nav>
+  <Link>Item 1</Link>
+  <Link>Item 2</Link>
+  <Link>Item 3</Link>
+</nav>
+
+// Hardcoded breakpoint pixels
+<div className="w-[768px]">
+```
+
+**Mobile-specific requirements:**
+- Touch targets must be 44px+ for WCAG compliance
+- No horizontal scroll on any page
+- Navigation must include mobile menu (hamburger + drawer)
+- Tables must use card view on mobile (`md:hidden` for cards, `hidden md:block` for table)
+- Forms must stack on mobile with full-width buttons
+- Modals must scale appropriately (max-w-[calc(100%-2rem)] on mobile)
+
 ## How to Review
 
 ### Step 1: Search for Violations
@@ -154,6 +218,23 @@ Use this template for your reports:
 - Found: Inline SVG
 - Fix: Add to `Icons.tsx` and use `<Icons.iconName />`
 - Reason: Icons must be centralized
+
+### Responsive Design
+
+❌ **src/path/to/file.tsx:line**
+- Found: `className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"`
+- Fix: `className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"`
+- Reason: Missing md: breakpoint for tablet support
+
+❌ **src/path/to/file.tsx:line**
+- Found: Navigation without mobile menu
+- Fix: Add mobile menu with `hidden md:flex` for desktop nav and `md:hidden` for mobile button
+- Reason: Navigation must work on mobile devices
+
+❌ **src/path/to/file.tsx:line**
+- Found: `className="text-3xl"` (fixed size)
+- Fix: `className="text-2xl sm:text-3xl lg:text-4xl"`
+- Reason: Typography must scale responsively
 
 ## Passed Files
 
