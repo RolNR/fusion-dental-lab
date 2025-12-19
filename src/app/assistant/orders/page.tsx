@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { OrdersTable, type OrderWithRelations } from '@/components/lab-admin/OrdersTable';
-import { Button } from '@/components/ui/Button';
 
 export default function AssistantOrdersPage() {
   const { data: session, status } = useSession();
@@ -40,27 +39,23 @@ export default function AssistantOrdersPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-lg text-muted-foreground">Cargando...</div>
+        <div className="text-base sm:text-lg text-muted-foreground">Cargando...</div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Órdenes</h1>
-            <p className="mt-2 text-muted-foreground">
-              Gestiona las órdenes de los doctores asignados
-            </p>
-          </div>
-          <Link href="/assistant/orders/new">
-            <Button variant="primary">
-              Crear Nueva Orden
-            </Button>
-          </Link>
-        </div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <PageHeader
+          title="Órdenes"
+          description="Gestiona las órdenes de los doctores asignados"
+          action={{
+            label: 'Crear Nueva Orden',
+            href: '/assistant/orders/new',
+            variant: 'primary',
+          }}
+        />
 
         <div className="rounded-xl bg-background shadow-md border border-border">
           <OrdersTable orders={orders} baseUrl="/assistant/orders" />

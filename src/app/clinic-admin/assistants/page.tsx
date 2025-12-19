@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
 
@@ -38,16 +39,16 @@ export default function AssistantsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center text-muted-foreground">Cargando...</div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="text-center text-sm sm:text-base text-muted-foreground">Cargando...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="rounded-lg bg-danger/10 p-6 text-sm sm:text-base text-danger">
           Error: {error}
         </div>
       </div>
@@ -98,19 +99,16 @@ export default function AssistantsPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Asistentes</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gestiona los asistentes de la clínica
-          </p>
-        </div>
-        <Link href="/clinic-admin/assistants/new">
-          <Button variant="primary">Nuevo Asistente</Button>
-        </Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+      <PageHeader
+        title="Asistentes"
+        description="Gestiona los asistentes de la clínica"
+        action={{
+          label: 'Nuevo Asistente',
+          href: '/clinic-admin/assistants/new',
+          variant: 'primary',
+        }}
+      />
 
       {/* Assistants Table */}
       <Table

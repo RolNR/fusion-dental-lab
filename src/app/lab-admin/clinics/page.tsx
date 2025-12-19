@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 type ClinicWithCounts = {
   id: string;
@@ -46,16 +47,16 @@ export default function ClinicsPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center text-muted-foreground">Cargando...</div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="text-center text-sm sm:text-base text-muted-foreground">Cargando...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="rounded-lg bg-danger/10 p-4 sm:p-6 text-sm sm:text-base text-danger">
           Error: {error}
         </div>
       </div>
@@ -151,19 +152,16 @@ export default function ClinicsPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Clínicas</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gestiona las clínicas dentales asociadas a tu laboratorio
-          </p>
-        </div>
-        <Link href="/lab-admin/clinics/new">
-          <Button variant="primary">Nueva Clínica</Button>
-        </Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+      <PageHeader
+        title="Clínicas"
+        description="Gestiona las clínicas dentales asociadas a tu laboratorio"
+        action={{
+          label: 'Nueva Clínica',
+          href: '/lab-admin/clinics/new',
+          variant: 'primary',
+        }}
+      />
 
       {/* Clinics Table */}
       <Table

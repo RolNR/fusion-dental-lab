@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Select } from '@/components/ui/Select';
 import { OrdersTable, OrderWithRelations } from '@/components/lab-admin/OrdersTable';
 
@@ -34,16 +35,16 @@ export default function ClinicOrdersPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center text-muted-foreground">Cargando...</div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="text-center text-sm sm:text-base text-muted-foreground">Cargando...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="rounded-lg bg-danger/10 p-6 text-sm sm:text-base text-danger">
           Error: {error}
         </div>
       </div>
@@ -51,14 +52,11 @@ export default function ClinicOrdersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Órdenes</h1>
-        <p className="mt-2 text-muted-foreground">
-          Todas las órdenes de la clínica
-        </p>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+      <PageHeader
+        title="Órdenes"
+        description="Todas las órdenes de la clínica"
+      />
 
       {/* Filters */}
       <div className="mb-6 flex gap-4">

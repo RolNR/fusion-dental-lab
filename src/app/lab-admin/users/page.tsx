@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
 import { Select } from '@/components/ui/Select';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Role } from '@prisma/client';
 
 type UserWithClinic = {
@@ -77,16 +78,16 @@ export default function UsersPage() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="text-center text-muted-foreground">Cargando...</div>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="text-center text-sm sm:text-base text-muted-foreground">Cargando...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="rounded-lg bg-danger/10 p-4 sm:p-6 text-sm sm:text-base text-danger">
           Error: {error}
         </div>
       </div>
@@ -151,25 +152,23 @@ export default function UsersPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Usuarios</h1>
-          <p className="mt-2 text-muted-foreground">
-            Gestiona todos los usuarios del laboratorio y clínicas
-          </p>
-        </div>
-        <Link href="/lab-admin/users/new">
-          <Button variant="primary">Nuevo Usuario</Button>
-        </Link>
-      </div>
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+      <PageHeader
+        title="Usuarios"
+        description="Gestiona todos los usuarios del laboratorio y clínicas"
+        action={{
+          label: 'Nuevo Usuario',
+          href: '/lab-admin/users/new',
+          variant: 'primary',
+        }}
+      />
 
       {/* Filters */}
       <div className="mb-6 flex gap-4">
         <Select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
+          className="w-full sm:w-auto"
         >
           <option value="">Todos los roles</option>
           <option value="LAB_COLLABORATOR">Colaborador Lab</option>

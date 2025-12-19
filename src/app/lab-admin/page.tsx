@@ -10,8 +10,8 @@ export default async function LabAdminDashboard() {
 
   if (!laboratoryId) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+        <div className="rounded-lg bg-danger/10 p-4 sm:p-6 text-sm sm:text-base text-danger">
           Error: Usuario no asociado a un laboratorio
         </div>
       </div>
@@ -71,23 +71,23 @@ export default async function LabAdminDashboard() {
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
           Panel de Administración
         </h1>
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 text-sm sm:text-base text-muted-foreground">
           Bienvenido, {session.user.name}
         </p>
       </div>
 
       {/* Laboratory Info */}
-      <div className="mb-8 rounded-xl bg-background p-6 shadow-md border border-border">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
+      <div className="mb-6 sm:mb-8 rounded-xl bg-background p-4 sm:p-6 shadow-md border border-border">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-3 sm:mb-4">
           Información del Laboratorio
         </h2>
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Nombre</dt>
             <dd className="mt-1 text-sm text-foreground">{laboratory?.name}</dd>
@@ -108,7 +108,7 @@ export default async function LabAdminDashboard() {
       </div>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
         <StatsCard
           title="Clínicas Activas"
           value={clinicsCount}
@@ -136,11 +136,11 @@ export default async function LabAdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <h2 className="text-xl font-semibold text-foreground mb-4">
+      <div className="rounded-xl bg-background p-4 sm:p-6 shadow-md border border-border">
+        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-3 sm:mb-4">
           Acciones Rápidas
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
           <Link href="/lab-admin/clinics">
             <Button variant="primary" className="w-full">
               Nueva Clínica
