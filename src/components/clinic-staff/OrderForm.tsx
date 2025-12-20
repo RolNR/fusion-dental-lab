@@ -20,6 +20,7 @@ interface OrderFormProps {
     color?: string;
     scanType?: 'DIGITAL' | 'PHYSICAL' | 'NONE';
     doctorId?: string;
+    status?: string;
   };
   orderId?: string;
   role: 'doctor' | 'assistant';
@@ -82,37 +83,87 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
+    await saveOrder(false);
+  };
+
+  const handleSubmitForReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await saveOrder(true);
+  };
+
+  const saveOrder = async (submitForReview: boolean) => {
     setError(null);
     setIsLoading(true);
 
     try {
-      const endpoint = orderId
-        ? `/api/${role}/orders/${orderId}`
-        : `/api/${role}/orders`;
+      // For editing, just update the order
+      if (orderId) {
+        const endpoint = `/api/${role}/orders/${orderId}`;
+        const response = await fetch(endpoint, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
 
-      const method = orderId ? 'PATCH' : 'POST';
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Error al actualizar orden');
+        }
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+        // If we want to submit after editing, call submit endpoint
+        if (submitForReview) {
+          const submitResponse = await fetch(`/api/${role}/orders/${orderId}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
 
-      const data = await response.json();
+          const submitData = await submitResponse.json();
+          if (!submitResponse.ok) {
+            throw new Error(submitData.error || 'Error al enviar orden');
+          }
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al guardar orden');
-      }
-
-      if (onSuccess) {
-        onSuccess();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/${role}/orders`);
+          router.refresh();
+        }
       } else {
-        router.push(`/${role}/orders`);
-        router.refresh();
+        // For new orders, create and optionally submit
+        const createResponse = await fetch(`/api/${role}/orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+
+        const createData = await createResponse.json();
+        if (!createResponse.ok) {
+          throw new Error(createData.error || 'Error al crear orden');
+        }
+
+        // If submit for review, call submit endpoint
+        if (submitForReview) {
+          const newOrderId = createData.order.id;
+          const submitResponse = await fetch(`/api/${role}/orders/${newOrderId}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          const submitData = await submitResponse.json();
+          if (!submitResponse.ok) {
+            throw new Error(submitData.error || 'Error al enviar orden');
+          }
+        }
+
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/${role}/orders`);
+          router.refresh();
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -121,8 +172,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
   };
 
+  const isEditingDraft = orderId && initialData?.status === 'DRAFT';
+  const isEditingNeedsInfo = orderId && initialData?.status === 'NEEDS_INFO';
+  const canSubmit = !orderId || isEditingDraft || isEditingNeedsInfo;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+    <form onSubmit={handleSaveDraft} className="space-y-4 sm:space-y-6">
       {error && (
         <div className="rounded-lg bg-danger/10 p-3 sm:p-4 text-sm sm:text-base text-danger">
           {error}
@@ -260,9 +315,27 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-        <Button type="submit" variant="primary" isLoading={isLoading} fullWidth className="sm:w-auto">
-          {orderId ? 'Actualizar Orden' : 'Crear Orden'}
+        <Button
+          type="submit"
+          variant="secondary"
+          isLoading={isLoading}
+          fullWidth
+          className="sm:w-auto"
+        >
+          {orderId ? 'Guardar Cambios' : 'Guardar Borrador'}
         </Button>
+        {canSubmit && (
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleSubmitForReview}
+            isLoading={isLoading}
+            fullWidth
+            className="sm:w-auto"
+          >
+            {orderId ? 'Guardar y Enviar' : 'Enviar para Revisión'}
+          </Button>
+        )}
         <Button
           type="button"
           variant="secondary"

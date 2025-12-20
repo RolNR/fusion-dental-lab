@@ -15,6 +15,7 @@ export interface Order {
   color?: string;
   scanType?: string;
   status: OrderStatus;
+  doctorId: string;
   createdAt: string;
   clinic?: {
     name: string;

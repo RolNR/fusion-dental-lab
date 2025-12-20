@@ -16,9 +16,9 @@ export function OrderHeader({ orderNumber, status, createdAt, backUrl, backLabel
       <Link href={backUrl} className="text-primary hover:text-primary/80 text-sm font-medium">
         ← {backLabel}
       </Link>
-      <div className="mt-4 flex items-start justify-between">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
             Orden #{orderNumber}
           </h1>
           <p className="mt-2 text-muted-foreground">
