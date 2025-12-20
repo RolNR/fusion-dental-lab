@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { OrderStatus, Role } from '@prisma/client';
-import {
-  canUserTransition,
-  getTimestampUpdates,
-  getTransitionErrorMessage,
-} from '@/lib/orderStateMachine';
+import { checkOrderAccess } from '@/lib/api/orderAuthorization';
+import { updateOrderStatus } from '@/lib/api/orderStatusUpdate';
 
 export async function POST(
   req: NextRequest,
@@ -30,95 +26,40 @@ export async function POST(
     }
 
     const { orderId } = await params;
-
-    // Get the order
-    const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        doctor: true,
-        clinic: true,
-      },
-    });
-
-    if (!order) {
-      return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
-    }
-
-    // Verify user has access to this order
     const userRole = session.user.role as Role;
     const userId = session.user.id;
 
-    if (userRole === Role.DOCTOR && order.doctorId !== userId) {
+    // Check user has access to this order
+    const accessCheck = await checkOrderAccess({
+      orderId,
+      userId,
+      userRole,
+      clinicId: session.user.clinicId,
+    });
+
+    if (!accessCheck.hasAccess) {
       return NextResponse.json(
-        { error: 'No tienes acceso a esta orden' },
-        { status: 403 }
+        { error: accessCheck.error },
+        { status: accessCheck.statusCode }
       );
     }
 
-    if (
-      (userRole === Role.CLINIC_ASSISTANT || userRole === Role.CLINIC_ADMIN) &&
-      order.clinicId !== session.user.clinicId
-    ) {
+    // Update order status to PENDING_REVIEW
+    const updateResult = await updateOrderStatus({
+      orderId,
+      newStatus: OrderStatus.PENDING_REVIEW,
+      userId,
+      userRole,
+    });
+
+    if (!updateResult.success) {
       return NextResponse.json(
-        { error: 'No tienes acceso a esta orden' },
-        { status: 403 }
+        { error: updateResult.error },
+        { status: updateResult.statusCode }
       );
     }
 
-    // Check if the transition is valid
-    const newStatus = OrderStatus.PENDING_REVIEW;
-    if (!canUserTransition(userRole, order.status, newStatus)) {
-      const errorMessage = getTransitionErrorMessage(userRole, order.status, newStatus);
-      return NextResponse.json({ error: errorMessage }, { status: 400 });
-    }
-
-    // Update order status
-    const timestampUpdates = getTimestampUpdates(newStatus);
-    const updatedOrder = await prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: newStatus,
-        ...timestampUpdates,
-      },
-      include: {
-        doctor: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        createdBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        files: true,
-      },
-    });
-
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        action: 'STATUS_CHANGE',
-        entityType: 'Order',
-        entityId: orderId,
-        oldValue: order.status,
-        newValue: newStatus,
-        userId: userId,
-        orderId: orderId,
-      },
-    });
-
-    return NextResponse.json(updatedOrder);
+    return NextResponse.json(updateResult.order);
   } catch (error) {
     console.error('Error submitting order:', error);
     return NextResponse.json(
