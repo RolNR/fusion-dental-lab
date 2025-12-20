@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Table, TableColumn } from '@/components/ui/Table';
 import { OrderStatus } from '@prisma/client';
+import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
 
 type OrderWithRelations = {
   id: string;
@@ -31,30 +32,6 @@ interface OrdersTableProps {
   baseUrl?: string;
   showDoctorColumn?: boolean;
 }
-
-const getStatusLabel = (status: OrderStatus) => {
-  const labels: Record<OrderStatus, string> = {
-    DRAFT: 'Borrador',
-    MATERIALS_SENT: 'Materiales Enviados',
-    NEEDS_INFO: 'Necesita Información',
-    IN_PROGRESS: 'En Proceso',
-    COMPLETED: 'Completado',
-    CANCELLED: 'Cancelado',
-  };
-  return labels[status];
-};
-
-const getStatusColor = (status: OrderStatus) => {
-  const colors: Record<OrderStatus, string> = {
-    DRAFT: 'bg-muted text-muted-foreground',
-    MATERIALS_SENT: 'bg-primary/10 text-primary',
-    NEEDS_INFO: 'bg-warning/10 text-warning',
-    IN_PROGRESS: 'bg-info/10 text-info',
-    COMPLETED: 'bg-success/10 text-success',
-    CANCELLED: 'bg-danger/10 text-danger',
-  };
-  return colors[status];
-};
 
 export function OrdersTable({ orders, baseUrl = '/lab-admin/orders', showDoctorColumn = true }: OrdersTableProps) {
   const columns: TableColumn<OrderWithRelations>[] = [

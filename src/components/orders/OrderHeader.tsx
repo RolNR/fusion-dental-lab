@@ -1,5 +1,6 @@
 import { OrderStatus } from '@prisma/client';
 import Link from 'next/link';
+import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
 
 interface OrderHeaderProps {
   orderNumber: string;
@@ -8,30 +9,6 @@ interface OrderHeaderProps {
   backUrl: string;
   backLabel?: string;
 }
-
-const getStatusLabel = (status: OrderStatus) => {
-  const labels: Record<OrderStatus, string> = {
-    DRAFT: 'Borrador',
-    MATERIALS_SENT: 'Materiales Enviados',
-    NEEDS_INFO: 'Necesita Información',
-    IN_PROGRESS: 'En Proceso',
-    COMPLETED: 'Completado',
-    CANCELLED: 'Cancelado',
-  };
-  return labels[status];
-};
-
-const getStatusColor = (status: OrderStatus) => {
-  const colors: Record<OrderStatus, string> = {
-    DRAFT: 'bg-muted text-muted-foreground',
-    MATERIALS_SENT: 'bg-primary/10 text-primary',
-    NEEDS_INFO: 'bg-warning/10 text-warning',
-    IN_PROGRESS: 'bg-info/10 text-info',
-    COMPLETED: 'bg-success/10 text-success',
-    CANCELLED: 'bg-danger/10 text-danger',
-  };
-  return colors[status];
-};
 
 export function OrderHeader({ orderNumber, status, createdAt, backUrl, backLabel = 'Volver a Órdenes' }: OrderHeaderProps) {
   return (

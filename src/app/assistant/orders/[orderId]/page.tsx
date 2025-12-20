@@ -1,71 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { OrderHeader } from '@/components/orders/OrderHeader';
 import { OrderDetails } from '@/components/orders/OrderDetails';
-import { Order } from '@/types/order';
+import { useOrderDetail } from '@/hooks/useOrderDetail';
 
 export default function AssistantOrderDetailPage() {
-  const { data: session, status: sessionStatus } = useSession();
-  const router = useRouter();
   const params = useParams();
   const orderId = params.orderId as string;
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    if (sessionStatus === 'unauthenticated') {
-      router.push('/auth/login');
-    }
-
-    if (sessionStatus === 'authenticated' && orderId) {
-      fetchOrder();
-    }
-  }, [sessionStatus, orderId, router]);
-
-  const fetchOrder = async () => {
-    try {
-      const response = await fetch(`/api/assistant/orders/${orderId}`);
-      if (!response.ok) throw new Error('Error al cargar orden');
-
-      const data = await response.json();
-      setOrder(data.order);
-    } catch (error) {
-      console.error('Error fetching order:', error);
-      alert('Error al cargar la orden');
-      router.push('/assistant/orders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('¿Estás seguro de eliminar esta orden?')) return;
-
-    setDeleting(true);
-    try {
-      const response = await fetch(`/api/assistant/orders/${orderId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al eliminar orden');
-      }
-
-      router.push('/assistant/orders');
-    } catch (error) {
-      console.error('Error deleting order:', error);
-      alert(error instanceof Error ? error.message : 'Error al eliminar la orden');
-    } finally {
-      setDeleting(false);
-    }
-  };
+  const { order, loading, deleting, sessionStatus, handleDelete } = useOrderDetail({
+    orderId,
+    apiBasePath: '/api/assistant/orders',
+    redirectPath: '/assistant/orders',
+  });
 
   if (sessionStatus === 'loading' || loading) {
     return (
