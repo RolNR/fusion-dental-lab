@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { orderUpdateSchema, type OrderUpdateData } from '@/types/order';
+import { canEditOrder, canDeleteOrder } from '@/lib/api/orderEditValidation';
 
 // GET /api/assistant/orders/[orderId] - Get a specific order
 export async function GET(
@@ -112,12 +113,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    // Only allow editing DRAFT orders
-    if (existingOrder.status !== 'DRAFT') {
-      return NextResponse.json(
-        { error: 'Solo se pueden editar órdenes en borrador' },
-        { status: 400 }
-      );
+    // Check if order can be edited
+    const editCheck = canEditOrder(existingOrder.status);
+    if (!editCheck.canEdit) {
+      return NextResponse.json({ error: editCheck.error }, { status: 400 });
     }
 
     const body = await request.json();
@@ -196,12 +195,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    // Only allow deleting DRAFT orders
-    if (existingOrder.status !== 'DRAFT') {
-      return NextResponse.json(
-        { error: 'Solo se pueden eliminar órdenes en borrador' },
-        { status: 400 }
-      );
+    // Check if order can be deleted
+    const deleteCheck = canDeleteOrder(existingOrder.status);
+    if (!deleteCheck.canDelete) {
+      return NextResponse.json({ error: deleteCheck.error }, { status: 400 });
     }
 
     await prisma.order.delete({
