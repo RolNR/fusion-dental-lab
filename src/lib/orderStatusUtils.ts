@@ -37,3 +37,18 @@ export function getStatusLabel(status: OrderStatus): string {
 export function getStatusColor(status: OrderStatus): string {
   return ORDER_STATUS_COLORS[status];
 }
+
+/**
+ * Order statuses that can be edited
+ */
+export const EDITABLE_STATUSES: OrderStatus[] = [
+  OrderStatus.DRAFT,
+  OrderStatus.NEEDS_INFO,
+];
+
+/**
+ * Check if an order with given status can be edited
+ */
+export function isOrderEditable(status: OrderStatus): boolean {
+  return EDITABLE_STATUSES.includes(status);
+}

@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ScanType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Doctor } from '@/types/user';
+import { getScanTypeOptions } from '@/lib/scanTypeUtils';
+import {
+  createOrder,
+  updateOrder,
+  submitOrderForReview,
+  handleSuccessNavigation,
+} from '@/lib/api/orderFormHelpers';
 
 interface OrderFormProps {
   initialData?: {
@@ -18,7 +26,7 @@ interface OrderFormProps {
     material?: string;
     materialBrand?: string;
     color?: string;
-    scanType?: 'DIGITAL' | 'PHYSICAL' | 'NONE';
+    scanType?: ScanType | null;
     doctorId?: string;
     status?: string;
   };
@@ -43,7 +51,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     material: initialData?.material || '',
     materialBrand: initialData?.materialBrand || '',
     color: initialData?.color || '',
-    scanType: initialData?.scanType || 'NONE' as 'DIGITAL' | 'PHYSICAL' | 'NONE',
+    scanType: initialData?.scanType || null as ScanType | null,
     doctorId: initialData?.doctorId || '',
   });
 
@@ -93,78 +101,36 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     await saveOrder(true);
   };
 
+  const handleCreateOrder = async (submitForReview: boolean) => {
+    const newOrder = await createOrder(role, formData);
+
+    if (submitForReview) {
+      await submitOrderForReview(role, newOrder.id);
+    }
+  };
+
+  const handleUpdateOrder = async (submitForReview: boolean) => {
+    if (!orderId) return;
+
+    await updateOrder(role, orderId, formData);
+
+    if (submitForReview) {
+      await submitOrderForReview(role, orderId);
+    }
+  };
+
   const saveOrder = async (submitForReview: boolean) => {
     setError(null);
     setIsLoading(true);
 
     try {
-      // For editing, just update the order
       if (orderId) {
-        const endpoint = `/api/${role}/orders/${orderId}`;
-        const response = await fetch(endpoint, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data.error || 'Error al actualizar orden');
-        }
-
-        // If we want to submit after editing, call submit endpoint
-        if (submitForReview) {
-          const submitResponse = await fetch(`/api/${role}/orders/${orderId}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          const submitData = await submitResponse.json();
-          if (!submitResponse.ok) {
-            throw new Error(submitData.error || 'Error al enviar orden');
-          }
-        }
-
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push(`/${role}/orders`);
-          router.refresh();
-        }
+        await handleUpdateOrder(submitForReview);
       } else {
-        // For new orders, create and optionally submit
-        const createResponse = await fetch(`/api/${role}/orders`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        const createData = await createResponse.json();
-        if (!createResponse.ok) {
-          throw new Error(createData.error || 'Error al crear orden');
-        }
-
-        // If submit for review, call submit endpoint
-        if (submitForReview) {
-          const newOrderId = createData.order.id;
-          const submitResponse = await fetch(`/api/${role}/orders/${newOrderId}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          const submitData = await submitResponse.json();
-          if (!submitResponse.ok) {
-            throw new Error(submitData.error || 'Error al enviar orden');
-          }
-        }
-
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push(`/${role}/orders`);
-          router.refresh();
-        }
+        await handleCreateOrder(submitForReview);
       }
+
+      handleSuccessNavigation(onSuccess, router, role);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -265,13 +231,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         <Select
           label="Tipo de Escaneo"
           id="scanType"
-          value={formData.scanType}
-          onChange={(e) => setFormData({ ...formData, scanType: e.target.value as any })}
+          value={formData.scanType || ''}
+          onChange={(e) => setFormData({ ...formData, scanType: e.target.value ? e.target.value as ScanType : null })}
           disabled={isLoading}
         >
-          <option value="NONE">Ninguno</option>
-          <option value="DIGITAL">Digital</option>
-          <option value="ANALOG_MOLD">Molde Analógico</option>
+          {getScanTypeOptions().map((option) => (
+            <option key={option.value || 'none'} value={option.value || ''}>
+              {option.label}
+            </option>
+          ))}
         </Select>
       </div>
 

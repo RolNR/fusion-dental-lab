@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { OrderStatus, ScanType, Role } from '@prisma/client';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
+import { getScanTypeLabel } from '@/lib/scanTypeUtils';
+import { formatFileSize, formatDate } from '@/lib/formatters';
 import { StatusChangeControl } from '@/components/orders/StatusChangeControl';
 import { useSession } from 'next-auth/react';
 
@@ -52,23 +54,6 @@ type OrderDetail = {
     storageUrl: string;
     createdAt: string;
   }>;
-};
-
-const getScanTypeLabel = (scanType: ScanType | null) => {
-  if (!scanType) return '-';
-  const labels: Record<ScanType, string> = {
-    DIGITAL_SCAN: 'Escaneo Digital',
-    ANALOG_MOLD: 'Molde Análogo',
-  };
-  return labels[scanType];
-};
-
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 export default function OrderDetailPage() {
@@ -182,13 +167,7 @@ export default function OrderDetailPage() {
                   Fecha de Creación
                 </dt>
                 <dd className="mt-1 text-sm text-foreground">
-                  {new Date(order.createdAt).toLocaleDateString('es-MX', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {formatDate(order.createdAt, true)}
                 </dd>
               </div>
               <div>
@@ -196,13 +175,7 @@ export default function OrderDetailPage() {
                   Última Actualización
                 </dt>
                 <dd className="mt-1 text-sm text-foreground">
-                  {new Date(order.updatedAt).toLocaleDateString('es-MX', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {formatDate(order.updatedAt, true)}
                 </dd>
               </div>
             </dl>
@@ -292,8 +265,7 @@ export default function OrderDetailPage() {
                         {file.originalName}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {formatFileSize(file.fileSize)} •{' '}
-                        {new Date(file.createdAt).toLocaleDateString('es-MX')}
+                        {formatFileSize(file.fileSize)} • {formatDate(file.createdAt)}
                       </p>
                     </div>
                     <a

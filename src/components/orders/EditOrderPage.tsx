@@ -1,8 +1,10 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { ScanType } from '@prisma/client';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { OrderForm } from '@/components/clinic-staff/OrderForm';
+import { isOrderEditable } from '@/lib/orderStatusUtils';
 
 interface EditOrderPageProps {
   role: 'assistant' | 'doctor';
@@ -32,7 +34,7 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
   }
 
   // Only allow editing DRAFT and NEEDS_INFO orders
-  if (order.status !== 'DRAFT' && order.status !== 'NEEDS_INFO') {
+  if (!isOrderEditable(order.status)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg text-danger">
@@ -64,7 +66,7 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
             material: order.material || '',
             materialBrand: order.materialBrand || '',
             color: order.color || '',
-            scanType: order.scanType as 'DIGITAL' | 'PHYSICAL' | 'NONE',
+            scanType: order.scanType as ScanType | null,
             doctorId: order.doctorId,
             status: order.status,
           }}
