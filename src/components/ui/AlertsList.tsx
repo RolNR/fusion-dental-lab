@@ -85,7 +85,7 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, l
           >
             <div className="flex items-start justify-between mb-2">
               <Link
-                href={`${baseUrl}/${alert.order.id}`}
+                href={`${baseUrl}/${alert.order.id}/edit`}
                 className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
               >
                 Orden #{alert.order.orderNumber}

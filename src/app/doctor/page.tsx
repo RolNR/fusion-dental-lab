@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Role } from '@prisma/client';
+import { useAlerts } from '@/hooks/useAlerts';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
 import { QuickActions } from '@/components/ui/QuickActions';
 import { AlertsList } from '@/components/ui/AlertsList';
@@ -15,22 +17,6 @@ interface OrderStats {
   completed: number;
 }
 
-interface Alert {
-  id: string;
-  message: string;
-  status: 'UNREAD' | 'READ' | 'RESOLVED';
-  createdAt: string;
-  order: {
-    id: string;
-    orderNumber: string;
-    patientName: string;
-  };
-  sender: {
-    name: string;
-    role: string;
-  };
-}
-
 export default function DoctorDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -41,18 +27,21 @@ export default function DoctorDashboard() {
     inProgress: 0,
     completed: 0,
   });
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Use the new custom hook for alerts
+  const {
+    alerts,
+    loading: alertsLoading,
+    setAlerts,
+  } = useAlerts({ role: Role.DOCTOR });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login');
     }
-
     if (status === 'authenticated') {
       fetchStats();
-      fetchAlerts();
     }
   }, [status, router]);
 
@@ -76,43 +65,33 @@ export default function DoctorDashboard() {
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAlerts = async () => {
-    try {
-      const response = await fetch('/api/doctor/alerts');
-      if (response.ok) {
-        const data = await response.json();
-        setAlerts(data.alerts || []);
-      }
-    } catch (error) {
-      console.error('Error fetching alerts:', error);
-    } finally {
-      setAlertsLoading(false);
+      setStatsLoading(false);
     }
   };
 
   const handleMarkAsRead = async (alertId: string) => {
+    // Optimistically update the UI
+    setAlerts((prevAlerts) =>
+      prevAlerts.map((alert) =>
+        alert.id === alertId ? { ...alert, status: 'READ' } : alert
+      )
+    );
+
     try {
-      const response = await fetch(`/api/doctor/alerts/${alertId}`, {
+      // Then, send the request to the server
+      await fetch(`/api/doctor/alerts/${alertId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'READ' }),
       });
-
-      if (response.ok) {
-        setAlerts(alerts.map(alert =>
-          alert.id === alertId ? { ...alert, status: 'READ' as const } : alert
-        ));
-      }
     } catch (error) {
       console.error('Error marking alert as read:', error);
+      // Optional: Revert the optimistic update on error
+      // fetchInitialAlerts(); // Or some other state rollback
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || statsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg text-muted-foreground">Cargando...</div>
