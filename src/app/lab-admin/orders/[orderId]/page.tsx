@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { OrderStatus, ScanType } from '@prisma/client';
+import { OrderStatus, ScanType, Role } from '@prisma/client';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
+import { StatusChangeControl } from '@/components/orders/StatusChangeControl';
+import { useSession } from 'next-auth/react';
 
 type OrderDetail = {
   id: string;
@@ -72,29 +74,31 @@ const formatFileSize = (bytes: number) => {
 export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.orderId as string;
+  const { data: session } = useSession();
 
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchOrder() {
-      try {
-        const response = await fetch(`/api/lab-admin/orders/${orderId}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar orden');
-        }
-        const data = await response.json();
-        setOrder(data.order);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setIsLoading(false);
+  const fetchOrder = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/lab-admin/orders/${orderId}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar orden');
       }
+      const data = await response.json();
+      setOrder(data.order);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchOrder();
   }, [orderId]);
+
+  useEffect(() => {
+    fetchOrder();
+  }, [fetchOrder]);
 
   if (isLoading) {
     return (
@@ -126,17 +130,17 @@ export default function OrderDetailPage() {
             ← Volver a Órdenes
           </Link>
         </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground break-words">
               Orden {order.orderNumber}
             </h1>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-muted-foreground break-words">
               Paciente: {order.patientName}
             </p>
           </div>
           <span
-            className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(
+            className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold self-start ${getStatusColor(
               order.status
             )}`}
           >
@@ -309,6 +313,16 @@ export default function OrderDetailPage() {
 
         {/* Right Column - Clinic & Doctor Info */}
         <div className="space-y-6">
+          {/* Status Change Control */}
+          {session?.user?.role && (
+            <StatusChangeControl
+              orderId={order.id}
+              currentStatus={order.status}
+              userRole={session.user.role as Role}
+              onStatusChange={fetchOrder}
+            />
+          )}
+
           {/* Clinic Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">

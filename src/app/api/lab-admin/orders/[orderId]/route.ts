@@ -149,6 +149,7 @@ export async function PATCH(
     // Validate request body
     const updateSchema = z.object({
       status: z.nativeEnum(OrderStatus),
+      comment: z.string().optional(),
     });
 
     const body = await request.json();
@@ -166,7 +167,15 @@ export async function PATCH(
       throw err;
     }
 
-    const newStatus = validatedData.status;
+    const { status: newStatus, comment } = validatedData;
+
+    // Validate that comment is provided when status is NEEDS_INFO
+    if (newStatus === OrderStatus.NEEDS_INFO && (!comment || !comment.trim())) {
+      return NextResponse.json(
+        { error: 'Debes proporcionar un comentario cuando solicitas información' },
+        { status: 400 }
+      );
+    }
 
     // Update order status using shared utility
     const updateResult = await updateOrderStatus({
@@ -174,6 +183,7 @@ export async function PATCH(
       newStatus,
       userId,
       userRole,
+      comment,
     });
 
     if (!updateResult.success) {

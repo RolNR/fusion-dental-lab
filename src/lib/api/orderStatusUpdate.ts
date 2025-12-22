@@ -11,6 +11,7 @@ interface StatusUpdateParams {
   newStatus: OrderStatus;
   userId: string;
   userRole: Role;
+  comment?: string;
 }
 
 interface StatusUpdateResult {
@@ -49,6 +50,7 @@ export async function updateOrderStatus({
   newStatus,
   userId,
   userRole,
+  comment,
 }: StatusUpdateParams): Promise<StatusUpdateResult> {
   // Get the order with current status
   const order = await prisma.order.findUnique({
@@ -118,6 +120,17 @@ export async function updateOrderStatus({
       orderId: orderId,
     },
   });
+
+  // Create comment if provided (e.g., when requesting more info)
+  if (comment && comment.trim()) {
+    await prisma.orderComment.create({
+      data: {
+        content: comment.trim(),
+        orderId: orderId,
+        authorId: userId,
+      },
+    });
+  }
 
   return {
     success: true,
