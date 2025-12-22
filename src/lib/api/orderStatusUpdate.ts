@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Role, OrderStatus } from '@prisma/client';
+import eventBus from '@/lib/sse/eventBus';
 import {
   canUserTransition,
   getTimestampUpdates,
@@ -130,6 +131,64 @@ export async function updateOrderStatus({
         authorId: userId,
       },
     });
+  }
+
+  // Create alerts and emit SSE events when status changes to NEEDS_INFO
+  if (newStatus === OrderStatus.NEEDS_INFO) {
+    try {
+      // Get doctor and assistants to notify
+      const [doctor, doctorAssistants] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: updatedOrder.doctorId },
+          select: { id: true, name: true },
+        }),
+        prisma.doctorAssistant.findMany({
+          where: { doctorId: updatedOrder.doctorId },
+          include: {
+            assistant: {
+              select: { id: true, name: true },
+            },
+          },
+        }),
+      ]);
+
+      // Prepare recipients (doctor + all assistants)
+      const recipients = [
+        doctor,
+        ...doctorAssistants.map((da) => da.assistant),
+      ].filter((r): r is { id: string; name: string | null } => !!r);
+
+      if (recipients.length > 0) {
+        const alertMessage = `Se requiere información adicional para la orden #${updatedOrder.orderNumber} del paciente ${updatedOrder.patientName}`;
+
+        for (const recipient of recipients) {
+          // Create the alert in the DB and include the order for the payload
+          const newAlert = await prisma.alert.create({
+            data: {
+              message: alertMessage,
+              status: 'UNREAD',
+              orderId: orderId,
+              senderId: userId,
+              receiverId: recipient.id,
+            },
+            include: {
+              order: {
+                select: {
+                  id: true,
+                  orderNumber: true,
+                },
+              },
+            },
+          });
+
+          // Emit a type-safe event
+          eventBus.emit('new-alert', newAlert);
+        }
+      }
+    } catch (alertError) {
+      // Log error but don't fail the status update
+      console.error('Error creating and emitting alerts:', alertError);
+    }
   }
 
   return {
