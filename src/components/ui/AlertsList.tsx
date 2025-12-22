@@ -15,7 +15,7 @@ interface Alert {
     patientName: string;
   };
   sender: {
-    name: string;
+    name: string | null;
     role: string;
   };
 }

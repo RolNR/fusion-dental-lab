@@ -4,7 +4,7 @@ import { AlertEventPayload } from '@/lib/sse/eventBus';
 import { Role } from '@prisma/client';
 
 interface UseAlertsOptions {
-  role: Role.DOCTOR | Role.CLINIC_ASSISTANT;
+  role: Role;
 }
 
 export function useAlerts({ role }: UseAlertsOptions) {
@@ -20,7 +20,9 @@ export function useAlerts({ role }: UseAlertsOptions) {
     const fetchInitialAlerts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/${role.toLowerCase()}/alerts`);
+        // Map role to API endpoint path
+        const rolePath = role === Role.DOCTOR ? 'doctor' : 'assistant';
+        const response = await fetch(`/api/${rolePath}/alerts`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.error || 'Failed to fetch alerts');

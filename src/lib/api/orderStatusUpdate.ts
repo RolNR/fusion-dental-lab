@@ -156,13 +156,13 @@ export async function updateOrderStatus({
       const recipients = [
         doctor,
         ...doctorAssistants.map((da) => da.assistant),
-      ].filter((r): r is { id: string; name: string | null } => !!r);
+      ].filter((r): r is NonNullable<typeof r> => !!r);
 
       if (recipients.length > 0) {
         const alertMessage = `Se requiere información adicional para la orden #${updatedOrder.orderNumber} del paciente ${updatedOrder.patientName}`;
 
         for (const recipient of recipients) {
-          // Create the alert in the DB and include the order for the payload
+          // Create the alert in the DB and include order and sender info for SSE
           const newAlert = await prisma.alert.create({
             data: {
               message: alertMessage,
@@ -176,13 +176,25 @@ export async function updateOrderStatus({
                 select: {
                   id: true,
                   orderNumber: true,
+                  patientName: true,
+                },
+              },
+              sender: {
+                select: {
+                  name: true,
+                  role: true,
                 },
               },
             },
           });
 
-          // Emit a type-safe event
-          eventBus.emit('new-alert', newAlert);
+          // Emit a type-safe event with serialized dates
+          eventBus.emit('new-alert', {
+            ...newAlert,
+            createdAt: newAlert.createdAt.toISOString(),
+            readAt: newAlert.readAt?.toISOString() ?? null,
+            resolvedAt: newAlert.resolvedAt?.toISOString() ?? null,
+          });
         }
       }
     } catch (alertError) {
