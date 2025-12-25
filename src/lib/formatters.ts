@@ -38,3 +38,17 @@ export function formatDate(date: string | Date, includeTime = false): string {
   const options = includeTime ? DATETIME_FORMAT_OPTIONS : DATE_FORMAT_OPTIONS;
   return dateObj.toLocaleDateString('es-MX', options);
 }
+
+/**
+ * Translate user role to Spanish display label
+ */
+export function getRoleLabel(role: string): string {
+  const labels: Record<string, string> = {
+    LAB_ADMIN: 'Admin Laboratorio',
+    LAB_COLLABORATOR: 'Colaborador Lab',
+    CLINIC_ADMIN: 'Admin Clínica',
+    DOCTOR: 'Doctor',
+    CLINIC_ASSISTANT: 'Asistente',
+  };
+  return labels[role] || role;
+}

@@ -1,10 +1,11 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ScanType } from '@prisma/client';
+import { ScanType, OrderStatus } from '@prisma/client';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { OrderForm } from '@/components/clinic-staff/OrderForm';
 import { isOrderEditable } from '@/lib/orderStatusUtils';
+import { OrderComments } from '@/components/orders/OrderComments';
 
 interface EditOrderPageProps {
   role: 'assistant' | 'doctor';
@@ -53,6 +54,10 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
             Orden #{order.orderNumber}
           </p>
         </div>
+
+        {order.status === OrderStatus.NEEDS_INFO && order.comments && (
+          <OrderComments comments={order.comments} />
+        )}
 
         <OrderForm
           role={role}

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { orderUpdateSchema, type OrderUpdateData } from '@/types/order';
 import { canEditOrder, canDeleteOrder } from '@/lib/api/orderEditValidation';
+import { orderDetailInclude } from '@/lib/api/orderQueries';
 
 // GET /api/assistant/orders/[orderId] - Get a specific order
 export async function GET(
@@ -24,28 +25,7 @@ export async function GET(
       where: {
         id: orderId,
       },
-      include: {
-        clinic: {
-          select: {
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-        doctor: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-        createdBy: {
-          select: {
-            name: true,
-            role: true,
-          },
-        },
-        files: true,
-      },
+      include: orderDetailInclude,
     });
 
     if (!order) {

@@ -1,9 +1,11 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { OrderStatus } from '@prisma/client';
 import { Button } from '@/components/ui/Button';
 import { OrderHeader } from '@/components/orders/OrderHeader';
 import { OrderDetails } from '@/components/orders/OrderDetails';
+import { OrderComments } from '@/components/orders/OrderComments';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { useSubmitOrder } from '@/hooks/useSubmitOrder';
 
@@ -55,6 +57,10 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           createdAt={order.createdAt}
           backUrl={redirectPath}
         />
+
+        {order.status === OrderStatus.NEEDS_INFO && order.comments && (
+          <OrderComments comments={order.comments} />
+        )}
 
         <OrderDetails order={order} showClinicInfo={!showDoctorInfo} showDoctorInfo={showDoctorInfo} />
 

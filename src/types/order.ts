@@ -30,6 +30,15 @@ export interface Order {
     name: string;
     role: string;
   };
+  comments?: {
+    id: string;
+    content: string;
+    createdAt: string;
+    author: {
+      name: string | null;
+      role: string;
+    };
+  }[];
 }
 
 // Base schema for creating orders (shared between doctor and assistant)

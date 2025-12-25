@@ -7,6 +7,7 @@ import { Table, TableColumn } from '@/components/ui/Table';
 import { Select } from '@/components/ui/Select';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Role } from '@prisma/client';
+import { getRoleLabel } from '@/lib/formatters';
 
 type UserWithClinic = {
   id: string;
@@ -26,17 +27,6 @@ type UserWithClinic = {
     id: string;
     name: string;
   } | null;
-};
-
-const getRoleLabel = (role: Role) => {
-  const labels: Record<Role, string> = {
-    LAB_ADMIN: 'Admin Laboratorio',
-    LAB_COLLABORATOR: 'Colaborador Lab',
-    CLINIC_ADMIN: 'Admin Clínica',
-    DOCTOR: 'Doctor',
-    CLINIC_ASSISTANT: 'Asistente',
-  };
-  return labels[role];
 };
 
 const getClinicName = (user: UserWithClinic) => {
