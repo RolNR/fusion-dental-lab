@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { AlertEventPayload } from '@/lib/sse/eventBus';
 import { Role } from '@prisma/client';
+import { useToast } from '@/contexts/ToastContext';
+import { DEFAULT_TOAST_DURATION } from '@/lib/constants';
 
 interface UseAlertsOptions {
   role: Role;
@@ -9,6 +11,7 @@ interface UseAlertsOptions {
 
 export function useAlerts({ role }: UseAlertsOptions) {
   const { data: session, status } = useSession();
+  const { addToast } = useToast();
   const [alerts, setAlerts] = useState<AlertEventPayload[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,7 +55,7 @@ export function useAlerts({ role }: UseAlertsOptions) {
     eventSource.addEventListener('new-alert', (event) => {
       try {
         const newAlert = JSON.parse(event.data) as AlertEventPayload;
-        
+
         // Add the new alert to the top of the list, preventing duplicates
         setAlerts((prevAlerts) => {
           if (prevAlerts.some(a => a.id === newAlert.id)) {
@@ -60,6 +63,13 @@ export function useAlerts({ role }: UseAlertsOptions) {
           }
           return [newAlert, ...prevAlerts];
         });
+
+        // Show toast notification for the new alert
+        addToast(
+          `Nueva alerta: ${newAlert.order.patientName} - Orden #${newAlert.order.orderNumber}`,
+          'info',
+          DEFAULT_TOAST_DURATION
+        );
 
       } catch (e) {
         console.error('Failed to parse SSE event data:', e);
