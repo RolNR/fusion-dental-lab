@@ -4,14 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { ClinicFormData } from '@/types/clinic';
 
 interface ClinicFormProps {
-  initialData?: {
-    name: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
+  initialData?: ClinicFormData;
   clinicId?: string;
   onSuccess?: () => void;
 }

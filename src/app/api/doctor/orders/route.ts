@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { orderCreateSchema } from '@/types/order';
+import { createOrderWithRetry } from '@/lib/api/orderCreation';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
 export async function GET(request: NextRequest) {
@@ -70,14 +71,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const order = await prisma.order.create({
-      data: {
+    // Create order with retry logic for race conditions
+    const order = await createOrderWithRetry({
+      orderData: {
         ...validatedData,
-        clinicId: doctor.doctorClinicId,
-        doctorId: session.user.id,
-        createdById: session.user.id,
+        clinic: {
+          connect: { id: doctor.doctorClinicId },
+        },
+        doctor: {
+          connect: { id: session.user.id },
+        },
+        createdBy: {
+          connect: { id: session.user.id },
+        },
         status: 'DRAFT',
       },
+      clinicId: doctor.doctorClinicId,
+      patientName: validatedData.patientName,
+    });
+
+    // Fetch the created order with clinic info
+    const orderWithClinic = await prisma.order.findUnique({
+      where: { id: order.id },
       include: {
         clinic: {
           select: {
@@ -87,7 +102,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ order }, { status: 201 });
+    return NextResponse.json({ order: orderWithClinic }, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return NextResponse.json(

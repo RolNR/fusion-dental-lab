@@ -4,20 +4,13 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ClinicForm } from '@/components/lab-admin/ClinicForm';
-
-type ClinicData = {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-};
+import { Clinic } from '@/types/clinic';
 
 export default function EditClinicPage() {
   const params = useParams();
   const clinicId = params.clinicId as string;
 
-  const [clinic, setClinic] = useState<ClinicData | null>(null);
+  const [clinic, setClinic] = useState<Clinic | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
