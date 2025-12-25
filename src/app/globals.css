@@ -118,6 +118,16 @@ body {
   letter-spacing: -0.011em; /* Apple's subtle letter spacing */
 }
 
+/* Hide scrollbars for all browsers */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 /* Toast notification animations */
 @keyframes slide-in-right {
   from {

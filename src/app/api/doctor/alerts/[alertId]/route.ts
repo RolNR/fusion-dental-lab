@@ -3,7 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { AlertStatus } from '@prisma/client';
+import { AlertStatus, Role } from '@prisma/client';
+import { deleteAlert } from '@/lib/api/alertActions';
 
 const alertUpdateSchema = z.object({
   status: z.nativeEnum(AlertStatus),
@@ -76,6 +77,43 @@ export async function PATCH(
     console.error('Error updating alert:', err);
     return NextResponse.json(
       { error: 'Error al actualizar alerta' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/doctor/alerts/[alertId] - Delete a resolved alert
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ alertId: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || session.user.role !== 'DOCTOR') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const { alertId } = await params;
+
+    const result = await deleteAlert({
+      alertId,
+      userId: session.user.id,
+      userRole: Role.DOCTOR,
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error },
+        { status: result.statusCode || 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting alert:', err);
+    return NextResponse.json(
+      { error: 'Error al eliminar alerta' },
       { status: 500 }
     );
   }

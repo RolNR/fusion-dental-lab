@@ -203,6 +203,26 @@ export async function updateOrderStatus({
     }
   }
 
+  // Auto-resolve alerts when order is no longer NEEDS_INFO
+  // This happens when doctor/assistant fixes the issue and resubmits
+  if (order.status === OrderStatus.NEEDS_INFO && newStatus !== OrderStatus.NEEDS_INFO) {
+    try {
+      await prisma.alert.updateMany({
+        where: {
+          orderId: orderId,
+          status: 'UNREAD',
+        },
+        data: {
+          status: 'RESOLVED',
+          resolvedAt: new Date(),
+        },
+      });
+    } catch (resolveError) {
+      // Log error but don't fail the status update
+      console.error('Error auto-resolving alerts:', resolveError);
+    }
+  }
+
   return {
     success: true,
     order: updatedOrder,

@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Role } from '@prisma/client';
 import { useAlerts } from '@/hooks/useAlerts';
+import { useAlertActions } from '@/hooks/useAlertActions';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
 import { QuickActions } from '@/components/ui/QuickActions';
 import { AlertsList } from '@/components/ui/AlertsList';
@@ -36,6 +37,12 @@ export default function DoctorDashboard() {
     setAlerts,
   } = useAlerts({ role: Role.DOCTOR });
 
+  // Use the alert actions hook
+  const { handleMarkAsRead, handleDeleteAlert } = useAlertActions({
+    role: 'doctor',
+    onAlertsUpdate: setAlerts,
+  });
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login');
@@ -66,28 +73,6 @@ export default function DoctorDashboard() {
       console.error('Error fetching stats:', error);
     } finally {
       setStatsLoading(false);
-    }
-  };
-
-  const handleMarkAsRead = async (alertId: string) => {
-    // Optimistically update the UI
-    setAlerts((prevAlerts) =>
-      prevAlerts.map((alert) =>
-        alert.id === alertId ? { ...alert, status: 'READ' } : alert
-      )
-    );
-
-    try {
-      // Then, send the request to the server
-      await fetch(`/api/doctor/alerts/${alertId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'READ' }),
-      });
-    } catch (error) {
-      console.error('Error marking alert as read:', error);
-      // Optional: Revert the optimistic update on error
-      // fetchInitialAlerts(); // Or some other state rollback
     }
   };
 
@@ -159,6 +144,7 @@ export default function DoctorDashboard() {
               alerts={alerts}
               loading={alertsLoading}
               onMarkAsRead={handleMarkAsRead}
+              onDelete={handleDeleteAlert}
             />
           </div>
         </div>

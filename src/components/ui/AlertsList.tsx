@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { AlertStatus } from '@prisma/client';
 import { Button } from './Button';
+import { Icons } from './Icons';
 
 interface Alert {
   id: string;
@@ -24,6 +25,7 @@ interface AlertsListProps {
   alerts: Alert[];
   baseUrl?: string;
   onMarkAsRead?: (alertId: string) => void;
+  onDelete?: (alertId: string) => void;
   loading?: boolean;
 }
 
@@ -45,7 +47,7 @@ const getStatusLabel = (status: AlertStatus) => {
   return labels[status];
 };
 
-export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, loading }: AlertsListProps) {
+export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, onDelete, loading }: AlertsListProps) {
   if (loading) {
     return (
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
@@ -90,9 +92,25 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, l
               >
                 Orden #{alert.order.orderNumber}
               </Link>
-              <span className="text-xs font-medium">
-                {getStatusLabel(alert.status)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium">
+                  {getStatusLabel(alert.status)}
+                </span>
+                {(alert.status === 'RESOLVED' || alert.status === 'READ') && onDelete && (
+                  <Button
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onDelete(alert.id);
+                    }}
+                    className="p-1 h-auto text-muted-foreground hover:text-danger"
+                    aria-label="Eliminar alerta"
+                    title="Eliminar alerta"
+                  >
+                    <Icons.trash size={16} />
+                  </Button>
+                )}
+              </div>
             </div>
 
             <p className="text-sm text-foreground mb-2">{alert.message}</p>
