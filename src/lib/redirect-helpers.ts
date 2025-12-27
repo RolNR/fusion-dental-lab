@@ -8,7 +8,7 @@ export function getRoleBasedRedirect(role: Role): string {
     case 'LAB_ADMIN':
       return '/lab-admin';
     case 'LAB_COLLABORATOR':
-      return '/lab-admin/collaborators';
+      return '/lab-collaborator';
     case 'CLINIC_ADMIN':
       return '/clinic-admin';
     case 'DOCTOR':
