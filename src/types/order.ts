@@ -1,7 +1,7 @@
 import { ScanType, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 
-// Order interface for detail pages
+// Order interface for detail pages (doctor/assistant views)
 export interface Order {
   id: string;
   orderNumber: string;
@@ -39,6 +39,53 @@ export interface Order {
       role: string;
     };
   }[];
+}
+
+// Order detail interface for lab views (lab-admin/lab-collaborator)
+export interface OrderDetail {
+  id: string;
+  orderNumber: string;
+  patientName: string;
+  patientId: string | null;
+  description: string | null;
+  notes: string | null;
+  teethNumbers: string | null;
+  material: string | null;
+  materialBrand: string | null;
+  color: string | null;
+  scanType: ScanType | null;
+  status: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+  materialsSentAt: string | null;
+  completedAt: string | null;
+  clinic: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+  };
+  doctor: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  createdBy: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  files: Array<{
+    id: string;
+    fileName: string;
+    originalName: string;
+    fileType: string;
+    fileSize: number;
+    storageUrl: string;
+    createdAt: string;
+  }>;
 }
 
 // Base schema for creating orders (shared between doctor and assistant)

@@ -111,11 +111,13 @@ export default function DoctorDashboard() {
             title="En Proceso"
             value={stats.submitted + stats.inProgress}
             description="Activas"
+            variant="info"
           />
           <StatsCard
             title="Completadas"
             value={stats.completed}
             description="Finalizadas"
+            variant="success"
           />
         </div>
 

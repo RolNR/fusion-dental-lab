@@ -1,7 +1,7 @@
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
-import { QuickActions } from '@/components/ui/QuickActions';
+import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { OrderStatus } from '@prisma/client';
 
 export default async function LabCollaboratorDashboard() {
@@ -18,8 +18,8 @@ export default async function LabCollaboratorDashboard() {
     );
   }
 
-  // Fetch statistics
-  const [laboratory, orderStats] = await Promise.all([
+  // Fetch statistics and orders
+  const [laboratory, orderStats, orders] = await Promise.all([
     prisma.laboratory.findUnique({
       where: { id: laboratoryId },
       select: { name: true, email: true, phone: true },
@@ -32,6 +32,26 @@ export default async function LabCollaboratorDashboard() {
         },
       },
       _count: true,
+    }),
+    prisma.order.findMany({
+      where: {
+        clinic: {
+          laboratoryId,
+        },
+      },
+      include: {
+        clinic: {
+          select: { id: true, name: true },
+        },
+        doctor: {
+          select: { id: true, name: true, email: true },
+        },
+        createdBy: {
+          select: { id: true, name: true, role: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 20, // Show latest 20 orders
     }),
   ]);
 
@@ -107,32 +127,46 @@ export default async function LabCollaboratorDashboard() {
           title="Pendiente Revisión"
           value={statusCounts.pendingReview}
           description="Órdenes nuevas"
+          variant="warning"
         />
         <StatsCard
           title="En Proceso"
           value={statusCounts.inProgress}
           description="Trabajando"
+          variant="info"
         />
         <StatsCard
           title="Requiere Info"
           value={statusCounts.needsInfo}
           description="Esperando respuesta"
+          variant="danger"
         />
         <StatsCard
           title="Completadas"
           value={statusCounts.completed}
           description="Finalizadas"
+          variant="success"
         />
       </div>
 
-      {/* Quick Actions */}
-      <QuickActions
-        actions={[
-          { label: 'Ver Pendientes', href: '/lab-collaborator/orders?status=PENDING_REVIEW', variant: 'primary' },
-          { label: 'En Proceso', href: '/lab-collaborator/orders?status=IN_PROGRESS', variant: 'secondary' },
-          { label: 'Todas las Órdenes', href: '/lab-collaborator/orders', variant: 'secondary' },
-        ]}
-      />
+      {/* Recent Orders */}
+      <div className="rounded-xl bg-background p-4 sm:p-6 shadow-md border border-border">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+            Órdenes Recientes
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            Mostrando últimas {orders.length} órdenes
+          </span>
+        </div>
+        <OrdersTable
+          orders={orders.map(order => ({
+            ...order,
+            createdAt: order.createdAt.toISOString(),
+          }))}
+          baseUrl="/lab-collaborator/orders"
+        />
+      </div>
     </div>
   );
 }

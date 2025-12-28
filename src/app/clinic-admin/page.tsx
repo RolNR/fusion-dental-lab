@@ -121,6 +121,7 @@ export default function ClinicAdminDashboard() {
           title="En Proceso"
           value={stats.ordersByStatus.IN_PROGRESS || 0}
           description="Órdenes en proceso"
+          variant="info"
         />
       </div>
 
