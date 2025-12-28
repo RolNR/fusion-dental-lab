@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { FileUpload } from '@/components/ui/FileUpload';
 import { Doctor } from '@/types/user';
 import { getScanTypeOptions } from '@/lib/scanTypeUtils';
 import {
@@ -55,6 +56,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     doctorId: initialData?.doctorId || '',
   });
 
+  // File upload state for digital scans
+  const [upperFile, setUpperFile] = useState<File | null>(null);
+  const [lowerFile, setLowerFile] = useState<File | null>(null);
+  const [biteFile, setBiteFile] = useState<File | null>(null);
+
   // Fetch current user info if doctor
   useEffect(() => {
     if (role === 'doctor') {
@@ -102,7 +108,13 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   };
 
   const handleCreateOrder = async (submitForReview: boolean) => {
-    const newOrder = await createOrder(role, formData);
+    const files = {
+      upperFile,
+      lowerFile,
+      biteFile,
+    };
+
+    const newOrder = await createOrder(role, formData, files);
 
     if (submitForReview) {
       await submitOrderForReview(role, newOrder.id);
@@ -112,7 +124,13 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const handleUpdateOrder = async (submitForReview: boolean) => {
     if (!orderId) return;
 
-    await updateOrder(role, orderId, formData);
+    const files = {
+      upperFile,
+      lowerFile,
+      biteFile,
+    };
+
+    await updateOrder(role, orderId, formData, files);
 
     if (submitForReview) {
       await submitOrderForReview(role, orderId);
@@ -121,6 +139,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const saveOrder = async (submitForReview: boolean) => {
     setError(null);
+
+    // Validate digital scan files if digital scan is selected
+    if (formData.scanType === ScanType.DIGITAL_SCAN) {
+      if (!upperFile || !lowerFile || !biteFile) {
+        setError('Debes subir los archivos STL/PLY obligatorios: Superior, Inferior y Mordida');
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -242,6 +269,47 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           ))}
         </Select>
       </div>
+
+      {/* Digital Scan File Uploads */}
+      {formData.scanType === ScanType.DIGITAL_SCAN && (
+        <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <h3 className="text-lg font-semibold text-foreground">
+            Archivos de Escaneo Digital
+          </h3>
+          <p className="text-sm text-muted-foreground -mt-2">
+            Sube los archivos STL o PLY de los escaneos. Los archivos superior, inferior y de mordida son obligatorios.
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
+            <FileUpload
+              label="Escaneo Superior (Upper)"
+              accept=".stl,.ply"
+              maxSize={50}
+              value={upperFile}
+              onChange={setUpperFile}
+              required
+            />
+
+            <FileUpload
+              label="Escaneo Inferior (Lower)"
+              accept=".stl,.ply"
+              maxSize={50}
+              value={lowerFile}
+              onChange={setLowerFile}
+              required
+            />
+
+            <FileUpload
+              label="Escaneo de Mordida (Bite)"
+              accept=".stl,.ply"
+              maxSize={50}
+              value={biteFile}
+              onChange={setBiteFile}
+              required
+            />
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
         <Input
