@@ -4,11 +4,21 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { StaffForm } from '@/components/clinic-admin/StaffForm';
+import { DoctorAssignment } from '@/components/clinic-admin/DoctorAssignment';
+
+type Doctor = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 type AssistantData = {
   id: string;
   name: string;
   email: string;
+  assignedDoctors?: {
+    doctor: Doctor;
+  }[];
 };
 
 export default function EditAssistantPage() {
@@ -19,22 +29,24 @@ export default function EditAssistantPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchAssistant() {
-      try {
-        const response = await fetch(`/api/clinic-admin/assistants/${assistantId}`);
-        if (!response.ok) {
-          throw new Error('Error al cargar asistente');
-        }
-        const data = await response.json();
-        setAssistant(data.assistant);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error desconocido');
-      } finally {
-        setIsLoading(false);
+  const fetchAssistant = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/clinic-admin/assistants/${assistantId}`);
+      if (!response.ok) {
+        throw new Error('Error al cargar asistente');
       }
+      const data = await response.json();
+      setAssistant(data.assistant);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
+  useEffect(() => {
     fetchAssistant();
   }, [assistantId]);
 
@@ -56,6 +68,8 @@ export default function EditAssistantPage() {
     );
   }
 
+  const assignedDoctors = assistant.assignedDoctors?.map((ad) => ad.doctor) || [];
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Header */}
@@ -75,14 +89,23 @@ export default function EditAssistantPage() {
       </div>
 
       {/* Form */}
-      <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <StaffForm
-          staffId={assistantId}
-          staffType="assistant"
-          initialData={{
-            name: assistant.name,
-            email: assistant.email,
-          }}
+      <div className="space-y-6">
+        <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+          <StaffForm
+            staffId={assistantId}
+            staffType="assistant"
+            initialData={{
+              name: assistant.name,
+              email: assistant.email,
+            }}
+          />
+        </div>
+
+        {/* Doctor Assignment */}
+        <DoctorAssignment
+          assistantId={assistantId}
+          initialAssignedDoctors={assignedDoctors}
+          onSave={fetchAssistant}
         />
       </div>
     </div>
