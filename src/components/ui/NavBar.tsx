@@ -47,8 +47,18 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
           {/* Desktop Navigation - Hidden on mobile */}
           <div className="hidden md:flex items-center gap-2">
             {navItems.map((item) => {
-              const isActive = pathname === item.href ||
-                (item.href !== basePath && pathname.startsWith(item.href));
+              // Exact match or starts with (but not if another item is a better match)
+              const isExactMatch = pathname === item.href;
+              const isStartMatch = item.href !== basePath && pathname.startsWith(item.href);
+
+              // Check if any other nav item is a longer, more specific match
+              const hasMoreSpecificMatch = navItems.some(
+                (other) => other.href !== item.href &&
+                           other.href.startsWith(item.href) &&
+                           pathname.startsWith(other.href)
+              );
+
+              const isActive = isExactMatch || (isStartMatch && !hasMoreSpecificMatch);
 
               return (
                 <Link
@@ -99,8 +109,18 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
           <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b border-border shadow-lg py-3 px-4 sm:px-6 z-50">
             <div className="space-y-1">
             {navItems.map((item) => {
-              const isActive = pathname === item.href ||
-                (item.href !== basePath && pathname.startsWith(item.href));
+              // Exact match or starts with (but not if another item is a better match)
+              const isExactMatch = pathname === item.href;
+              const isStartMatch = item.href !== basePath && pathname.startsWith(item.href);
+
+              // Check if any other nav item is a longer, more specific match
+              const hasMoreSpecificMatch = navItems.some(
+                (other) => other.href !== item.href &&
+                           other.href.startsWith(item.href) &&
+                           pathname.startsWith(other.href)
+              );
+
+              const isActive = isExactMatch || (isStartMatch && !hasMoreSpecificMatch);
 
               return (
                 <Link
