@@ -41,6 +41,29 @@ export interface Order {
   }[];
 }
 
+// Order interface for table views (shared across dashboards)
+export interface OrderWithRelations {
+  id: string;
+  orderNumber: string;
+  patientName: string;
+  status: OrderStatus;
+  createdAt: string;
+  clinic: {
+    id: string;
+    name: string;
+  };
+  doctor?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  createdBy: {
+    id: string;
+    name: string;
+    role: string;
+  };
+}
+
 // Order detail interface for lab views (lab-admin/lab-collaborator)
 export interface OrderDetail {
   id: string;

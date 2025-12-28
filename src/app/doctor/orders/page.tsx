@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { OrdersTable, type OrderWithRelations } from '@/components/lab-admin/OrdersTable';
+import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderWithRelations } from '@/types/order';
 
 export default function DoctorOrdersPage() {
   const { data: session, status } = useSession();

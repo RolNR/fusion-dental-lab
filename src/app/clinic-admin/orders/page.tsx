@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Select } from '@/components/ui/Select';
-import { OrdersTable, OrderWithRelations } from '@/components/lab-admin/OrdersTable';
+import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderWithRelations } from '@/types/order';
 
 export default function ClinicOrdersPage() {
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);

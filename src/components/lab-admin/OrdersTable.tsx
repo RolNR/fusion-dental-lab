@@ -2,30 +2,8 @@
 
 import Link from 'next/link';
 import { Table, TableColumn } from '@/components/ui/Table';
-import { OrderStatus } from '@prisma/client';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
-
-type OrderWithRelations = {
-  id: string;
-  orderNumber: string;
-  patientName: string;
-  status: OrderStatus;
-  createdAt: string;
-  clinic: {
-    id: string;
-    name: string;
-  };
-  doctor?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  createdBy: {
-    id: string;
-    name: string;
-    role: string;
-  };
-};
+import { OrderWithRelations } from '@/types/order';
 
 interface OrdersTableProps {
   orders: OrderWithRelations[];
@@ -111,5 +89,3 @@ export function OrdersTable({ orders, baseUrl = '/lab-admin/orders', showDoctorC
     />
   );
 }
-
-export type { OrderWithRelations };

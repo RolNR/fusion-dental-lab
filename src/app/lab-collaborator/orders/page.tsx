@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Select } from '@/components/ui/Select';
-import { OrdersTable, OrderWithRelations } from '@/components/lab-admin/OrdersTable';
+import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderWithRelations } from '@/types/order';
 
 export default function LabCollaboratorOrdersPage() {
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);

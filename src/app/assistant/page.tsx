@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Role } from '@prisma/client';
+import { Role, OrderStatus } from '@prisma/client';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useAlertActions } from '@/hooks/useAlertActions';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
-import { QuickActions } from '@/components/ui/QuickActions';
+import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { AlertsList } from '@/components/ui/AlertsList';
+import { Button } from '@/components/ui/Button';
+import { OrderWithRelations } from '@/types/order';
+import Link from 'next/link';
 
 interface OrderStats {
   total: number;
@@ -28,6 +31,7 @@ export default function AssistantDashboard() {
     inProgress: 0,
     completed: 0,
   });
+  const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Use the new custom hook for alerts
@@ -58,17 +62,18 @@ export default function AssistantDashboard() {
       if (!response.ok) throw new Error('Error al cargar estadísticas');
 
       const data = await response.json();
-      const orders = data.orders || [];
+      const fetchedOrders = data.orders || [];
 
       const newStats = {
-        total: orders.length,
-        draft: orders.filter((o: { status: string }) => o.status === 'DRAFT').length,
-        submitted: orders.filter((o: { status: string }) => o.status === 'SUBMITTED').length,
-        inProgress: orders.filter((o: { status: string }) => o.status === 'IN_PROGRESS').length,
-        completed: orders.filter((o: { status: string }) => o.status === 'COMPLETED').length,
+        total: fetchedOrders.length,
+        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT).length,
+        submitted: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW).length,
+        inProgress: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS).length,
+        completed: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.COMPLETED).length,
       };
 
       setStats(newStats);
+      setOrders(fetchedOrders.slice(0, 10)); // Show latest 10 orders
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -123,21 +128,35 @@ export default function AssistantDashboard() {
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            <QuickActions
-              columns={2}
-              actions={[
-                { label: 'Crear Nueva Orden', href: '/assistant/orders/new', variant: 'primary' },
-                { label: 'Ver Todas las Órdenes', href: '/assistant/orders', variant: 'secondary' },
-              ]}
-            />
-
-            <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-              <h2 className="text-xl font-bold text-foreground mb-4">Información</h2>
-              <div className="space-y-3 text-sm text-muted-foreground">
-                <p>Crea órdenes en nombre de los doctores asignados</p>
-                <p>Las órdenes en borrador pueden ser editadas antes de enviarse</p>
-                <p>Recibirás notificaciones sobre el estado de las órdenes</p>
+            {/* Recent Orders */}
+            <div className="rounded-xl bg-background shadow-md border border-border overflow-hidden">
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border">
+                <h2 className="text-lg sm:text-xl font-semibold text-foreground">
+                  Órdenes Recientes
+                </h2>
+                <Link href="/assistant/orders/new">
+                  <Button variant="primary" size="sm">
+                    Crear Nueva Orden
+                  </Button>
+                </Link>
               </div>
+              <div className="overflow-x-auto">
+                <OrdersTable
+                  orders={orders}
+                  baseUrl="/assistant/orders"
+                  showDoctorColumn={true}
+                />
+              </div>
+              {orders.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground p-4">
+                  <p className="mb-4">No hay órdenes aún</p>
+                  <Link href="/assistant/orders/new">
+                    <Button variant="primary">
+                      Crear Primera Orden
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
