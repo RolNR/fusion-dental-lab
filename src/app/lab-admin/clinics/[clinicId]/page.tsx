@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
+import { QuickActions } from '@/components/ui/QuickActions';
 
 type ClinicDetail = {
   id: string;
@@ -101,6 +102,31 @@ export default function ClinicDetailPage() {
         >
           {clinic.isActive ? 'Activa' : 'Inactiva'}
         </span>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="mb-8">
+        <QuickActions
+          title="Agregar Usuarios a la Clínica"
+          actions={[
+            {
+              label: '+ Agregar Doctor',
+              href: `/lab-admin/users/new?clinicId=${clinicId}&role=DOCTOR`,
+              variant: 'secondary',
+            },
+            {
+              label: '+ Agregar Administrador',
+              href: `/lab-admin/users/new?clinicId=${clinicId}&role=CLINIC_ADMIN`,
+              variant: 'secondary',
+            },
+            {
+              label: '+ Agregar Asistente',
+              href: `/lab-admin/users/new?clinicId=${clinicId}&role=CLINIC_ASSISTANT`,
+              variant: 'secondary',
+            },
+          ]}
+          columns={3}
+        />
       </div>
 
       {/* Statistics */}

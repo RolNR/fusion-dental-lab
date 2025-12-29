@@ -16,6 +16,7 @@ interface UserFormProps {
   };
   userId?: string;
   roleFixed?: boolean;
+  initialClinicId?: string;
   onSuccess?: () => void;
 }
 
@@ -24,14 +25,14 @@ type Clinic = {
   name: string;
 };
 
-export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: UserFormProps) {
+export function UserForm({ initialData, userId, roleFixed = false, initialClinicId, onSuccess }: UserFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     email: initialData?.email || '',
     password: '',
     role: initialData?.role || ('' as Role | ''),
-    clinicId: '',
+    clinicId: initialClinicId || '',
   });
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});

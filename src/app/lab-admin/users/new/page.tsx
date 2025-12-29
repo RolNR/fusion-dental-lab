@@ -1,6 +1,14 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
 import { UserForm } from '@/components/lab-admin/UserForm';
+import { Role } from '@prisma/client';
 
 export default function NewUserPage() {
+  const searchParams = useSearchParams();
+  const clinicId = searchParams.get('clinicId');
+  const role = searchParams.get('role') as Role | null;
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -11,7 +19,12 @@ export default function NewUserPage() {
       </div>
 
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <UserForm />
+        <UserForm
+          initialData={{
+            role: role || undefined,
+          }}
+          initialClinicId={clinicId || undefined}
+        />
       </div>
     </div>
   );
