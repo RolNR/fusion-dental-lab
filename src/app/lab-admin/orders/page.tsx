@@ -66,9 +66,10 @@ export default function OrdersPage() {
         <Select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-full sm:w-64"
         >
           <option value="">Todos los estados</option>
-          <option value="DRAFT">Borrador</option>
+          <option value="PENDING_REVIEW">Pendiente Revisión</option>
           <option value="MATERIALS_SENT">Materiales Enviados</option>
           <option value="NEEDS_INFO">Necesita Información</option>
           <option value="IN_PROGRESS">En Proceso</option>

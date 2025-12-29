@@ -158,7 +158,7 @@ export default function UsersPage() {
         <Select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-64"
         >
           <option value="">Todos los roles</option>
           <option value="LAB_COLLABORATOR">Colaborador Lab</option>
