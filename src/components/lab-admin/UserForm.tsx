@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { Icons } from '@/components/ui/Icons';
 import { Role } from '@prisma/client';
 
 interface UserFormProps {
@@ -60,6 +62,19 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
       role === 'DOCTOR' ||
       role === 'CLINIC_ASSISTANT'
     );
+  };
+
+  const getRoleDisplayName = (role: Role | ''): string => {
+    switch (role) {
+      case 'DOCTOR':
+        return 'doctor';
+      case 'CLINIC_ADMIN':
+        return 'administrador de clínica';
+      case 'CLINIC_ASSISTANT':
+        return 'asistente';
+      default:
+        return 'usuario';
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -184,23 +199,48 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
       )}
 
       {!userId && requiresClinic(formData.role) && (
-        <Select
-          label="Clínica"
-          name="clinicId"
-          value={formData.clinicId}
-          onChange={(e) =>
-            setFormData({ ...formData, clinicId: e.target.value })
-          }
-          error={errors.clinicId}
-          required
-        >
-          <option value="">Selecciona una clínica</option>
-          {clinics.map((clinic) => (
-            <option key={clinic.id} value={clinic.id}>
-              {clinic.name}
-            </option>
-          ))}
-        </Select>
+        <>
+          {clinics.length === 0 ? (
+            <div className="rounded-lg border-2 border-dashed border-warning bg-warning/5 p-6">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  <Icons.alertCircle className="h-6 w-6 text-warning" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
+                    No hay clínicas disponibles
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Para agregar un {getRoleDisplayName(formData.role)}, primero necesitas crear una clínica.
+                  </p>
+                  <Link href="/lab-admin/clinics/new">
+                    <Button variant="primary" size="sm">
+                      Crear Clínica
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Select
+              label="Clínica"
+              name="clinicId"
+              value={formData.clinicId}
+              onChange={(e) =>
+                setFormData({ ...formData, clinicId: e.target.value })
+              }
+              error={errors.clinicId}
+              required
+            >
+              <option value="">Selecciona una clínica</option>
+              {clinics.map((clinic) => (
+                <option key={clinic.id} value={clinic.id}>
+                  {clinic.name}
+                </option>
+              ))}
+            </Select>
+          )}
+        </>
       )}
 
       <PasswordInput
