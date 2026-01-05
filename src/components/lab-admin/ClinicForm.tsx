@@ -9,10 +9,28 @@ import { ClinicFormData } from '@/types/clinic';
 interface ClinicFormProps {
   initialData?: ClinicFormData;
   clinicId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (createdClinicId?: string) => void;
+  asModal?: boolean;
+  onCancel?: () => void;
 }
 
-export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps) {
+interface ClinicApiResponse {
+  message: string;
+  clinic: {
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+  };
+}
+
+interface ErrorApiResponse {
+  error: string;
+  details?: Array<{ field: string; message: string }>;
+}
+
+export function ClinicForm({ initialData, clinicId, onSuccess, asModal = false, onCancel }: ClinicFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -23,8 +41,7 @@ export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitForm = async () => {
     setErrors({});
     setIsLoading(true);
 
@@ -45,23 +62,24 @@ export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        if (data.details) {
+        const errorData: ErrorApiResponse = await response.json();
+        if (errorData.details) {
           const fieldErrors: Record<string, string> = {};
-          data.details.forEach((detail: { field: string; message: string }) => {
+          errorData.details.forEach((detail) => {
             fieldErrors[detail.field] = detail.message;
           });
           setErrors(fieldErrors);
         } else {
-          setErrors({ general: data.error || 'Error al guardar clínica' });
+          setErrors({ general: errorData.error || 'Error al guardar clínica' });
         }
         return;
       }
 
+      const data: ClinicApiResponse = await response.json();
+
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data.clinic.id);
       } else {
         router.push('/lab-admin/clinics');
         router.refresh();
@@ -73,8 +91,13 @@ export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitForm();
+  };
+
+  const formContent = (
+    <>
       {errors.general && (
         <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">
           {errors.general}
@@ -124,12 +147,17 @@ export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps
         <Button
           type="button"
           variant="secondary"
-          onClick={() => router.back()}
+          onClick={asModal && onCancel ? onCancel : () => router.back()}
           disabled={isLoading}
         >
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={isLoading}>
+        <Button
+          type={asModal ? "button" : "submit"}
+          variant="primary"
+          disabled={isLoading}
+          onClick={asModal ? submitForm : undefined}
+        >
           {isLoading
             ? 'Guardando...'
             : clinicId
@@ -137,6 +165,16 @@ export function ClinicForm({ initialData, clinicId, onSuccess }: ClinicFormProps
               : 'Crear Clínica'}
         </Button>
       </div>
+    </>
+  );
+
+  if (asModal) {
+    return <div className="space-y-6">{formContent}</div>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {formContent}
     </form>
   );
 }

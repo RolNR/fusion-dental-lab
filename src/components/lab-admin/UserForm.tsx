@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
@@ -8,7 +8,10 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
+import { Modal } from '@/components/ui/Modal';
+import { ClinicForm } from '@/components/lab-admin/ClinicForm';
 import { Role } from '@prisma/client';
+import { featureFlags } from '@/lib/featureFlags';
 
 interface UserFormProps {
   initialData?: {
@@ -27,6 +30,20 @@ type Clinic = {
   name: string;
 };
 
+interface CreateUserPayload {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+  clinicId?: string;
+}
+
+interface UpdateUserPayload {
+  name: string;
+  email: string;
+  password?: string;
+}
+
 export function UserForm({ initialData, userId, roleFixed = false, initialClinicId, onSuccess }: UserFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -39,22 +56,26 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isCreateClinicModalOpen, setIsCreateClinicModalOpen] = useState(false);
 
   // Fetch clinics for dropdown
-  useEffect(() => {
-    async function fetchClinics() {
-      try {
-        const response = await fetch('/api/lab-admin/clinics');
-        if (response.ok) {
-          const data = await response.json();
-          setClinics(data.clinics);
-        }
-      } catch (error) {
-        console.error('Error fetching clinics:', error);
+  const fetchClinics = useCallback(async () => {
+    try {
+      const response = await fetch('/api/lab-admin/clinics');
+      if (response.ok) {
+        const data = await response.json();
+        setClinics(data.clinics);
+        return data.clinics;
       }
+    } catch (error) {
+      console.error('Error fetching clinics:', error);
     }
-    fetchClinics();
+    return [];
   }, []);
+
+  useEffect(() => {
+    fetchClinics();
+  }, [fetchClinics]);
 
   const requiresClinic = (role: Role | '') => {
     return (
@@ -77,6 +98,16 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
     }
   };
 
+  const handleClinicCreated = useCallback(async (createdClinicId?: string) => {
+    setIsCreateClinicModalOpen(false);
+    // Refrescar lista de clínicas
+    await fetchClinics();
+    // Auto-seleccionar la clínica recién creada usando su ID
+    if (createdClinicId) {
+      setFormData(prevFormData => ({ ...prevFormData, clinicId: createdClinicId }));
+    }
+  }, [fetchClinics]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -86,22 +117,34 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
       const url = userId ? `/api/lab-admin/users/${userId}` : '/api/lab-admin/users';
       const method = userId ? 'PATCH' : 'POST';
 
-      const payload: any = {
-        name: formData.name,
-        email: formData.email,
-      };
+      let payload: CreateUserPayload | UpdateUserPayload;
 
       if (!userId) {
-        // Only include these on creation
-        payload.password = formData.password;
-        payload.role = formData.role;
+        // Creating a new user
+        const createPayload: CreateUserPayload = {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role as Role,
+        };
 
         if (requiresClinic(formData.role)) {
-          payload.clinicId = formData.clinicId;
+          createPayload.clinicId = formData.clinicId;
         }
-      } else if (formData.password) {
-        // Only include password on update if it's being changed
-        payload.password = formData.password;
+
+        payload = createPayload;
+      } else {
+        // Updating existing user
+        const updatePayload: UpdateUserPayload = {
+          name: formData.name,
+          email: formData.email,
+        };
+
+        if (formData.password) {
+          updatePayload.password = formData.password;
+        }
+
+        payload = updatePayload;
       }
 
       const response = await fetch(url, {
@@ -199,7 +242,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
       )}
 
       {!userId && requiresClinic(formData.role) && (
-        <>
+        <div className="space-y-3">
           {clinics.length === 0 ? (
             <div className="rounded-lg border-2 border-dashed border-warning bg-warning/5 p-6">
               <div className="flex items-start gap-3">
@@ -213,34 +256,52 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
                   <p className="text-sm text-muted-foreground mb-4">
                     Para agregar un {getRoleDisplayName(formData.role)}, primero necesitas crear una clínica.
                   </p>
-                  <Link href="/lab-admin/clinics/new">
-                    <Button variant="primary" size="sm">
+                  {featureFlags.enableCreateClinicInUserForm && (
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setIsCreateClinicModalOpen(true)}
+                    >
                       Crear Clínica
                     </Button>
-                  </Link>
+                  )}
                 </div>
               </div>
             </div>
           ) : (
-            <Select
-              label="Clínica"
-              name="clinicId"
-              value={formData.clinicId}
-              onChange={(e) =>
-                setFormData({ ...formData, clinicId: e.target.value })
-              }
-              error={errors.clinicId}
-              required
-            >
-              <option value="">Selecciona una clínica</option>
-              {clinics.map((clinic) => (
-                <option key={clinic.id} value={clinic.id}>
-                  {clinic.name}
-                </option>
-              ))}
-            </Select>
+            <>
+              <Select
+                label="Clínica"
+                name="clinicId"
+                value={formData.clinicId}
+                onChange={(e) =>
+                  setFormData({ ...formData, clinicId: e.target.value })
+                }
+                error={errors.clinicId}
+                required
+              >
+                <option value="">Selecciona una clínica</option>
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>
+                    {clinic.name}
+                  </option>
+                ))}
+              </Select>
+              {featureFlags.enableCreateClinicInUserForm && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsCreateClinicModalOpen(true)}
+                  className="w-full"
+                >
+                  + Crear nueva clínica
+                </Button>
+              )}
+            </>
           )}
-        </>
+        </div>
       )}
 
       <PasswordInput
@@ -270,6 +331,19 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
               : 'Crear Usuario'}
         </Button>
       </div>
+
+      <Modal
+        isOpen={isCreateClinicModalOpen}
+        onClose={() => setIsCreateClinicModalOpen(false)}
+        title="Nueva Clínica"
+        size="md"
+      >
+        <ClinicForm
+          asModal={true}
+          onSuccess={handleClinicCreated}
+          onCancel={() => setIsCreateClinicModalOpen(false)}
+        />
+      </Modal>
     </form>
   );
 }
