@@ -10,7 +10,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export default function ClinicOrdersPage() {
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -19,7 +19,6 @@ export default function ClinicOrdersPage() {
     // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(async () => {
       try {
-        setIsLoading(true);
         const params = new URLSearchParams();
         if (statusFilter) params.append('status', statusFilter);
         if (searchQuery) params.append('search', searchQuery);
@@ -35,14 +34,14 @@ export default function ClinicOrdersPage() {
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
-        setIsLoading(false);
+        setIsInitialLoading(false);
       }
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
   }, [statusFilter, searchQuery]);
 
-  if (isLoading) {
+  if (isInitialLoading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
         <div className="text-center text-sm sm:text-base text-muted-foreground">Cargando...</div>

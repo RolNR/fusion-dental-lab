@@ -20,7 +20,6 @@ export default function AssistantOrdersPage() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true);
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (statusFilter) params.append('status', statusFilter);
@@ -31,9 +30,9 @@ export default function AssistantOrdersPage() {
 
       const data = await response.json();
       setOrders(data.orders || []);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
-    } finally {
       setLoading(false);
     }
   }, [searchQuery, statusFilter]);
