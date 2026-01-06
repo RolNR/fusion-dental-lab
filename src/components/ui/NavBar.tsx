@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogoutButton } from '@/components/ui/LogoutButton';
+import { UserMenu } from '@/components/ui/UserMenu';
 import { Icons } from '@/components/ui/Icons';
 
 interface NavItem {
@@ -76,9 +77,9 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
             })}
           </div>
 
-          {/* Desktop Logout Button - Hidden on mobile */}
+          {/* Desktop User Menu - Hidden on mobile */}
           <div className="hidden md:block">
-            <LogoutButton />
+            <UserMenu basePath={basePath} />
           </div>
 
           {/* Mobile Menu Button - Hidden on desktop */}
@@ -138,9 +139,7 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
               );
             })}
             <div className="pt-2 border-t border-border mt-2">
-              <div onClick={() => setMobileMenuOpen(false)}>
-                <LogoutButton />
-              </div>
+              <UserMenu basePath={basePath} />
             </div>
             </div>
           </div>
