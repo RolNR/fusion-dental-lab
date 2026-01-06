@@ -765,3 +765,94 @@ LabWiseLink is a **multi-tenant dental lab platform** where:
 9. **Semantic design system** for easy theming
 
 **Total codebase**: ~14,500 lines of TypeScript across 152 files.
+
+## Claude Cognitive - Context Management System
+
+This project uses **Claude Cognitive** for intelligent context management and multi-instance coordination.
+
+### What It Does
+
+Claude Cognitive provides:
+- **Context Router**: Automatically manages which files stay in context (HOT/WARM/COLD)
+- **Pool Coordinator**: Allows multiple Claude instances to share work status and avoid duplicate work
+- **Token Savings**: Reduces token usage by 50-95% through intelligent file attention tracking
+
+### Context Documentation Structure
+
+The project uses **fractal documentation** in `.claude/` directory:
+
+**Systems** (`.claude/systems/`)
+- Hardware, deployment, infrastructure
+- Changes slowly
+- Example: production environment, development setup
+
+**Modules** (`.claude/modules/`)
+- Core code systems documentation
+- Changes frequently
+- Example: API layer, database layer, authentication
+
+**Integrations** (`.claude/integrations/`)
+- Cross-system communication
+- Example: external APIs, real-time features
+
+### How It Works
+
+**Automatic context management:**
+1. Files you mention become HOT (full content injected)
+2. Related files become WARM (headers only)
+3. Unmentioned files decay to COLD (evicted from context)
+4. State persists across sessions in `~/.claude/attn_state.json`
+
+**Hook triggers:**
+- `UserPromptSubmit`: Runs context router and pool updater
+- `SessionStart`: Loads pool state from other instances
+- `Stop`: Extracts and saves current work status
+
+### Multi-Instance Coordination
+
+If running multiple Claude Code instances:
+
+**1. Set instance ID:**
+```bash
+# Add to ~/.bashrc or ~/.zshrc for persistence
+export CLAUDE_INSTANCE=A  # Or B, C, D, etc.
+```
+
+**2. Signal work completion in prompts:**
+```
+pool
+INSTANCE: A
+ACTION: completed
+TOPIC: User authentication refactor
+SUMMARY: Migrated to NextAuth.js v5 with JWT sessions
+AFFECTS: src/lib/auth.ts, src/app/api/auth/[...nextauth]/route.ts
+BLOCKS: none
+```
+
+**3. Query pool status:**
+```bash
+python3 ~/.claude/scripts/pool-query.py --since 1h
+```
+
+### Useful Commands
+
+```bash
+# View attention state
+cat ~/.claude/attn_state.json
+
+# View pool state
+cat ~/.claude/pool/instance_state.jsonl
+
+# Query recent activity
+python3 ~/.claude/scripts/pool-query.py --since 1h
+
+# View attention history (v1.1+)
+tail -20 ~/.claude/attention_history.jsonl
+```
+
+### Best Practices
+
+1. **Organize documentation**: Use `.claude/systems/`, `.claude/modules/`, `.claude/integrations/` for detailed docs
+2. **Reference files explicitly**: Mention files you're working on to keep them HOT
+3. **Use pool coordination**: Signal completion status when working across multiple instances
+4. **Check pool state**: Before starting work, check if another instance is already working on it
