@@ -91,9 +91,17 @@ export const authOptions: NextAuthOptions = {
         token.clinicId = user.clinicId;
       }
 
-      // Handle profile updates
-      if (trigger === 'update' && session) {
-        token.name = session.name;
+      // Handle profile updates - fetch fresh data from database
+      if (trigger === 'update') {
+        const updatedUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { name: true, email: true },
+        });
+
+        if (updatedUser) {
+          token.name = updatedUser.name;
+          token.email = updatedUser.email;
+        }
       }
 
       return token;

@@ -139,7 +139,7 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
               );
             })}
             <div className="pt-2 border-t border-border mt-2">
-              <UserMenu basePath={basePath} />
+              <UserMenu basePath={basePath} isMobile={true} onClose={() => setMobileMenuOpen(false)} />
             </div>
             </div>
           </div>

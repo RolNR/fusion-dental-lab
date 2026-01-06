@@ -8,9 +8,11 @@ import { LogoutButton } from '@/components/ui/LogoutButton';
 
 interface UserMenuProps {
   basePath: string;
+  isMobile?: boolean;
+  onClose?: () => void;
 }
 
-export function UserMenu({ basePath }: UserMenuProps) {
+export function UserMenu({ basePath, isMobile = false, onClose }: UserMenuProps) {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,30 @@ export function UserMenu({ basePath }: UserMenuProps) {
 
   const initials = getInitials(session.user.name, session.user.email);
 
+  // Mobile version - simple menu items
+  if (isMobile) {
+    return (
+      <div className="space-y-1">
+        <Link
+          href={`${basePath}/settings`}
+          onClick={onClose}
+          className="flex items-center gap-3 rounded-lg px-4 py-3 text-base font-semibold text-foreground hover:bg-muted transition-all duration-200"
+        >
+          <Icons.settings className="h-5 w-5 text-muted-foreground" />
+          <span>Configuración</span>
+        </Link>
+        <div className="pt-1">
+          <LogoutButton
+            variant="ghost"
+            showIcon={true}
+            className="w-full justify-start px-4 py-3 text-base font-semibold"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop version - avatar dropdown
   return (
     <div className="relative" ref={menuRef}>
       {/* Avatar Button */}

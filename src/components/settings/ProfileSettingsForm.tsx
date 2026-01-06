@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/Button';
@@ -38,6 +39,7 @@ interface FormErrors {
 
 export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
   const router = useRouter();
+  const { update: updateSession } = useSession();
   const { updateProfile, isLoading, error, success } = useProfileUpdate();
   const [formData, setFormData] = useState<FormData>({
     name: user.name || '',
@@ -125,6 +127,9 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         confirmPassword: '',
       });
       setIsChangingPassword(false);
+
+      // Update session with new user data
+      await updateSession();
 
       // Refresh the page to update session data
       router.refresh();
