@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Role, OrderStatus } from '@prisma/client';
+import { buildOrderWhereClause } from '@/lib/api/orderFilters';
 
 // GET /api/lab-collaborator/orders - Get all orders for this laboratory
 export async function GET(request: NextRequest) {
@@ -28,25 +29,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get status filter from query params
+    // Get query parameters for filtering
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status') as OrderStatus | null;
+    const status = searchParams.get('status') as OrderStatus | null;
+    const search = searchParams.get('search');
 
-    // Build where clause
-    const whereClause: any = {
-      clinic: {
-        laboratoryId,
-      },
-    };
-
-    // Add status filter if provided
-    if (statusFilter && Object.values(OrderStatus).includes(statusFilter)) {
-      whereClause.status = statusFilter;
-    }
+    // Build where clause using shared utility
+    const where = buildOrderWhereClause({
+      search,
+      status,
+      laboratoryId,
+    });
 
     // Fetch orders
     const orders = await prisma.order.findMany({
-      where: whereClause,
+      where,
       include: {
         clinic: {
           select: {

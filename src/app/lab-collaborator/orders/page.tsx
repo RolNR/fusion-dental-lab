@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Select } from '@/components/ui/Select';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
 
 export default function LabCollaboratorOrdersPage() {
@@ -10,28 +10,34 @@ export default function LabCollaboratorOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    async function fetchOrders() {
+    // Debounce search to avoid too many API calls
+    const timeoutId = setTimeout(async () => {
       try {
-        const url = statusFilter
-          ? `/api/lab-collaborator/orders?status=${statusFilter}`
-          : '/api/lab-collaborator/orders';
+        setIsLoading(true);
+        const params = new URLSearchParams();
+        if (statusFilter) params.append('status', statusFilter);
+        if (searchQuery) params.append('search', searchQuery);
+
+        const url = `/api/lab-collaborator/orders${params.toString() ? `?${params.toString()}` : ''}`;
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Error al cargar órdenes');
         }
         const data = await response.json();
         setOrders(data.orders);
+        setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setIsLoading(false);
       }
-    }
+    }, 300);
 
-    fetchOrders();
-  }, [statusFilter]);
+    return () => clearTimeout(timeoutId);
+  }, [statusFilter, searchQuery]);
 
   if (isLoading) {
     return (
@@ -61,20 +67,14 @@ export default function LabCollaboratorOrdersPage() {
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex gap-4">
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="">Todos los estados</option>
-          <option value="PENDING_REVIEW">Pendiente Revisión</option>
-          <option value="MATERIALS_SENT">Materiales Enviados</option>
-          <option value="NEEDS_INFO">Necesita Información</option>
-          <option value="IN_PROGRESS">En Proceso</option>
-          <option value="COMPLETED">Completado</option>
-          <option value="CANCELLED">Cancelado</option>
-        </Select>
+      {/* Search and Filters */}
+      <div className="mb-6">
+        <OrderSearchFilter
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+        />
       </div>
 
       {/* Orders Table */}

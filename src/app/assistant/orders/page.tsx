@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
 
 export default function AssistantOrdersPage() {
@@ -12,6 +13,8 @@ export default function AssistantOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -19,13 +22,24 @@ export default function AssistantOrdersPage() {
     }
 
     if (status === 'authenticated') {
-      fetchOrders();
+      // Debounce search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+        fetchOrders();
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     }
-  }, [status, router]);
+  }, [status, router, searchQuery, statusFilter]);
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/assistant/orders');
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (statusFilter) params.append('status', statusFilter);
+
+      const url = `/api/assistant/orders${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Error al cargar órdenes');
 
       const data = await response.json();
@@ -57,6 +71,16 @@ export default function AssistantOrdersPage() {
             variant: 'primary',
           }}
         />
+
+        {/* Search and Filters */}
+        <div className="mb-6">
+          <OrderSearchFilter
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+          />
+        </div>
 
         <div className="rounded-xl bg-background shadow-md border border-border">
           <OrdersTable orders={orders} baseUrl="/assistant/orders" />

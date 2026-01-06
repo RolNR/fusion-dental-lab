@@ -3,8 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 import { assistantOrderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
+import { buildOrderWhereClause } from '@/lib/api/orderFilters';
 
 // GET /api/assistant/orders - Get orders for doctors assigned to this assistant
 export async function GET(request: NextRequest) {
@@ -27,12 +29,20 @@ export async function GET(request: NextRequest) {
 
     const doctorIds = assignments.map(a => a.doctorId);
 
+    // Get query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const status = searchParams.get('status') as OrderStatus | null;
+
+    // Build where clause using shared utility
+    const where = buildOrderWhereClause({
+      search,
+      status,
+      doctorIds,
+    });
+
     const orders = await prisma.order.findMany({
-      where: {
-        doctorId: {
-          in: doctorIds,
-        },
-      },
+      where,
       include: {
         clinic: {
           select: {

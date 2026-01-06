@@ -3,8 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 import { orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
+import { buildOrderWhereClause } from '@/lib/api/orderFilters';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
 export async function GET(request: NextRequest) {
@@ -15,10 +17,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    // Get query parameters for filtering
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const status = searchParams.get('status') as OrderStatus | null;
+
+    // Build where clause using shared utility
+    const where = buildOrderWhereClause({
+      search,
+      status,
+      doctorId: session.user.id,
+    });
+
     const orders = await prisma.order.findMany({
-      where: {
-        doctorId: session.user.id,
-      },
+      where,
       include: {
         clinic: {
           select: {
