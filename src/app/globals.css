@@ -103,6 +103,11 @@
   --color-info-hover: rgb(var(--color-info-hover));
   --color-info-foreground: rgb(var(--color-info-foreground));
 
+  --color-background: rgb(var(--color-background));
+  --color-foreground: rgb(var(--color-foreground));
+  --color-muted: rgb(var(--color-muted));
+  --color-muted-foreground: rgb(var(--color-muted-foreground));
+
   --color-border: rgb(var(--color-border));
   --color-border-input: rgb(var(--color-border-input));
 
