@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function AssistantOrdersPage() {
   const { data: session, status } = useSession();
@@ -16,22 +18,7 @@ export default function AssistantOrdersPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login');
-    }
-
-    if (status === 'authenticated') {
-      // Debounce search to avoid too many API calls
-      const timeoutId = setTimeout(() => {
-        fetchOrders();
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [status, router, searchQuery, statusFilter]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -49,7 +36,23 @@ export default function AssistantOrdersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, statusFilter]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (status === 'authenticated') {
+      // Debounce search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+        fetchOrders();
+      }, SEARCH_DEBOUNCE_MS);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [status, router, fetchOrders]);
 
   if (status === 'loading' || loading) {
     return (

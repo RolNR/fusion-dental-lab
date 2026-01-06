@@ -5,6 +5,8 @@ import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
 
+const SEARCH_DEBOUNCE_MS = 300;
+
 export default function LabCollaboratorOrdersPage() {
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +36,7 @@ export default function LabCollaboratorOrdersPage() {
       } finally {
         setIsLoading(false);
       }
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
   }, [statusFilter, searchQuery]);
