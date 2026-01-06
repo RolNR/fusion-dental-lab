@@ -3,6 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Role, OrderStatus } from '@prisma/client';
+import { z } from 'zod';
+import { buildOrderWhereClause } from '@/lib/api/orderFilters';
+
+const queryParamsSchema = z.object({
+  search: z.string().optional(),
+  status: z.nativeEnum(OrderStatus).optional(),
+});
 
 // GET /api/lab-collaborator/orders - Get all orders for this laboratory
 export async function GET(request: NextRequest) {
@@ -28,25 +35,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get status filter from query params
+    // Validate query parameters
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status') as OrderStatus | null;
+    const result = queryParamsSchema.safeParse({
+      search: searchParams.get('search') || undefined,
+      status: searchParams.get('status') || undefined,
+    });
 
-    // Build where clause
-    const whereClause: any = {
-      clinic: {
-        laboratoryId,
-      },
-    };
-
-    // Add status filter if provided
-    if (statusFilter && Object.values(OrderStatus).includes(statusFilter)) {
-      whereClause.status = statusFilter;
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Parámetros inválidos', details: result.error.issues },
+        { status: 400 }
+      );
     }
+
+    const { search, status } = result.data;
+
+    // Build where clause using shared utility
+    const where = buildOrderWhereClause({
+      search,
+      status,
+      laboratoryId,
+    });
 
     // Fetch orders
     const orders = await prisma.order.findMany({
-      where: whereClause,
+      where,
       include: {
         clinic: {
           select: {
