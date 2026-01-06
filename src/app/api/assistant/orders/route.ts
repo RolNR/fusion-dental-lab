@@ -3,8 +3,15 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 import { assistantOrderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
+import { buildOrderWhereClause } from '@/lib/api/orderFilters';
+
+const queryParamsSchema = z.object({
+  search: z.string().optional(),
+  status: z.nativeEnum(OrderStatus).optional(),
+});
 
 // GET /api/assistant/orders - Get orders for doctors assigned to this assistant
 export async function GET(request: NextRequest) {
@@ -27,12 +34,31 @@ export async function GET(request: NextRequest) {
 
     const doctorIds = assignments.map(a => a.doctorId);
 
+    // Validate query parameters
+    const { searchParams } = new URL(request.url);
+    const result = queryParamsSchema.safeParse({
+      search: searchParams.get('search') || undefined,
+      status: searchParams.get('status') || undefined,
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: 'Parámetros inválidos', details: result.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const { search, status } = result.data;
+
+    // Build where clause using shared utility
+    const where = buildOrderWhereClause({
+      search,
+      status,
+      doctorIds,
+    });
+
     const orders = await prisma.order.findMany({
-      where: {
-        doctorId: {
-          in: doctorIds,
-        },
-      },
+      where,
       include: {
         clinic: {
           select: {

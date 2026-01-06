@@ -1,41 +1,57 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
+import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 export default function AssistantOrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('');
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/login');
-    }
-
-    if (status === 'authenticated') {
-      fetchOrders();
-    }
-  }, [status, router]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/assistant/orders');
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (statusFilter) params.append('status', statusFilter);
+
+      const url = `/api/assistant/orders${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url);
       if (!response.ok) throw new Error('Error al cargar órdenes');
 
       const data = await response.json();
       setOrders(data.orders || []);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
-    } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, statusFilter]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/login');
+      return;
+    }
+
+    if (status === 'authenticated') {
+      // Debounce search to avoid too many API calls
+      const timeoutId = setTimeout(() => {
+        fetchOrders();
+      }, SEARCH_DEBOUNCE_MS);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [status, router, fetchOrders]);
 
   if (status === 'loading' || loading) {
     return (
@@ -57,6 +73,16 @@ export default function AssistantOrdersPage() {
             variant: 'primary',
           }}
         />
+
+        {/* Search and Filters */}
+        <div className="mb-6">
+          <OrderSearchFilter
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+          />
+        </div>
 
         <div className="rounded-xl bg-background shadow-md border border-border">
           <OrdersTable orders={orders} baseUrl="/assistant/orders" />
