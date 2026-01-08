@@ -33,6 +33,7 @@ export default function DoctorDashboard() {
   });
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [activeClinicName, setActiveClinicName] = useState<string>('');
 
   // Use the new custom hook for alerts
   const {
@@ -53,6 +54,7 @@ export default function DoctorDashboard() {
     }
     if (status === 'authenticated') {
       fetchStats();
+      fetchActiveClinic();
     }
   }, [status, router]);
 
@@ -81,6 +83,21 @@ export default function DoctorDashboard() {
     }
   };
 
+  const fetchActiveClinic = async () => {
+    try {
+      const response = await fetch('/api/doctor/clinics');
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const currentClinic = data.clinics?.find((c: any) => c.isCurrent);
+      if (currentClinic) {
+        setActiveClinicName(currentClinic.name);
+      }
+    } catch (error) {
+      console.error('Error fetching active clinic:', error);
+    }
+  };
+
   if (status === 'loading' || statsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -97,7 +114,9 @@ export default function DoctorDashboard() {
             Bienvenido, Dr. {session?.user?.name}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-            Panel de control de órdenes dentales
+            {activeClinicName
+              ? `Panel de control de órdenes dentales - ${activeClinicName}`
+              : 'Panel de control de órdenes dentales'}
           </p>
         </div>
 

@@ -24,6 +24,25 @@ export default withAuth(
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
+    // Redirect doctors without active clinic to clinic selection page
+    if (
+      token?.role === Role.DOCTOR &&
+      !token?.activeClinicId &&
+      path.startsWith('/doctor') &&
+      path !== '/doctor/select-clinic'
+    ) {
+      return NextResponse.redirect(new URL('/doctor/select-clinic', req.url));
+    }
+
+    // Redirect doctors with active clinic away from clinic selection page
+    if (
+      token?.role === Role.DOCTOR &&
+      token?.activeClinicId &&
+      path === '/doctor/select-clinic'
+    ) {
+      return NextResponse.redirect(new URL('/doctor', req.url));
+    }
+
     if (path.startsWith('/assistant') && token?.role !== Role.CLINIC_ASSISTANT) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }

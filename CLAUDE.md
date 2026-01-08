@@ -69,10 +69,13 @@ Laboratory (single instance)
 - Database: `user.clinicId → Clinic.id`
 
 **4. DOCTOR** - Dentist
-- Creates orders (auto-assigned to self)
+- Can belong to MULTIPLE clinics via `DoctorClinic` junction table
+- Selects active clinic at login (if multiple clinics assigned)
+- Can switch between clinics during session without re-login
+- Creates orders for currently active clinic (auto-assigned to self)
 - Views ONLY their own orders
 - Uploads files, submits orders
-- Database: `user.doctorClinicId → Clinic.id`
+- Database: `user.activeClinicId → Clinic.id` (current session context)
 
 **5. CLINIC_ASSISTANT** - Dental assistant
 - Creates orders ON BEHALF of assigned doctors
@@ -88,6 +91,14 @@ Order.doctorId → User.id (doctor who owns the order)
 Order.createdById → User.id (who created it - doctor/assistant/clinic_admin)
 Order.clinicId → Clinic.id
 
+// Doctor-Clinic many-to-many relationship
+DoctorClinic {
+  doctorId → User.id
+  clinicId → Clinic.id
+  isPrimary: boolean  // One clinic marked as primary
+  unique([doctorId, clinicId])
+}
+
 // Doctor-Assistant assignment
 DoctorAssistant {
   doctorId → User.id
@@ -95,12 +106,192 @@ DoctorAssistant {
   unique([doctorId, assistantId])
 }
 
-// User organizational links (mutually exclusive)
+// User organizational links (mutually exclusive except for doctors)
 User.laboratoryId → Laboratory.id (LAB_ADMIN)
 User.labCollaboratorId → Laboratory.id (LAB_COLLABORATOR)
 User.clinicId → Clinic.id (CLINIC_ADMIN)
-User.doctorClinicId → Clinic.id (DOCTOR)
+User.activeClinicId → Clinic.id (DOCTOR - current session context)
 User.assistantClinicId → Clinic.id (CLINIC_ASSISTANT)
+
+// Doctor clinic memberships (via junction table)
+User.clinicMemberships → DoctorClinic[] (DOCTOR - all assigned clinics)
+```
+
+## Multi-Clinic Support for Doctors
+
+### Overview
+
+Doctors can belong to multiple clinics and switch between them during their session without re-login. The active clinic context is stored in the database (not JWT) for instant switching.
+
+### Key Components
+
+**DoctorClinic Junction Table:**
+```typescript
+model DoctorClinic {
+  id        String   @id @default(cuid())
+  doctorId  String
+  clinicId  String
+  isPrimary Boolean  @default(false)  // One clinic marked as primary
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, clinicId])
+  @@index([doctorId])
+  @@index([clinicId])
+}
+```
+
+### Login Flow
+
+1. Doctor logs in
+2. Middleware checks `activeClinicId` in session
+3. If `null` (first login or no active clinic set):
+   - Redirect to `/doctor/select-clinic`
+   - Display all assigned clinics (from `DoctorClinic` table)
+   - Auto-select primary clinic if exists
+   - User selects clinic → `activeClinicId` updated in database
+   - Redirect to `/doctor` dashboard
+4. If `activeClinicId` exists:
+   - Proceed to dashboard
+   - Show active clinic name in header
+   - ClinicSelector visible in navbar
+
+### Clinic Switching
+
+**UI Component:** `ClinicSelector` in NavBar
+- Dropdown on desktop, full-width menu on mobile
+- Shows current clinic name
+- Lists all assigned clinics
+- Marks primary clinic with badge
+- Calls `/api/doctor/active-clinic` on selection
+- Updates session via `update()` from `next-auth/react`
+- Reloads page to refresh data
+
+**API Endpoints:**
+```typescript
+// GET /api/doctor/clinics
+// Returns all clinics for logged-in doctor
+{
+  clinics: [
+    { id, name, isPrimary, isActive, isCurrent }
+  ]
+}
+
+// POST /api/doctor/active-clinic
+// Body: { clinicId: string }
+// Updates: user.activeClinicId in database
+// Triggers: session update via NextAuth
+```
+
+### Middleware Logic
+
+```typescript
+// Redirect doctors without active clinic to clinic selection
+if (
+  token?.role === Role.DOCTOR &&
+  !token?.activeClinicId &&
+  path.startsWith('/doctor') &&
+  path !== '/doctor/select-clinic'
+) {
+  return NextResponse.redirect(new URL('/doctor/select-clinic', req.url));
+}
+
+// Redirect doctors with active clinic away from clinic selection
+if (
+  token?.role === Role.DOCTOR &&
+  token?.activeClinicId &&
+  path === '/doctor/select-clinic'
+) {
+  return NextResponse.redirect(new URL('/doctor', req.url));
+}
+```
+
+### Session Management
+
+**NextAuth Configuration:**
+```typescript
+// src/lib/auth.ts
+jwt: async ({ token, user, trigger }) => {
+  if (user) {
+    token.activeClinicId = user.activeClinicId;
+  }
+
+  // Refresh activeClinicId on clinic switch
+  if (trigger === 'update') {
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: token.id },
+      select: { activeClinicId: true },
+    });
+    token.activeClinicId = updatedUser?.activeClinicId;
+  }
+
+  return token;
+}
+
+session: async ({ session, token }) => {
+  session.user.activeClinicId = token.activeClinicId;
+  return session;
+}
+```
+
+### Order Context
+
+All doctor order operations use `activeClinicId`:
+
+```typescript
+// Creating an order
+const doctor = await prisma.user.findUnique({
+  where: { id: session.user.id },
+  select: { activeClinicId: true },
+});
+
+if (!doctor?.activeClinicId) {
+  return NextResponse.json(
+    { error: 'Debes seleccionar una clínica para crear órdenes' },
+    { status: 400 }
+  );
+}
+
+// Verify clinic membership
+const membership = await prisma.doctorClinic.findUnique({
+  where: {
+    doctorId_clinicId: {
+      doctorId: session.user.id,
+      clinicId: doctor.activeClinicId,
+    },
+  },
+});
+```
+
+### Creating Doctors (Admin)
+
+When creating a doctor, use atomic transaction to ensure consistency:
+
+```typescript
+const doctor = await prisma.$transaction(async (tx) => {
+  // Create user with activeClinicId
+  const newDoctor = await tx.user.create({
+    data: {
+      role: Role.DOCTOR,
+      activeClinicId: clinicId,
+      // ... other fields
+    },
+  });
+
+  // Create DoctorClinic membership with isPrimary: true
+  await tx.doctorClinic.create({
+    data: {
+      doctorId: newDoctor.id,
+      clinicId: clinicId,
+      isPrimary: true,
+    },
+  });
+
+  return newDoctor;
+});
 ```
 
 ## Order State Machine

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LogoutButton } from '@/components/ui/LogoutButton';
 import { UserMenu } from '@/components/ui/UserMenu';
+import { ClinicSelector } from '@/components/ui/ClinicSelector';
 import { Icons } from '@/components/ui/Icons';
 
 interface NavItem {
@@ -77,8 +77,9 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
             })}
           </div>
 
-          {/* Desktop User Menu - Hidden on mobile */}
-          <div className="hidden md:block">
+          {/* Desktop Clinic Selector & User Menu - Hidden on mobile */}
+          <div className="hidden md:flex items-center gap-2">
+            <ClinicSelector />
             <UserMenu basePath={basePath} />
           </div>
 
@@ -138,7 +139,8 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
                 </Link>
               );
             })}
-            <div className="pt-2 border-t border-border mt-2">
+            <div className="pt-2 border-t border-border mt-2 space-y-2">
+              <ClinicSelector isMobile={true} onClose={() => setMobileMenuOpen(false)} />
               <UserMenu basePath={basePath} isMobile={true} onClose={() => setMobileMenuOpen(false)} />
             </div>
             </div>
