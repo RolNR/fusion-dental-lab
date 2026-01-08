@@ -19,10 +19,13 @@ type UserWithClinic = {
     id: string;
     name: string;
   } | null;
-  doctorClinic?: {
-    id: string;
-    name: string;
-  } | null;
+  clinicMemberships?: Array<{
+    clinic: {
+      id: string;
+      name: string;
+    };
+    isPrimary: boolean;
+  }>;
   assistantClinic?: {
     id: string;
     name: string;
@@ -30,9 +33,18 @@ type UserWithClinic = {
 };
 
 const getClinicName = (user: UserWithClinic) => {
+  // For doctors: show primary clinic or first clinic
+  if (user.role === Role.DOCTOR && user.clinicMemberships) {
+    const primaryClinic = user.clinicMemberships.find((m) => m.isPrimary);
+    const clinic = primaryClinic || user.clinicMemberships[0];
+    if (clinic) {
+      return clinic.clinic.name;
+    }
+  }
+
+  // For other roles
   return (
     user.clinic?.name ||
-    user.doctorClinic?.name ||
     user.assistantClinic?.name ||
     '-'
   );
@@ -104,9 +116,33 @@ export default function UsersPage() {
     },
     {
       header: 'Clínica',
-      accessor: (user) => (
-        <span className="text-sm text-foreground">{getClinicName(user)}</span>
-      ),
+      accessor: (user) => {
+        // For doctors: show all clinics with primary badge
+        if (user.role === Role.DOCTOR && user.clinicMemberships && user.clinicMemberships.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {user.clinicMemberships.map((membership) => (
+                <span
+                  key={membership.clinic.id}
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                    membership.isPrimary
+                      ? 'bg-primary/20 text-primary'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {membership.clinic.name}
+                  {membership.isPrimary && (
+                    <span className="text-[10px]">★</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          );
+        }
+
+        // For other roles: show single clinic
+        return <span className="text-sm text-foreground">{getClinicName(user)}</span>;
+      },
     },
     {
       header: 'Fecha de Registro',

@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Role } from '@prisma/client';
+import { DoctorClinicAssignments } from '@/components/lab-admin/DoctorClinicAssignments';
 
 type UserDetail = {
   id: string;
@@ -24,6 +25,13 @@ type UserDetail = {
     id: string;
     name: string;
   } | null;
+  clinicMemberships?: Array<{
+    clinic: {
+      id: string;
+      name: string;
+    };
+    isPrimary: boolean;
+  }>;
 };
 
 const getRoleLabel = (role: Role) => {
@@ -161,6 +169,16 @@ export default function UserDetailPage() {
           </div>
         </dl>
       </div>
+
+      {/* Doctor Clinic Assignments */}
+      {user.role === Role.DOCTOR && (
+        <div className="mt-8">
+          <DoctorClinicAssignments
+            doctorId={user.id}
+            initialMemberships={user.clinicMemberships || []}
+          />
+        </div>
+      )}
     </div>
   );
 }

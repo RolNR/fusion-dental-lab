@@ -49,17 +49,22 @@ export async function GET(request: NextRequest) {
     const roleFilter = searchParams.get('role');
     const clinicIdFilter = searchParams.get('clinicId');
 
+    // Get all doctor IDs that belong to clinics in this laboratory
+    const doctorMemberships = await prisma.doctorClinic.findMany({
+      where: {
+        clinic: { laboratoryId },
+      },
+      select: { doctorId: true },
+    });
+    const allDoctorIds = doctorMemberships.map((m) => m.doctorId);
+
     // Build where clause
     const where: any = {
       OR: [
         { labCollaboratorId: laboratoryId }, // Lab collaborators
-        {
-          // Clinic users
-          OR: [
-            { clinic: { laboratoryId } },
-            { assistantClinic: { laboratoryId } },
-          ],
-        },
+        { clinic: { laboratoryId } }, // Clinic admins
+        { assistantClinic: { laboratoryId } }, // Assistants
+        { id: { in: allDoctorIds } }, // Doctors (via DoctorClinic junction table)
       ],
     };
 
@@ -69,12 +74,12 @@ export async function GET(request: NextRequest) {
 
     // Handle clinic filtering (doctors need special handling via DoctorClinic junction table)
     if (clinicIdFilter) {
-      // Get doctor IDs that belong to this clinic
-      const doctorMemberships = await prisma.doctorClinic.findMany({
+      // Get doctor IDs that belong to this specific clinic
+      const clinicDoctorMemberships = await prisma.doctorClinic.findMany({
         where: { clinicId: clinicIdFilter },
         select: { doctorId: true },
       });
-      const doctorIds = doctorMemberships.map((m) => m.doctorId);
+      const doctorIds = clinicDoctorMemberships.map((m) => m.doctorId);
 
       where.OR = [
         { clinicId: clinicIdFilter }, // CLINIC_ADMIN
