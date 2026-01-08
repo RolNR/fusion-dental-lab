@@ -53,16 +53,25 @@ export async function POST(
     const body = await request.json();
     const validatedData = assignDoctorSchema.parse(body);
 
-    // Verify doctor belongs to this clinic
-    const doctor = await prisma.user.findFirst({
+    // Verify doctor belongs to this clinic via DoctorClinic junction table
+    const doctorMembership = await prisma.doctorClinic.findUnique({
       where: {
-        id: validatedData.doctorId,
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
+        doctorId_clinicId: {
+          doctorId: validatedData.doctorId,
+          clinicId: clinicId,
+        },
+      },
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            role: true,
+          },
+        },
       },
     });
 
-    if (!doctor) {
+    if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
       return NextResponse.json(
         { error: 'Doctor no encontrado en esta clínica' },
         { status: 404 }

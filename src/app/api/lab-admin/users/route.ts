@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
           // Clinic users
           OR: [
             { clinic: { laboratoryId } },
-            { doctorClinic: { laboratoryId } },
             { assistantClinic: { laboratoryId } },
           ],
         },
@@ -68,11 +67,19 @@ export async function GET(request: NextRequest) {
       where.role = roleFilter as Role;
     }
 
+    // Handle clinic filtering (doctors need special handling via DoctorClinic junction table)
     if (clinicIdFilter) {
+      // Get doctor IDs that belong to this clinic
+      const doctorMemberships = await prisma.doctorClinic.findMany({
+        where: { clinicId: clinicIdFilter },
+        select: { doctorId: true },
+      });
+      const doctorIds = doctorMemberships.map((m) => m.doctorId);
+
       where.OR = [
-        { clinicId: clinicIdFilter },
-        { doctorClinicId: clinicIdFilter },
-        { assistantClinicId: clinicIdFilter },
+        { clinicId: clinicIdFilter }, // CLINIC_ADMIN
+        { id: { in: doctorIds } }, // DOCTOR (via DoctorClinic)
+        { assistantClinicId: clinicIdFilter }, // CLINIC_ASSISTANT
       ];
     }
 
@@ -85,16 +92,22 @@ export async function GET(request: NextRequest) {
         email: true,
         role: true,
         createdAt: true,
+        activeClinicId: true,
         clinic: {
           select: {
             id: true,
             name: true,
           },
         },
-        doctorClinic: {
+        clinicMemberships: {
           select: {
-            id: true,
-            name: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            isPrimary: true,
           },
         },
         assistantClinic: {
@@ -204,40 +217,77 @@ export async function POST(request: NextRequest) {
     } else if (validatedData.role === 'CLINIC_ADMIN') {
       userData.clinicId = validatedData.clinicId;
     } else if (validatedData.role === 'DOCTOR') {
-      userData.doctorClinicId = validatedData.clinicId;
+      userData.activeClinicId = validatedData.clinicId;
     } else if (validatedData.role === 'CLINIC_ASSISTANT') {
       userData.assistantClinicId = validatedData.clinicId;
     }
 
-    // Create user
-    const user = await prisma.user.create({
-      data: userData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        clinic: {
+    // Create user (with DoctorClinic entry for doctors)
+    let user;
+    if (validatedData.role === 'DOCTOR' && validatedData.clinicId) {
+      // Use transaction to create user and DoctorClinic entry atomically
+      user = await prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: userData,
+        });
+
+        // Create DoctorClinic membership
+        await tx.doctorClinic.create({
+          data: {
+            doctorId: newUser.id,
+            clinicId: validatedData.clinicId!,
+            isPrimary: true,
+          },
+        });
+
+        // Fetch user with relations
+        return await tx.user.findUnique({
+          where: { id: newUser.id },
           select: {
             id: true,
             name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            activeClinicId: true,
+            clinicMemberships: {
+              select: {
+                clinic: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                isPrimary: true,
+              },
+            },
+          },
+        });
+      });
+    } else {
+      user = await prisma.user.create({
+        data: userData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          clinic: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          assistantClinic: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-        doctorClinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        assistantClinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+      });
+    }
 
     return NextResponse.json(
       {

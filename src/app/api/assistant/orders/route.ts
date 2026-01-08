@@ -120,16 +120,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get doctor's clinic
+    // Get doctor's active clinic
     const doctor = await prisma.user.findUnique({
       where: { id: validatedData.doctorId },
-      select: { doctorClinicId: true },
+      select: { activeClinicId: true },
     });
 
-    if (!doctor?.doctorClinicId) {
+    if (!doctor?.activeClinicId) {
       return NextResponse.json(
-        { error: 'Doctor no asignado a una clínica' },
+        { error: 'El doctor debe seleccionar una clínica primero' },
         { status: 400 }
+      );
+    }
+
+    // Verify doctor belongs to the active clinic
+    const membership = await prisma.doctorClinic.findUnique({
+      where: {
+        doctorId_clinicId: {
+          doctorId: validatedData.doctorId,
+          clinicId: doctor.activeClinicId,
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: 'El doctor no tiene acceso a la clínica activa' },
+        { status: 403 }
       );
     }
 
@@ -138,7 +155,7 @@ export async function POST(request: NextRequest) {
       orderData: {
         ...validatedData,
         clinic: {
-          connect: { id: doctor.doctorClinicId },
+          connect: { id: doctor.activeClinicId },
         },
         doctor: {
           connect: { id: validatedData.doctorId },
@@ -148,7 +165,7 @@ export async function POST(request: NextRequest) {
         },
         status: 'DRAFT',
       },
-      clinicId: doctor.doctorClinicId,
+      clinicId: doctor.activeClinicId,
       patientName: validatedData.patientName,
     });
 

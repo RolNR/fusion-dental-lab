@@ -38,7 +38,7 @@ export async function GET() {
         _count: {
           select: {
             clinicAdmins: true,
-            doctors: true,
+            doctorMemberships: true,
             assistants: true,
             orders: true,
           },

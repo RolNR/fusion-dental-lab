@@ -11,6 +11,7 @@ declare module 'next-auth' {
       name: string;
       laboratoryId?: string | null;
       clinicId?: string | null;
+      activeClinicId?: string | null;
     } & DefaultSession['user'];
   }
 
@@ -21,6 +22,7 @@ declare module 'next-auth' {
     name: string;
     laboratoryId?: string | null;
     clinicId?: string | null;
+    activeClinicId?: string | null;
   }
 }
 
@@ -32,5 +34,6 @@ declare module 'next-auth/jwt' {
     name: string;
     laboratoryId?: string | null;
     clinicId?: string | null;
+    activeClinicId?: string | null;
   }
 }

@@ -41,28 +41,35 @@ export async function GET(
       );
     }
 
-    // Fetch doctor
-    const doctor = await prisma.user.findFirst({
+    // Fetch doctor via DoctorClinic junction table
+    const doctorMembership = await prisma.doctorClinic.findUnique({
       where: {
-        id: doctorId,
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
+        doctorId_clinicId: {
+          doctorId: doctorId,
+          clinicId: clinicId,
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+          },
+        },
       },
     });
 
-    if (!doctor) {
+    if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
       return NextResponse.json(
         { error: 'Doctor no encontrado' },
         { status: 404 }
       );
     }
+
+    const doctor = doctorMembership.doctor;
 
     return NextResponse.json({ doctor }, { status: 200 });
   } catch (error) {
@@ -101,16 +108,25 @@ export async function PATCH(
       );
     }
 
-    // Verify doctor belongs to this clinic
-    const existingDoctor = await prisma.user.findFirst({
+    // Verify doctor belongs to this clinic via DoctorClinic junction table
+    const doctorMembership = await prisma.doctorClinic.findUnique({
       where: {
-        id: doctorId,
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
+        doctorId_clinicId: {
+          doctorId: doctorId,
+          clinicId: clinicId,
+        },
+      },
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            role: true,
+          },
+        },
       },
     });
 
-    if (!existingDoctor) {
+    if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
       return NextResponse.json(
         { error: 'Doctor no encontrado' },
         { status: 404 }
@@ -121,8 +137,14 @@ export async function PATCH(
     const body = await request.json();
     const validatedData = updateDoctorSchema.parse(body);
 
+    // Fetch doctor's current email
+    const existingDoctor = await prisma.user.findUnique({
+      where: { id: doctorId },
+      select: { email: true },
+    });
+
     // Check if email is already in use by another user
-    if (validatedData.email && validatedData.email !== existingDoctor.email) {
+    if (validatedData.email && validatedData.email !== existingDoctor?.email) {
       const emailInUse = await prisma.user.findUnique({
         where: { email: validatedData.email },
       });
@@ -216,16 +238,25 @@ export async function DELETE(
       );
     }
 
-    // Verify doctor belongs to this clinic
-    const existingDoctor = await prisma.user.findFirst({
+    // Verify doctor belongs to this clinic via DoctorClinic junction table
+    const doctorMembership = await prisma.doctorClinic.findUnique({
       where: {
-        id: doctorId,
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
+        doctorId_clinicId: {
+          doctorId: doctorId,
+          clinicId: clinicId,
+        },
+      },
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            role: true,
+          },
+        },
       },
     });
 
-    if (!existingDoctor) {
+    if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
       return NextResponse.json(
         { error: 'Doctor no encontrado' },
         { status: 404 }

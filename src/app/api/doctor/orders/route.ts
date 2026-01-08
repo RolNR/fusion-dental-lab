@@ -86,16 +86,33 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = orderCreateSchema.parse(body);
 
-    // Get doctor's clinic
+    // Get doctor's active clinic
     const doctor = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { doctorClinicId: true },
+      select: { activeClinicId: true },
     });
 
-    if (!doctor?.doctorClinicId) {
+    if (!doctor?.activeClinicId) {
       return NextResponse.json(
-        { error: 'Doctor no asignado a una clínica' },
+        { error: 'Debes seleccionar una clínica para crear órdenes' },
         { status: 400 }
+      );
+    }
+
+    // Verify doctor belongs to the active clinic
+    const membership = await prisma.doctorClinic.findUnique({
+      where: {
+        doctorId_clinicId: {
+          doctorId: session.user.id,
+          clinicId: doctor.activeClinicId,
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: 'No tienes acceso a la clínica activa' },
+        { status: 403 }
       );
     }
 
@@ -104,7 +121,7 @@ export async function POST(request: NextRequest) {
       orderData: {
         ...validatedData,
         clinic: {
-          connect: { id: doctor.doctorClinicId },
+          connect: { id: doctor.activeClinicId },
         },
         doctor: {
           connect: { id: session.user.id },
@@ -114,7 +131,7 @@ export async function POST(request: NextRequest) {
         },
         status: 'DRAFT',
       },
-      clinicId: doctor.doctorClinicId,
+      clinicId: doctor.activeClinicId,
       patientName: validatedData.patientName,
     });
 

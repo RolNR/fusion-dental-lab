@@ -53,6 +53,7 @@ export const authOptions: NextAuthOptions = {
         // Return user data for session (determine clinic/lab based on role)
         let laboratoryId = null;
         let clinicId = null;
+        let activeClinicId = null;
 
         if (user.role === 'LAB_ADMIN') {
           laboratoryId = user.laboratoryId;
@@ -61,7 +62,7 @@ export const authOptions: NextAuthOptions = {
         } else if (user.role === 'CLINIC_ADMIN') {
           clinicId = user.clinicId;
         } else if (user.role === 'DOCTOR') {
-          clinicId = user.doctorClinicId;
+          activeClinicId = user.activeClinicId;
         } else if (user.role === 'CLINIC_ASSISTANT') {
           clinicId = user.assistantClinicId;
         }
@@ -73,6 +74,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           laboratoryId,
           clinicId,
+          activeClinicId,
         };
       },
     }),
@@ -89,18 +91,20 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.laboratoryId = user.laboratoryId;
         token.clinicId = user.clinicId;
+        token.activeClinicId = user.activeClinicId;
       }
 
-      // Handle profile updates - fetch fresh data from database
+      // Handle profile updates and clinic switches - fetch fresh data from database
       if (trigger === 'update') {
         const updatedUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { name: true, email: true },
+          select: { name: true, email: true, activeClinicId: true },
         });
 
         if (updatedUser) {
           token.name = updatedUser.name;
           token.email = updatedUser.email;
+          token.activeClinicId = updatedUser.activeClinicId;
         }
       }
 
@@ -116,6 +120,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.laboratoryId = token.laboratoryId as string | null | undefined;
         session.user.clinicId = token.clinicId as string | null | undefined;
+        session.user.activeClinicId = token.activeClinicId as string | null | undefined;
       }
       return session;
     },

@@ -55,15 +55,15 @@ export async function PUT(
 
     // Verify all doctors belong to this clinic
     if (validatedData.doctorIds.length > 0) {
-      const doctors = await prisma.user.findMany({
+      // Check via DoctorClinic junction table
+      const doctorMemberships = await prisma.doctorClinic.findMany({
         where: {
-          id: { in: validatedData.doctorIds },
-          role: Role.DOCTOR,
-          doctorClinicId: clinicId,
+          doctorId: { in: validatedData.doctorIds },
+          clinicId: clinicId,
         },
       });
 
-      if (doctors.length !== validatedData.doctorIds.length) {
+      if (doctorMemberships.length !== validatedData.doctorIds.length) {
         return NextResponse.json(
           { error: 'Uno o más doctores no pertenecen a esta clínica' },
           { status: 400 }

@@ -37,23 +37,28 @@ export async function GET() {
       );
     }
 
-    // Fetch all doctors for this clinic
-    const doctors = await prisma.user.findMany({
+    // Fetch all doctors for this clinic via DoctorClinic junction table
+    const doctorMemberships = await prisma.doctorClinic.findMany({
       where: {
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
+        clinicId: clinicId,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    const doctors = doctorMemberships.map((m) => m.doctor);
 
     return NextResponse.json({ doctors }, { status: 200 });
   } catch (error) {
@@ -107,22 +112,35 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(validatedData.password!, BCRYPT_SALT_ROUNDS);
 
-    // Create doctor
-    const doctor = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        passwordHash,
-        role: Role.DOCTOR,
-        doctorClinicId: clinicId,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
+    // Create doctor with DoctorClinic membership (atomic transaction)
+    const doctor = await prisma.$transaction(async (tx) => {
+      const newDoctor = await tx.user.create({
+        data: {
+          name: validatedData.name,
+          email: validatedData.email,
+          passwordHash,
+          role: Role.DOCTOR,
+          activeClinicId: clinicId,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+
+      // Create DoctorClinic membership
+      await tx.doctorClinic.create({
+        data: {
+          doctorId: newDoctor.id,
+          clinicId: clinicId,
+          isPrimary: true,
+        },
+      });
+
+      return newDoctor;
     });
 
     return NextResponse.json(

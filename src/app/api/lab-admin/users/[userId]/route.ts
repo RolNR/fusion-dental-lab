@@ -45,13 +45,21 @@ export async function GET(
     }
 
     // Fetch user
+    // Check if user is a doctor in any clinic of this laboratory
+    const doctorInLab = await prisma.doctorClinic.findFirst({
+      where: {
+        doctorId: userId,
+        clinic: { laboratoryId },
+      },
+    });
+
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
         OR: [
           { labCollaboratorId: laboratoryId },
           { clinic: { laboratoryId } },
-          { doctorClinic: { laboratoryId } },
+          ...(doctorInLab ? [{ id: userId }] : []),
           { assistantClinic: { laboratoryId } },
         ],
       },
@@ -68,10 +76,15 @@ export async function GET(
             name: true,
           },
         },
-        doctorClinic: {
+        clinicMemberships: {
           select: {
-            id: true,
-            name: true,
+            clinic: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            isPrimary: true,
           },
         },
         assistantClinic: {
@@ -145,7 +158,7 @@ export async function PATCH(
         OR: [
           { labCollaboratorId: laboratoryId },
           { clinic: { laboratoryId } },
-          { doctorClinic: { laboratoryId } },
+          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
           { assistantClinic: { laboratoryId } },
         ],
       },
@@ -269,7 +282,7 @@ export async function DELETE(
         OR: [
           { labCollaboratorId: laboratoryId },
           { clinic: { laboratoryId } },
-          { doctorClinic: { laboratoryId } },
+          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
           { assistantClinic: { laboratoryId } },
         ],
       },

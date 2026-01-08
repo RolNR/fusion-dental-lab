@@ -101,7 +101,7 @@ model Clinic {
 
   // Relations
   clinicAdmins  User[]   @relation("ClinicAdmins")
-  doctors       User[]   @relation("ClinicDoctors")
+  doctorMemberships DoctorClinic[] @relation("ClinicDoctorMemberships")
   assistants    User[]   @relation("ClinicAssistants")
   orders        Order[]
 
@@ -127,6 +127,28 @@ model DoctorAssistant {
   @@index([assistantId])
 }
 
+model DoctorClinic {
+  id        String   @id @default(cuid())
+
+  // Relations
+  doctorId  String
+  doctor    User     @relation("DoctorClinics", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  clinicId  String
+  clinic    Clinic   @relation("ClinicDoctorMemberships", fields: [clinicId], references: [id], onDelete: Cascade)
+
+  // Flags
+  isPrimary Boolean  @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, clinicId])
+  @@index([doctorId])
+  @@index([clinicId])
+}
+
 // ============================================
 // UPDATED USER MODEL
 // ============================================
@@ -145,11 +167,10 @@ model User {
   labCollaboratorId String? // For LAB_COLLABORATOR (separate relation)
   labCollaborator   Laboratory? @relation("LaboratoryCollaborators", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
 
-  clinicId      String?   // For CLINIC_ADMIN, DOCTOR, and CLINIC_ASSISTANT
+  clinicId      String?   // For CLINIC_ADMIN
   clinic        Clinic?   @relation("ClinicAdmins", fields: [clinicId], references: [id], onDelete: Cascade)
 
-  doctorClinicId String?  // For DOCTOR (separate relation)
-  doctorClinic   Clinic?  @relation("ClinicDoctors", fields: [doctorClinicId], references: [id], onDelete: Cascade)
+  activeClinicId String?  // For DOCTOR - current active clinic context (multi-clinic support)
 
   assistantClinicId String? // For CLINIC_ASSISTANT (separate relation)
   assistantClinic   Clinic? @relation("ClinicAssistants", fields: [assistantClinicId], references: [id], onDelete: Cascade)
@@ -169,6 +190,9 @@ model User {
   assignedDoctors    DoctorAssistant[] @relation("AssistantAssignments")
   assignedAssistants DoctorAssistant[] @relation("DoctorAssignments")
 
+  // Doctor-Clinic many-to-many relationships
+  clinicMemberships  DoctorClinic[]    @relation("DoctorClinics")
+
   // Order comments
   orderComments      OrderComment[]
 
@@ -176,7 +200,7 @@ model User {
   @@index([role])
   @@index([laboratoryId])
   @@index([clinicId])
-  @@index([doctorClinicId])
+  @@index([activeClinicId])
   @@index([assistantClinicId])
 }
 

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         _count: {
           select: {
             clinicAdmins: true,
-            doctors: true,
+            doctorMemberships: true,
             assistants: true,
             orders: true,
           },
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         _count: {
           select: {
             clinicAdmins: true,
-            doctors: true,
+            doctorMemberships: true,
             assistants: true,
             orders: true,
           },

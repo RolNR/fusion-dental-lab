@@ -33,7 +33,7 @@ export default async function LabAdminDashboard() {
         OR: [
           { labCollaboratorId: laboratoryId },
           { clinic: { laboratoryId } },
-          { doctorClinic: { laboratoryId } },
+          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
           { assistantClinic: { laboratoryId } },
         ],
       },
