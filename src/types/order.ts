@@ -20,6 +20,8 @@ export interface Order {
   patientId?: string;
   description?: string;
   notes?: string;
+  fechaEntregaDeseada?: string;
+  aiPrompt?: string;
   teethNumbers?: string;
   material?: string;
   materialBrand?: string;
@@ -28,6 +30,41 @@ export interface Order {
   status: OrderStatus;
   doctorId: string;
   createdAt: string;
+
+  // POC fields - Case type
+  tipoCaso?: CaseType;
+  motivoGarantia?: string;
+  seDevuelveTrabajoOriginal?: boolean;
+
+  // POC fields - Work classification
+  tipoTrabajo?: WorkType;
+  tipoRestauracion?: RestorationType;
+
+  // POC fields - Impression details
+  escanerUtilizado?: ScannerType;
+  otroEscaner?: string;
+  tipoSilicon?: SiliconType;
+  notaModeloFisico?: string;
+
+  // POC fields - Implant
+  trabajoSobreImplante?: boolean;
+  informacionImplante?: ImplantInfo;
+
+  // POC fields - Material sent
+  materialSent?: Record<string, boolean>;
+
+  // POC fields - Submission type
+  submissionType?: SubmissionType;
+
+  // POC fields - Occlusion
+  oclusionDiseno?: OcclusionInfo;
+
+  // POC fields - Extended color
+  colorInfo?: ColorInfo;
+
+  // POC fields - Articulation
+  articulatedBy?: ArticulatedBy;
+
   clinic?: {
     name: string;
     email?: string;
@@ -83,6 +120,8 @@ export interface OrderDetail {
   patientId: string | null;
   description: string | null;
   notes: string | null;
+  fechaEntregaDeseada: string | null;
+  aiPrompt: string | null;
   teethNumbers: string | null;
   material: string | null;
   materialBrand: string | null;
@@ -93,6 +132,41 @@ export interface OrderDetail {
   updatedAt: string;
   materialsSentAt: string | null;
   completedAt: string | null;
+
+  // POC fields - Case type
+  tipoCaso: CaseType | null;
+  motivoGarantia: string | null;
+  seDevuelveTrabajoOriginal: boolean | null;
+
+  // POC fields - Work classification
+  tipoTrabajo: WorkType | null;
+  tipoRestauracion: RestorationType | null;
+
+  // POC fields - Impression details
+  escanerUtilizado: ScannerType | null;
+  otroEscaner: string | null;
+  tipoSilicon: SiliconType | null;
+  notaModeloFisico: string | null;
+
+  // POC fields - Implant
+  trabajoSobreImplante: boolean | null;
+  informacionImplante: ImplantInfo | null;
+
+  // POC fields - Material sent
+  materialSent: Record<string, boolean> | null;
+
+  // POC fields - Submission type
+  submissionType: SubmissionType | null;
+
+  // POC fields - Occlusion
+  oclusionDiseno: OcclusionInfo | null;
+
+  // POC fields - Extended color
+  colorInfo: ColorInfo | null;
+
+  // POC fields - Articulation
+  articulatedBy: ArticulatedBy | null;
+
   clinic: {
     id: string;
     name: string;
