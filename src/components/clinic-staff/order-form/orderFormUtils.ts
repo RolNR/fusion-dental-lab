@@ -136,6 +136,31 @@ export async function saveOrder(
 }
 
 /**
+ * Parses AI prompt and returns structured order data
+ */
+export async function parseAIPrompt(prompt: string): Promise<Partial<OrderFormState>> {
+  const response = await fetch('/api/orders/parse-ai-prompt', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ prompt }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Error al procesar el prompt');
+  }
+
+  if (result.success && result.data) {
+    return result.data;
+  }
+
+  throw new Error('No se pudo procesar el prompt');
+}
+
+/**
  * Initializes form state from initial data
  */
 export function initializeFormState(initialData?: OrderFormData): OrderFormState {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScanType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
@@ -8,8 +8,10 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { Icons } from '@/components/ui/Icons';
 import { Doctor } from '@/types/user';
 import { getScanTypeOptions } from '@/lib/scanTypeUtils';
+import type { SpeechRecognition } from '@/types/speech-recognition';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
 import { WorkTypeSection } from './order-form/WorkTypeSection';
 import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
@@ -24,6 +26,7 @@ import {
   fetchDoctors,
   saveOrder as saveOrderUtil,
   initializeFormState,
+  parseAIPrompt,
 } from './order-form/orderFormUtils';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
@@ -32,6 +35,13 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [error, setError] = useState<string | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
+  const [isParsingAI, setIsParsingAI] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  // Speech recognition state
+  const [isListening, setIsListening] = useState(false);
+  const [speechSupported, setSpeechSupported] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const [formData, setFormData] = useState(initializeFormState(initialData));
 
@@ -54,6 +64,77 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       });
     }
   }, [role, orderId]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+      if (SpeechRecognitionAPI) {
+        setSpeechSupported(true);
+        const recognition = new SpeechRecognitionAPI();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'es-ES'; // Spanish language
+
+        recognition.onresult = (event) => {
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript + ' ';
+            }
+          }
+
+          if (finalTranscript) {
+            setFormData(prev => ({
+              ...prev,
+              aiPrompt: prev.aiPrompt + finalTranscript
+            }));
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
+          if (event.error === 'not-allowed') {
+            setAiError('Permiso de micrófono denegado. Por favor, habilita el micrófono en la configuración del navegador.');
+          }
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, []);
+
+  const handleToggleSpeechRecognition = () => {
+    if (!recognitionRef.current) return;
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+        setAiError(null);
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        setAiError('Error al iniciar el reconocimiento de voz');
+      }
+    }
+  };
 
   const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +170,33 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleParseAIPrompt = async () => {
+    if (!formData.aiPrompt || formData.aiPrompt.trim().length === 0) {
+      setAiError('Por favor escribe una descripción de la orden');
+      return;
+    }
+
+    setAiError(null);
+    setIsParsingAI(true);
+
+    try {
+      const parsedData = await parseAIPrompt(formData.aiPrompt);
+
+      // Auto-fill form fields with parsed data
+      setFormData(prev => ({
+        ...prev,
+        ...parsedData,
+        // Keep existing values if AI didn't provide them
+        patientName: parsedData.patientName || prev.patientName,
+        doctorId: prev.doctorId, // Don't override doctor selection
+      }));
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Error al procesar con IA');
+    } finally {
+      setIsParsingAI(false);
     }
   };
 
@@ -158,15 +266,58 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             </p>
           </div>
         </div>
-        <Textarea
-          label=""
-          id="aiPrompt"
-          value={formData.aiPrompt}
-          onChange={(e) => setFormData({ ...formData, aiPrompt: e.target.value })}
-          disabled={isLoading}
-          rows={4}
-          placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
-        />
+        <div className="space-y-3">
+          <Textarea
+            label=""
+            id="aiPrompt"
+            value={formData.aiPrompt}
+            onChange={(e) => setFormData({ ...formData, aiPrompt: e.target.value })}
+            disabled={isLoading || isParsingAI}
+            rows={4}
+            placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
+          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleParseAIPrompt}
+              isLoading={isParsingAI}
+              disabled={isLoading || !formData.aiPrompt || formData.aiPrompt.trim().length === 0}
+              className="w-full sm:w-auto"
+            >
+              {isParsingAI ? 'Procesando con IA...' : 'Procesar con IA'}
+            </Button>
+            {speechSupported && (
+              <Button
+                type="button"
+                variant={isListening ? 'danger' : 'secondary'}
+                onClick={handleToggleSpeechRecognition}
+                disabled={isLoading || isParsingAI}
+                className="w-full sm:w-auto"
+              >
+                {isListening ? (
+                  <>
+                    <Icons.micOff className="h-4 w-4 mr-2" />
+                    <span>Detener</span>
+                  </>
+                ) : (
+                  <>
+                    <Icons.mic className="h-4 w-4 mr-2" />
+                    <span>Dictar</span>
+                  </>
+                )}
+              </Button>
+            )}
+            {!speechSupported && (
+              <p className="text-sm text-muted-foreground">
+                Reconocimiento de voz no disponible en este navegador
+              </p>
+            )}
+          </div>
+          {aiError && (
+            <p className="text-sm text-danger font-medium">{aiError}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
