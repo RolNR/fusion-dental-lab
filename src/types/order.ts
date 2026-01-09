@@ -177,6 +177,8 @@ export const orderCreateSchema = z.object({
   patientId: z.string().optional(),
   description: z.string().optional(),
   notes: z.string().optional(),
+  fechaEntregaDeseada: z.string().optional(), // ISO date string
+  aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
   material: z.string().optional(),
   materialBrand: z.string().optional(),

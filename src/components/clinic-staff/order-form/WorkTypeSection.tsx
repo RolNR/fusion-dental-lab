@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select';
 type WorkTypeSectionProps = {
   tipoTrabajo?: WorkType;
   tipoRestauracion?: RestorationType;
-  onChange: (field: string, value: string | undefined) => void;
+  onChange: (updates: { tipoTrabajo?: WorkType; tipoRestauracion?: RestorationType }) => void;
   errors?: {
     tipoTrabajo?: string;
     tipoRestauracion?: string;
@@ -21,11 +21,11 @@ export function WorkTypeSection({
   errors,
 }: WorkTypeSectionProps) {
   const handleTipoTrabajoChange = (value: WorkType) => {
-    onChange('tipoTrabajo', value);
-
-    // Clear restoration type when switching to "otro"
+    // Batch updates to avoid state update conflicts
     if (value === 'otro') {
-      onChange('tipoRestauracion', undefined);
+      onChange({ tipoTrabajo: value, tipoRestauracion: undefined });
+    } else {
+      onChange({ tipoTrabajo: value });
     }
   };
 
@@ -66,7 +66,7 @@ export function WorkTypeSection({
           <Select
             label="Tipo de Restauración"
             value={tipoRestauracion || ''}
-            onChange={(e) => onChange('tipoRestauracion', e.target.value || undefined)}
+            onChange={(e) => onChange({ tipoRestauracion: (e.target.value || undefined) as RestorationType | undefined })}
             error={errors?.tipoRestauracion}
           >
             <option value="">Selecciona un tipo</option>

@@ -253,11 +253,13 @@ model Order {
 
   // Patient information
   patientName     String
-  patientId       String?
+  patientId       String?        // Optional patient ID (kept for backward compatibility)
 
   // Order details
   description     String?
   notes           String?
+  fechaEntregaDeseada DateTime?  // Desired delivery date
+  aiPrompt        String?        // AI prompt for future AI-assisted features
 
   // Dental-specific fields
   teethNumbers    String?

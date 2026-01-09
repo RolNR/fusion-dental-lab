@@ -7,7 +7,10 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className = '', ...props }, ref) => {
+  ({ label, error, helperText, className = '', value, ...props }, ref) => {
+    // Ensure value is always controlled (never undefined)
+    const controlledValue = value === undefined ? '' : value;
+
     return (
       <div className="w-full">
         {label && (
@@ -23,6 +26,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               ? 'border-danger/50 focus:border-danger focus:ring-danger/20'
               : 'border-border-input focus:border-primary focus:ring-primary/20'
           } disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground hover:border-primary/50 ${className}`}
+          value={controlledValue}
           {...props}
         />
         {error && <p className="mt-2 text-sm text-danger font-medium">{error}</p>}

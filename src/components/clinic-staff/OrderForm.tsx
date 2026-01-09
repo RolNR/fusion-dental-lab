@@ -10,31 +10,21 @@ import { Button } from '@/components/ui/Button';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { Doctor } from '@/types/user';
 import { getScanTypeOptions } from '@/lib/scanTypeUtils';
+import { CaseTypeSection } from './order-form/CaseTypeSection';
+import { WorkTypeSection } from './order-form/WorkTypeSection';
+import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
+import { OcclusionSection } from './order-form/OcclusionSection';
+import { MaterialSentSection } from './order-form/MaterialSentSection';
+import { ColorExtendedSection } from './order-form/ColorExtendedSection';
+import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
+import { ImplantSection } from './order-form/ImplantSection';
+import { OrderFormProps } from './order-form/OrderForm.types';
 import {
-  createOrder,
-  updateOrder,
-  submitOrderForReview,
-  handleSuccessNavigation,
-} from '@/lib/api/orderFormHelpers';
-
-interface OrderFormProps {
-  initialData?: {
-    patientName: string;
-    patientId?: string;
-    description?: string;
-    notes?: string;
-    teethNumbers?: string;
-    material?: string;
-    materialBrand?: string;
-    color?: string;
-    scanType?: ScanType | null;
-    doctorId?: string;
-    status?: string;
-  };
-  orderId?: string;
-  role: 'doctor' | 'assistant';
-  onSuccess?: () => void;
-}
+  fetchCurrentDoctor,
+  fetchDoctors,
+  saveOrder as saveOrderUtil,
+  initializeFormState,
+} from './order-form/orderFormUtils';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -43,121 +33,58 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
 
-  const [formData, setFormData] = useState({
-    patientName: initialData?.patientName || '',
-    patientId: initialData?.patientId || '',
-    description: initialData?.description || '',
-    notes: initialData?.notes || '',
-    teethNumbers: initialData?.teethNumbers || '',
-    material: initialData?.material || '',
-    materialBrand: initialData?.materialBrand || '',
-    color: initialData?.color || '',
-    scanType: initialData?.scanType || null as ScanType | null,
-    doctorId: initialData?.doctorId || '',
-  });
+  const [formData, setFormData] = useState(initializeFormState(initialData));
 
   // File upload state for digital scans
   const [upperFile, setUpperFile] = useState<File | null>(null);
   const [lowerFile, setLowerFile] = useState<File | null>(null);
   const [biteFile, setBiteFile] = useState<File | null>(null);
 
-  // Fetch current user info if doctor
+  // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
     if (role === 'doctor') {
-      fetchCurrentDoctor();
+      fetchCurrentDoctor().then(setCurrentDoctorName);
     } else if (role === 'assistant') {
-      fetchDoctors();
+      fetchDoctors().then((doctors) => {
+        setDoctors(doctors);
+        // Set first doctor as default if creating new order
+        if (!orderId && doctors.length > 0) {
+          setFormData(prev => ({ ...prev, doctorId: doctors[0].id }));
+        }
+      });
     }
-  }, [role]);
-
-  const fetchCurrentDoctor = async () => {
-    try {
-      const response = await fetch('/api/auth/session');
-      const session = await response.json();
-      if (session?.user?.name) {
-        setCurrentDoctorName(session.user.name);
-      }
-    } catch (err) {
-      console.error('Error fetching current doctor:', err);
-    }
-  };
-
-  const fetchDoctors = async () => {
-    try {
-      const response = await fetch('/api/assistant/doctors');
-      const data = await response.json();
-      setDoctors(data.doctors || []);
-
-      // Set first doctor as default if creating new order
-      if (!orderId && data.doctors.length > 0) {
-        setFormData(prev => ({ ...prev, doctorId: data.doctors[0].id }));
-      }
-    } catch (err) {
-      console.error('Error fetching doctors:', err);
-    }
-  };
+  }, [role, orderId]);
 
   const handleSaveDraft = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveOrder(false);
+    await handleSaveOrder(false);
   };
 
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    await saveOrder(true);
+    await handleSaveOrder(true);
   };
 
-  const handleCreateOrder = async (submitForReview: boolean) => {
-    const files = {
-      upperFile,
-      lowerFile,
-      biteFile,
-    };
-
-    const newOrder = await createOrder(role, formData, files);
-
-    if (submitForReview) {
-      await submitOrderForReview(role, newOrder.id);
-    }
-  };
-
-  const handleUpdateOrder = async (submitForReview: boolean) => {
-    if (!orderId) return;
-
-    const files = {
-      upperFile,
-      lowerFile,
-      biteFile,
-    };
-
-    await updateOrder(role, orderId, formData, files);
-
-    if (submitForReview) {
-      await submitOrderForReview(role, orderId);
-    }
-  };
-
-  const saveOrder = async (submitForReview: boolean) => {
+  const handleSaveOrder = async (submitForReview: boolean) => {
     setError(null);
-
-    // Validate digital scan files if digital scan is selected
-    if (formData.scanType === ScanType.DIGITAL_SCAN) {
-      if (!upperFile || !lowerFile || !biteFile) {
-        setError('Debes subir los archivos STL/PLY obligatorios: Superior, Inferior y Mordida');
-        return;
-      }
-    }
-
     setIsLoading(true);
 
     try {
-      if (orderId) {
-        await handleUpdateOrder(submitForReview);
-      } else {
-        await handleCreateOrder(submitForReview);
-      }
+      const files = {
+        upperFile,
+        lowerFile,
+        biteFile,
+      };
 
-      handleSuccessNavigation(onSuccess, router, role);
+      await saveOrderUtil(
+        orderId,
+        role,
+        formData,
+        files,
+        submitForReview,
+        onSuccess,
+        router
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -214,6 +141,34 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       )}
 
+      {/* AI Prompt - Highlighted Section */}
+      <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 sm:p-6">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="rounded-full bg-primary/10 p-2">
+            <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-foreground">
+              Llenar formulario con IA
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Describe la orden en lenguaje natural y la IA completará automáticamente los campos del formulario
+            </p>
+          </div>
+        </div>
+        <Textarea
+          label=""
+          id="aiPrompt"
+          value={formData.aiPrompt}
+          onChange={(e) => setFormData({ ...formData, aiPrompt: e.target.value })}
+          disabled={isLoading}
+          rows={4}
+          placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
         <Input
           label="Nombre del Paciente"
@@ -226,12 +181,31 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         />
 
         <Input
-          label="ID del Paciente"
-          type="text"
-          value={formData.patientId}
-          onChange={(e) => setFormData({ ...formData, patientId: e.target.value })}
+          label="Fecha de Entrega Deseada"
+          type="date"
+          value={formData.fechaEntregaDeseada}
+          onChange={(e) => setFormData({ ...formData, fechaEntregaDeseada: e.target.value })}
           disabled={isLoading}
-          placeholder="PAC-12345"
+          helperText="Fecha en que necesitas el trabajo completado"
+        />
+      </div>
+
+      {/* Case Type Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <CaseTypeSection
+          tipoCaso={formData.tipoCaso ?? undefined}
+          motivoGarantia={formData.motivoGarantia}
+          seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
+          onChange={(updates) => setFormData({ ...formData, ...updates })}
+        />
+      </div>
+
+      {/* Work Type Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <WorkTypeSection
+          tipoTrabajo={formData.tipoTrabajo ?? undefined}
+          tipoRestauracion={formData.tipoRestauracion ?? undefined}
+          onChange={(updates) => setFormData({ ...formData, ...updates })}
         />
       </div>
 
@@ -268,6 +242,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             </option>
           ))}
         </Select>
+      </div>
+
+      {/* Impression Extended Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <ImpressionExtendedSection
+          scanType={formData.scanType ?? undefined}
+          escanerUtilizado={formData.escanerUtilizado ?? undefined}
+          otroEscaner={formData.otroEscaner}
+          tipoSilicon={formData.tipoSilicon ?? undefined}
+          notaModeloFisico={formData.notaModeloFisico}
+          onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        />
       </div>
 
       {/* Digital Scan File Uploads */}
@@ -311,6 +297,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       )}
 
+      {/* Implant Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <ImplantSection
+          trabajoSobreImplante={formData.trabajoSobreImplante}
+          informacionImplante={formData.informacionImplante}
+          onChange={(updates) => setFormData({ ...formData, ...updates })}
+        />
+      </div>
+
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
         <Input
           label="Material"
@@ -337,6 +332,39 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           onChange={(e) => setFormData({ ...formData, color: e.target.value })}
           disabled={isLoading}
           placeholder="A2, B1..."
+        />
+      </div>
+
+      {/* Occlusion Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <OcclusionSection
+          oclusionDiseno={formData.oclusionDiseno}
+          onChange={(value) => setFormData({ ...formData, oclusionDiseno: value })}
+        />
+      </div>
+
+      {/* Material Sent Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <MaterialSentSection
+          materialSent={formData.materialSent}
+          onChange={(value) => setFormData({ ...formData, materialSent: value })}
+        />
+      </div>
+
+      {/* Color Extended Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <ColorExtendedSection
+          colorInfo={formData.colorInfo}
+          onChange={(value) => setFormData({ ...formData, colorInfo: value })}
+        />
+      </div>
+
+      {/* Submission Type Section */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
+        <SubmissionTypeSection
+          submissionType={formData.submissionType ?? undefined}
+          articulatedBy={formData.articulatedBy ?? undefined}
+          onChange={(field, value) => setFormData({ ...formData, [field]: value })}
         />
       </div>
 

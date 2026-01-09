@@ -8,7 +8,7 @@ type CaseTypeSectionProps = {
   tipoCaso?: CaseType;
   motivoGarantia?: string;
   seDevuelveTrabajoOriginal?: boolean;
-  onChange: (field: string, value: string | boolean | undefined) => void;
+  onChange: (updates: { tipoCaso?: CaseType; motivoGarantia?: string; seDevuelveTrabajoOriginal?: boolean }) => void;
   errors?: {
     tipoCaso?: string;
     motivoGarantia?: string;
@@ -24,12 +24,11 @@ export function CaseTypeSection({
   errors,
 }: CaseTypeSectionProps) {
   const handleTipoCasoChange = (value: CaseType) => {
-    onChange('tipoCaso', value);
-
-    // Clear warranty-related fields when switching to "nuevo"
+    // Batch updates to avoid state update conflicts
     if (value === 'nuevo') {
-      onChange('motivoGarantia', undefined);
-      onChange('seDevuelveTrabajoOriginal', undefined);
+      onChange({ tipoCaso: value, motivoGarantia: undefined, seDevuelveTrabajoOriginal: undefined });
+    } else {
+      onChange({ tipoCaso: value });
     }
   };
 
@@ -72,7 +71,7 @@ export function CaseTypeSection({
             label="Motivo de Garantía"
             required
             value={motivoGarantia || ''}
-            onChange={(e) => onChange('motivoGarantia', e.target.value)}
+            onChange={(e) => onChange({ motivoGarantia: e.target.value })}
             placeholder="Describe el motivo de la garantía..."
             rows={3}
             error={errors?.motivoGarantia}
@@ -88,14 +87,14 @@ export function CaseTypeSection({
               <Radio
                 name="seDevuelveTrabajoOriginal"
                 checked={seDevuelveTrabajoOriginal === true}
-                onChange={() => onChange('seDevuelveTrabajoOriginal', true)}
+                onChange={() => onChange({ seDevuelveTrabajoOriginal: true })}
                 label="Sí"
               />
 
               <Radio
                 name="seDevuelveTrabajoOriginal"
                 checked={seDevuelveTrabajoOriginal === false}
-                onChange={() => onChange('seDevuelveTrabajoOriginal', false)}
+                onChange={() => onChange({ seDevuelveTrabajoOriginal: false })}
                 label="No"
               />
             </div>
