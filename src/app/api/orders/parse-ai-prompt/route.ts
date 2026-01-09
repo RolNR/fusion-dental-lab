@@ -25,7 +25,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "tipoCaso": "nuevo" o "garantia",
   "tipoTrabajo": "restauracion" u "otro",
   "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
-  "scanType": "DIGITAL_SCAN" o "CONVENTIONAL_IMPRESSION",
+  "scanType": "DIGITAL_SCAN" o "ANALOG_MOLD",
   "escanerUtilizado": "iTero", "Medit", "ThreeShape", "Carestream", u "Otro",
   "otroEscaner": "Nombre del escáner si es 'Otro'",
   "tipoSilicon": "adicion" o "condensacion",
@@ -38,12 +38,14 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "notes": "Cualquier nota adicional extraída"
 }
 
-Reglas importantes:
-- Solo incluye campos para los que encuentres información en el prompt
+Reglas CRÍTICAS:
+- SOLO incluye en el JSON los campos para los que encuentres información EXPLÍCITA en el prompt
+- NO incluyas campos con valores null, undefined, o vacíos
+- Si no encuentras información para un campo, NO lo incluyas en el JSON de respuesta
 - Las fechas deben estar en formato YYYY-MM-DD
 - Para fechas relativas (ej: "en 5 días"), calcula la fecha desde hoy (${today})
-- Sé preciso y conservador - si no estás seguro, omite el campo
-- Devuelve SOLO el JSON, sin texto adicional`;
+- Sé preciso y conservador - si no estás 100% seguro, omite el campo
+- Devuelve SOLO el JSON con los campos que pudiste extraer con certeza`;
 }
 
 export async function POST(request: NextRequest) {

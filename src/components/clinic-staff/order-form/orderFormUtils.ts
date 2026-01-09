@@ -136,6 +136,22 @@ export async function saveOrder(
 }
 
 /**
+ * Filters out null, undefined, and empty string values from an object
+ */
+function filterEmptyValues<T extends Record<string, any>>(obj: T): Partial<T> {
+  const filtered: Partial<T> = {};
+
+  for (const [key, value] of Object.entries(obj)) {
+    // Only include non-null, non-undefined, non-empty-string values
+    if (value !== null && value !== undefined && value !== '') {
+      filtered[key as keyof T] = value;
+    }
+  }
+
+  return filtered;
+}
+
+/**
  * Parses AI prompt and returns structured order data
  */
 export async function parseAIPrompt(prompt: string): Promise<Partial<OrderFormState>> {
@@ -154,7 +170,8 @@ export async function parseAIPrompt(prompt: string): Promise<Partial<OrderFormSt
   }
 
   if (result.success && result.data) {
-    return result.data;
+    // Filter out any null/undefined/empty values before returning
+    return filterEmptyValues(result.data);
   }
 
   throw new Error('No se pudo procesar el prompt');
