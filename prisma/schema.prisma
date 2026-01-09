@@ -30,6 +30,49 @@ enum ScanType {
   ANALOG_MOLD
 }
 
+enum CaseType {
+  nuevo
+  garantia
+}
+
+enum WorkType {
+  restauracion
+  otro
+}
+
+enum RestorationType {
+  corona
+  puente
+  inlay
+  onlay
+  carilla
+  provisional
+}
+
+enum ScannerType {
+  iTero
+  Medit
+  ThreeShape
+  Carestream
+  Otro
+}
+
+enum SiliconType {
+  adicion
+  condensacion
+}
+
+enum SubmissionType {
+  prueba_estructura
+  prueba_estetica
+  terminado
+}
+
+enum ArticulatedBy {
+  doctor
+  laboratorio
+}
+
 enum AlertStatus {
   UNREAD
   READ
@@ -222,6 +265,40 @@ model Order {
   materialBrand   String?
   color           String?
   scanType        ScanType?
+
+  // Case Type
+  tipoCaso              CaseType?  @default(nuevo)
+  motivoGarantia        String?
+  seDevuelveTrabajoOriginal Boolean?
+
+  // Work Classification
+  tipoTrabajo           WorkType?  @default(restauracion)
+  tipoRestauracion      RestorationType?
+
+  // Impression Details
+  escanerUtilizado      ScannerType?
+  otroEscaner           String?
+  tipoSilicon           SiliconType?
+  notaModeloFisico      String?
+
+  // Implant
+  trabajoSobreImplante  Boolean?  @default(false)
+  informacionImplante   Json?
+
+  // Material Sent
+  materialSent          Json?
+
+  // Submission Type
+  submissionType        SubmissionType? @default(terminado)
+
+  // Occlusion
+  oclusionDiseno        Json?
+
+  // Extended Color
+  colorInfo             Json?
+
+  // Articulation
+  articulatedBy         ArticulatedBy? @default(doctor)
 
   status          OrderStatus  @default(DRAFT)
 
