@@ -251,27 +251,30 @@ export const orderCreateSchema = z.object({
   patientId: z.string().optional(),
   description: z.string().optional(),
   notes: z.string().optional(),
-  fechaEntregaDeseada: z.string().optional(), // ISO date string
+  fechaEntregaDeseada: z
+    .string()
+    .optional()
+    .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
   material: z.string().optional(),
   materialBrand: z.string().optional(),
   color: z.string().optional(),
-  scanType: z.nativeEnum(ScanType).optional(),
+  scanType: z.nativeEnum(ScanType).nullable().optional(),
 
   // Case type
-  tipoCaso: z.nativeEnum(CaseType).optional(),
+  tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
 
   // Work classification
-  tipoTrabajo: z.nativeEnum(WorkType).optional(),
-  tipoRestauracion: z.nativeEnum(RestorationType).optional(),
+  tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+  tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
 
   // Impression details
-  escanerUtilizado: z.nativeEnum(ScannerType).optional(),
+  escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
-  tipoSilicon: z.nativeEnum(SiliconType).optional(),
+  tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
   notaModeloFisico: z.string().optional(),
 
   // Implant
@@ -287,7 +290,7 @@ export const orderCreateSchema = z.object({
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Submission type
-  submissionType: z.nativeEnum(SubmissionType).optional(),
+  submissionType: z.nativeEnum(SubmissionType).nullable().optional(),
 
   // Occlusion
   oclusionDiseno: occlusionSchema
@@ -300,7 +303,7 @@ export const orderCreateSchema = z.object({
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Articulation
-  articulatedBy: z.nativeEnum(ArticulatedBy).optional(),
+  articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
 });
 
 // Schema for assistants creating orders (includes doctorId)
@@ -314,22 +317,26 @@ export const orderUpdateSchema = z.object({
   patientId: z.string().optional(),
   description: z.string().optional(),
   notes: z.string().optional(),
+  fechaEntregaDeseada: z
+    .string()
+    .optional()
+    .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   teethNumbers: z.string().optional(),
   material: z.string().optional(),
   materialBrand: z.string().optional(),
   color: z.string().optional(),
-  scanType: z.nativeEnum(ScanType).optional(),
+  scanType: z.nativeEnum(ScanType).nullable().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
 
   // New fields
-  tipoCaso: z.nativeEnum(CaseType).optional(),
+  tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
-  tipoTrabajo: z.nativeEnum(WorkType).optional(),
-  tipoRestauracion: z.nativeEnum(RestorationType).optional(),
-  escanerUtilizado: z.nativeEnum(ScannerType).optional(),
+  tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+  tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
+  escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
-  tipoSilicon: z.nativeEnum(SiliconType).optional(),
+  tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
   notaModeloFisico: z.string().optional(),
   trabajoSobreImplante: z.boolean().optional(),
   informacionImplante: implantInfoSchema
@@ -339,14 +346,14 @@ export const orderUpdateSchema = z.object({
     .record(z.string(), z.boolean())
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
-  submissionType: z.nativeEnum(SubmissionType).optional(),
+  submissionType: z.nativeEnum(SubmissionType).nullable().optional(),
   oclusionDiseno: occlusionSchema
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   colorInfo: colorInfoSchema
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
-  articulatedBy: z.nativeEnum(ArticulatedBy).optional(),
+  articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
 });
 
 export type OrderUpdateData = z.infer<typeof orderUpdateSchema>;
