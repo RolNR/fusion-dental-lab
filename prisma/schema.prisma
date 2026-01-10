@@ -374,6 +374,11 @@ model File {
   storageKey      String    @unique
   storageUrl      String
 
+  // File categorization and processing
+  category        String?   // 'scanUpper' | 'scanLower' | 'scanBite' | 'mouthPhoto' | 'other'
+  thumbnailUrl    String?   // For images only (WebP thumbnail)
+  isProcessed     Boolean   @default(false) // True after Sharp processing completes
+
   // Relations
   orderId         String
   order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -393,6 +398,7 @@ model File {
   @@index([createdAt])
   @@index([expiresAt])
   @@index([storageKey])
+  @@index([category])
 }
 
 model Alert {
