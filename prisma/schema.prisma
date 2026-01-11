@@ -7,12 +7,285 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  LAB_ADMIN        // Super admin of the laboratory (creates clinics, lab collaborators)
-  LAB_COLLABORATOR // Lab employee (views orders, read-only)
-  CLINIC_ADMIN     // Clinic administrator (manages doctors/assistants, views all clinic orders)
-  DOCTOR           // Doctor (creates and views own orders)
-  CLINIC_ASSISTANT // Clinic assistant (creates orders for assigned doctors)
+model Alert {
+  id                          String      @id
+  message                     String
+  status                      AlertStatus @default(UNREAD)
+  orderId                     String
+  senderId                    String
+  receiverId                  String
+  createdAt                   DateTime    @default(now())
+  readAt                      DateTime?
+  resolvedAt                  DateTime?
+  Order                       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  User_Alert_receiverIdToUser User        @relation("Alert_receiverIdToUser", fields: [receiverId], references: [id], onDelete: Cascade)
+  User_Alert_senderIdToUser   User        @relation("Alert_senderIdToUser", fields: [senderId], references: [id], onDelete: Cascade)
+  AuditLog                    AuditLog[]
+
+  @@index([createdAt])
+  @@index([orderId])
+  @@index([receiverId])
+  @@index([senderId])
+  @@index([status])
+}
+
+model AuditLog {
+  id         String      @id
+  action     AuditAction
+  entityType String
+  entityId   String
+  oldValue   String?
+  newValue   String?
+  metadata   Json?
+  userId     String
+  ipAddress  String?
+  userAgent  String?
+  orderId    String?
+  fileId     String?
+  alertId    String?
+  createdAt  DateTime    @default(now())
+  Alert      Alert?      @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  File       File?       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  Order      Order?      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  User       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([action])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([orderId])
+  @@index([userId])
+}
+
+model Clinic {
+  id                                  String         @id
+  name                                String
+  email                               String?
+  phone                               String?
+  address                             String?
+  isActive                            Boolean        @default(true)
+  laboratoryId                        String
+  createdAt                           DateTime       @default(now())
+  updatedAt                           DateTime
+  Laboratory                          Laboratory     @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  DoctorClinic                        DoctorClinic[]
+  Order                               Order[]
+  User_User_assistantClinicIdToClinic User[]         @relation("User_assistantClinicIdToClinic")
+  User_User_clinicIdToClinic          User[]         @relation("User_clinicIdToClinic")
+
+  @@index([isActive])
+  @@index([laboratoryId])
+}
+
+model DoctorAssistant {
+  id                                     String   @id
+  doctorId                               String
+  assistantId                            String
+  createdAt                              DateTime @default(now())
+  User_DoctorAssistant_assistantIdToUser User     @relation("DoctorAssistant_assistantIdToUser", fields: [assistantId], references: [id], onDelete: Cascade)
+  User_DoctorAssistant_doctorIdToUser    User     @relation("DoctorAssistant_doctorIdToUser", fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, assistantId])
+  @@index([assistantId])
+  @@index([doctorId])
+}
+
+model DoctorClinic {
+  id        String   @id
+  doctorId  String
+  clinicId  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, clinicId])
+  @@index([clinicId])
+  @@index([doctorId])
+}
+
+model File {
+  id           String     @id
+  fileName     String
+  originalName String
+  fileType     String
+  fileSize     Int
+  mimeType     String
+  storageKey   String     @unique
+  storageUrl   String
+  category     String?
+  thumbnailUrl String?
+  isProcessed  Boolean    @default(false)
+  orderId      String
+  uploadedById String
+  createdAt    DateTime   @default(now())
+  expiresAt    DateTime?
+  deletedAt    DateTime?
+  AuditLog     AuditLog[]
+  Order        Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  User         User       @relation(fields: [uploadedById], references: [id])
+
+  @@index([category])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@index([orderId])
+  @@index([storageKey])
+  @@index([uploadedById])
+}
+
+model Laboratory {
+  id                                      String   @id
+  name                                    String
+  email                                   String?
+  phone                                   String?
+  address                                 String?
+  isActive                                Boolean  @default(true)
+  createdAt                               DateTime @default(now())
+  updatedAt                               DateTime
+  Clinic                                  Clinic[]
+  User_User_labCollaboratorIdToLaboratory User[]   @relation("User_labCollaboratorIdToLaboratory")
+  User_User_laboratoryIdToLaboratory      User[]   @relation("User_laboratoryIdToLaboratory")
+
+  @@index([isActive])
+}
+
+model Order {
+  id                           String           @id
+  orderNumber                  String           @unique
+  patientName                  String
+  patientId                    String?
+  description                  String?
+  notes                        String?
+  fechaEntregaDeseada          DateTime?
+  aiPrompt                     String?
+  teethNumbers                 String?
+  material                     String?
+  materialBrand                String?
+  color                        String?
+  scanType                     ScanType?
+  tipoCaso                     CaseType?        @default(nuevo)
+  motivoGarantia               String?
+  seDevuelveTrabajoOriginal    Boolean?
+  tipoTrabajo                  WorkType?        @default(restauracion)
+  tipoRestauracion             RestorationType?
+  escanerUtilizado             ScannerType?
+  otroEscaner                  String?
+  tipoSilicon                  SiliconType?
+  notaModeloFisico             String?
+  trabajoSobreImplante         Boolean?         @default(false)
+  informacionImplante          Json?
+  materialSent                 Json?
+  submissionType               SubmissionType?  @default(terminado)
+  oclusionDiseno               Json?
+  colorInfo                    Json?
+  articulatedBy                ArticulatedBy?   @default(doctor)
+  status                       OrderStatus      @default(DRAFT)
+  clinicId                     String
+  createdById                  String
+  doctorId                     String
+  createdAt                    DateTime         @default(now())
+  updatedAt                    DateTime
+  submittedAt                  DateTime?
+  materialsSentAt              DateTime?
+  completedAt                  DateTime?
+  Alert                        Alert[]
+  AuditLog                     AuditLog[]
+  File                         File[]
+  Clinic                       Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  User_Order_createdByIdToUser User             @relation("Order_createdByIdToUser", fields: [createdById], references: [id], onDelete: Cascade)
+  User_Order_doctorIdToUser    User             @relation("Order_doctorIdToUser", fields: [doctorId], references: [id], onDelete: Cascade)
+  OrderComment                 OrderComment[]
+
+  @@index([clinicId])
+  @@index([createdAt])
+  @@index([createdById])
+  @@index([doctorId])
+  @@index([orderNumber])
+  @@index([status])
+}
+
+model OrderComment {
+  id         String   @id
+  content    String
+  isInternal Boolean  @default(false)
+  orderId    String
+  authorId   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime
+  User       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  Order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([isInternal])
+  @@index([orderId])
+}
+
+model User {
+  id                                                String            @id
+  email                                             String            @unique
+  name                                              String
+  passwordHash                                      String
+  role                                              Role
+  laboratoryId                                      String?
+  labCollaboratorId                                 String?
+  clinicId                                          String?
+  activeClinicId                                    String?
+  assistantClinicId                                 String?
+  createdAt                                         DateTime          @default(now())
+  updatedAt                                         DateTime
+  Alert_Alert_receiverIdToUser                      Alert[]           @relation("Alert_receiverIdToUser")
+  Alert_Alert_senderIdToUser                        Alert[]           @relation("Alert_senderIdToUser")
+  AuditLog                                          AuditLog[]
+  DoctorAssistant_DoctorAssistant_assistantIdToUser DoctorAssistant[] @relation("DoctorAssistant_assistantIdToUser")
+  DoctorAssistant_DoctorAssistant_doctorIdToUser    DoctorAssistant[] @relation("DoctorAssistant_doctorIdToUser")
+  DoctorClinic                                      DoctorClinic[]
+  File                                              File[]
+  Order_Order_createdByIdToUser                     Order[]           @relation("Order_createdByIdToUser")
+  Order_Order_doctorIdToUser                        Order[]           @relation("Order_doctorIdToUser")
+  OrderComment                                      OrderComment[]
+  Clinic_User_assistantClinicIdToClinic             Clinic?           @relation("User_assistantClinicIdToClinic", fields: [assistantClinicId], references: [id], onDelete: Cascade)
+  Clinic_User_clinicIdToClinic                      Clinic?           @relation("User_clinicIdToClinic", fields: [clinicId], references: [id], onDelete: Cascade)
+  Laboratory_User_labCollaboratorIdToLaboratory     Laboratory?       @relation("User_labCollaboratorIdToLaboratory", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
+  Laboratory_User_laboratoryIdToLaboratory          Laboratory?       @relation("User_laboratoryIdToLaboratory", fields: [laboratoryId], references: [id], onDelete: Cascade)
+
+  @@index([activeClinicId])
+  @@index([assistantClinicId])
+  @@index([clinicId])
+  @@index([email])
+  @@index([laboratoryId])
+  @@index([role])
+}
+
+enum AlertStatus {
+  UNREAD
+  READ
+  RESOLVED
+}
+
+enum ArticulatedBy {
+  doctor
+  laboratorio
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  REGISTER
+  FILE_UPLOAD
+  FILE_DOWNLOAD
+  FILE_DELETE
+  STATUS_CHANGE
+  ALERT_SENT
+  ALERT_READ
+}
+
+enum CaseType {
+  nuevo
+  garantia
 }
 
 enum OrderStatus {
@@ -25,21 +298,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-enum ScanType {
-  DIGITAL_SCAN
-  ANALOG_MOLD
-}
-
-enum CaseType {
-  nuevo
-  garantia
-}
-
-enum WorkType {
-  restauracion
-  otro
-}
-
 enum RestorationType {
   corona
   puente
@@ -47,6 +305,19 @@ enum RestorationType {
   onlay
   carilla
   provisional
+}
+
+enum Role {
+  LAB_ADMIN
+  LAB_COLLABORATOR
+  CLINIC_ADMIN
+  DOCTOR
+  CLINIC_ASSISTANT
+}
+
+enum ScanType {
+  DIGITAL_SCAN
+  ANALOG_MOLD
 }
 
 enum ScannerType {
@@ -68,407 +339,7 @@ enum SubmissionType {
   terminado
 }
 
-enum ArticulatedBy {
-  doctor
-  laboratorio
-}
-
-enum AlertStatus {
-  UNREAD
-  READ
-  RESOLVED
-}
-
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  REGISTER
-  FILE_UPLOAD
-  FILE_DOWNLOAD
-  FILE_DELETE
-  STATUS_CHANGE
-  ALERT_SENT
-  ALERT_READ
-}
-
-// ============================================
-// NEW MULTI-TENANT MODELS
-// ============================================
-
-model Laboratory {
-  id          String   @id @default(cuid())
-  name        String
-
-  // Contact info
-  email       String?
-  phone       String?
-  address     String?
-
-  // Platform subscription
-  isActive    Boolean  @default(true)
-
-  // Timestamps
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  clinics     Clinic[]
-  labAdmins   User[]   @relation("LaboratoryAdmins")
-  labCollaborators User[] @relation("LaboratoryCollaborators")
-
-  @@index([isActive])
-}
-
-model Clinic {
-  id            String   @id @default(cuid())
-  name          String
-
-  // Contact info
-  email         String?
-  phone         String?
-  address       String?
-
-  // Status
-  isActive      Boolean  @default(true)
-
-  // Laboratory relationship
-  laboratoryId  String
-  laboratory    Laboratory @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
-
-  // Timestamps
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  // Relations
-  clinicAdmins  User[]   @relation("ClinicAdmins")
-  doctorMemberships DoctorClinic[] @relation("ClinicDoctorMemberships")
-  assistants    User[]   @relation("ClinicAssistants")
-  orders        Order[]
-
-  @@index([laboratoryId])
-  @@index([isActive])
-}
-
-model DoctorAssistant {
-  id          String   @id @default(cuid())
-
-  // Relations
-  doctorId    String
-  doctor      User     @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade)
-
-  assistantId String
-  assistant   User     @relation("AssistantAssignments", fields: [assistantId], references: [id], onDelete: Cascade)
-
-  // Timestamps
-  createdAt   DateTime @default(now())
-
-  @@unique([doctorId, assistantId])
-  @@index([doctorId])
-  @@index([assistantId])
-}
-
-model DoctorClinic {
-  id        String   @id @default(cuid())
-
-  // Relations
-  doctorId  String
-  doctor    User     @relation("DoctorClinics", fields: [doctorId], references: [id], onDelete: Cascade)
-
-  clinicId  String
-  clinic    Clinic   @relation("ClinicDoctorMemberships", fields: [clinicId], references: [id], onDelete: Cascade)
-
-  // Flags
-  isPrimary Boolean  @default(false)
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([doctorId, clinicId])
-  @@index([doctorId])
-  @@index([clinicId])
-}
-
-// ============================================
-// UPDATED USER MODEL
-// ============================================
-
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String
-  passwordHash  String
-  role          Role
-
-  // Organization relationships (nullable for flexibility)
-  laboratoryId  String?   // For LAB_ADMIN and LAB_COLLABORATOR
-  laboratory    Laboratory? @relation("LaboratoryAdmins", fields: [laboratoryId], references: [id], onDelete: Cascade)
-
-  labCollaboratorId String? // For LAB_COLLABORATOR (separate relation)
-  labCollaborator   Laboratory? @relation("LaboratoryCollaborators", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
-
-  clinicId      String?   // For CLINIC_ADMIN
-  clinic        Clinic?   @relation("ClinicAdmins", fields: [clinicId], references: [id], onDelete: Cascade)
-
-  activeClinicId String?  // For DOCTOR - current active clinic context (multi-clinic support)
-
-  assistantClinicId String? // For CLINIC_ASSISTANT (separate relation)
-  assistantClinic   Clinic? @relation("ClinicAssistants", fields: [assistantClinicId], references: [id], onDelete: Cascade)
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Relations
-  ordersCreated Order[]   @relation("CreatorOrders")
-  ordersByDoctor Order[]  @relation("DoctorOrders")
-  alertsSent    Alert[]   @relation("AlertSender")
-  alertsReceived Alert[]  @relation("AlertReceiver")
-  filesUploaded File[]
-  auditLogs     AuditLog[]
-
-  // Doctor-Assistant relationships
-  assignedDoctors    DoctorAssistant[] @relation("AssistantAssignments")
-  assignedAssistants DoctorAssistant[] @relation("DoctorAssignments")
-
-  // Doctor-Clinic many-to-many relationships
-  clinicMemberships  DoctorClinic[]    @relation("DoctorClinics")
-
-  // Order comments
-  orderComments      OrderComment[]
-
-  @@index([email])
-  @@index([role])
-  @@index([laboratoryId])
-  @@index([clinicId])
-  @@index([activeClinicId])
-  @@index([assistantClinicId])
-}
-
-model Order {
-  id              String       @id @default(cuid())
-  orderNumber     String       @unique @default(cuid())
-
-  // Patient information
-  patientName     String
-  patientId       String?        // Optional patient ID (kept for backward compatibility)
-
-  // Order details
-  description     String?
-  notes           String?
-  fechaEntregaDeseada DateTime?  // Desired delivery date
-  aiPrompt        String?        // AI prompt for future AI-assisted features
-
-  // Dental-specific fields
-  teethNumbers    String?
-  material        String?
-  materialBrand   String?
-  color           String?
-  scanType        ScanType?
-
-  // Case Type
-  tipoCaso              CaseType?  @default(nuevo)
-  motivoGarantia        String?
-  seDevuelveTrabajoOriginal Boolean?
-
-  // Work Classification
-  tipoTrabajo           WorkType?  @default(restauracion)
-  tipoRestauracion      RestorationType?
-
-  // Impression Details
-  escanerUtilizado      ScannerType?
-  otroEscaner           String?
-  tipoSilicon           SiliconType?
-  notaModeloFisico      String?
-
-  // Implant
-  trabajoSobreImplante  Boolean?  @default(false)
-  informacionImplante   Json?
-
-  // Material Sent
-  materialSent          Json?
-
-  // Submission Type
-  submissionType        SubmissionType? @default(terminado)
-
-  // Occlusion
-  oclusionDiseno        Json?
-
-  // Extended Color
-  colorInfo             Json?
-
-  // Articulation
-  articulatedBy         ArticulatedBy? @default(doctor)
-
-  status          OrderStatus  @default(DRAFT)
-
-  // Organization relationships
-  clinicId        String
-  clinic          Clinic       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-
-  // User relationships
-  createdById     String       // Who created the order (DOCTOR, CLINIC_ASSISTANT, or CLINIC_ADMIN)
-  createdBy       User         @relation("CreatorOrders", fields: [createdById], references: [id], onDelete: Cascade)
-
-  doctorId        String       // The doctor this order belongs to
-  doctor          User         @relation("DoctorOrders", fields: [doctorId], references: [id], onDelete: Cascade)
-
-  // Timestamps
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  submittedAt     DateTime?
-  materialsSentAt DateTime?
-  completedAt     DateTime?
-
-  // Relations
-  files           File[]
-  alerts          Alert[]
-  auditLogs       AuditLog[]
-  comments        OrderComment[]
-
-  @@index([clinicId])
-  @@index([createdById])
-  @@index([doctorId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([orderNumber])
-}
-
-model OrderComment {
-  id              String    @id @default(cuid())
-
-  // Comment content
-  content         String    @db.Text
-  isInternal      Boolean   @default(false) // true = internal lab notes, false = visible to clinic
-
-  // Relations
-  orderId         String
-  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  authorId        String
-  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([orderId])
-  @@index([authorId])
-  @@index([createdAt])
-  @@index([isInternal])
-}
-
-model File {
-  id              String    @id @default(cuid())
-
-  // File metadata
-  fileName        String
-  originalName    String
-  fileType        String
-  fileSize        Int
-  mimeType        String
-
-  // Storage info
-  storageKey      String    @unique
-  storageUrl      String
-
-  // File categorization and processing
-  category        String?   // 'scanUpper' | 'scanLower' | 'scanBite' | 'mouthPhoto' | 'other'
-  thumbnailUrl    String?   // For images only (WebP thumbnail)
-  isProcessed     Boolean   @default(false) // True after Sharp processing completes
-
-  // Relations
-  orderId         String
-  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  uploadedById    String
-  uploadedBy      User      @relation(fields: [uploadedById], references: [id])
-
-  // Timestamps
-  createdAt       DateTime  @default(now())
-  expiresAt       DateTime?
-  deletedAt       DateTime?
-
-  auditLogs       AuditLog[]
-
-  @@index([orderId])
-  @@index([uploadedById])
-  @@index([createdAt])
-  @@index([expiresAt])
-  @@index([storageKey])
-  @@index([category])
-}
-
-model Alert {
-  id              String       @id @default(cuid())
-
-  // Alert content
-  message         String       @db.Text
-  status          AlertStatus  @default(UNREAD)
-
-  // Relations
-  orderId         String
-  order           Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  senderId        String
-  sender          User         @relation("AlertSender", fields: [senderId], references: [id], onDelete: Cascade)
-
-  receiverId      String
-  receiver        User         @relation("AlertReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-
-  // Timestamps
-  createdAt       DateTime     @default(now())
-  readAt          DateTime?
-  resolvedAt      DateTime?
-
-  auditLogs       AuditLog[]
-
-  @@index([orderId])
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model AuditLog {
-  id              String       @id @default(cuid())
-
-  // Action details
-  action          AuditAction
-  entityType      String
-  entityId        String
-
-  // Change tracking
-  oldValue        String?      @db.Text
-  newValue        String?      @db.Text
-  metadata        Json?
-
-  // User info
-  userId          String
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // IP and session tracking
-  ipAddress       String?
-  userAgent       String?
-
-  // Relations (optional, for easier querying)
-  orderId         String?
-  order           Order?       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  fileId          String?
-  file            File?        @relation(fields: [fileId], references: [id], onDelete: Cascade)
-
-  alertId         String?
-  alert           Alert?       @relation(fields: [alertId], references: [id], onDelete: Cascade)
-
-  // Timestamp
-  createdAt       DateTime     @default(now())
-
-  @@index([userId])
-  @@index([action])
-  @@index([entityType, entityId])
-  @@index([createdAt])
-  @@index([orderId])
+enum WorkType {
+  restauracion
+  otro
 }
