@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { ScanPreview } from '@/components/ui/ScanPreview';
@@ -42,7 +42,21 @@ export function FileUpload({
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Create and cleanup object URL for image preview
+  useEffect(() => {
+    if (value && category === FileCategory.MOUTH_PHOTO) {
+      const url = URL.createObjectURL(value);
+      setPreviewUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [value, category]);
 
   const uploadToR2 = async (file: File) => {
     if (!orderId) {
@@ -274,32 +288,62 @@ export function FileUpload({
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="rounded-lg border border-border bg-background p-4">
-                  <div className="flex items-start gap-3">
-                    <Icons.file className="h-10 w-10 text-primary flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {formatFileSize(value.size)}
-                      </p>
+                {category === FileCategory.MOUTH_PHOTO ? (
+                  // Image preview with details
+                  <div className="space-y-2">
+                    <div className="rounded-lg border border-border bg-background overflow-hidden">
+                      {previewUrl && (
+                        <img
+                          src={previewUrl}
+                          alt="Vista previa"
+                          className="w-full h-auto max-h-[400px] object-contain"
+                        />
+                      )}
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => setShowPreview(!showPreview)}
-                      >
-                        <Icons.eye className="h-4 w-4" />
-                      </Button>
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Icons.file className="h-5 w-5 text-primary flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
+                          <p className="text-xs text-muted-foreground">{formatFileSize(value.size)}</p>
+                        </div>
+                      </div>
                       <Button type="button" variant="danger" size="sm" onClick={handleRemove}>
                         <Icons.trash className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  // 3D file with preview button
+                  <>
+                    <div className="rounded-lg border border-border bg-background p-4">
+                      <div className="flex items-start gap-3">
+                        <Icons.file className="h-10 w-10 text-primary flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatFileSize(value.size)}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setShowPreview(!showPreview)}
+                          >
+                            <Icons.eye className="h-4 w-4" />
+                          </Button>
+                          <Button type="button" variant="danger" size="sm" onClick={handleRemove}>
+                            <Icons.trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
 
-                {showPreview && <ScanPreview file={value} onClose={() => setShowPreview(false)} />}
+                    {showPreview && <ScanPreview file={value} onClose={() => setShowPreview(false)} />}
+                  </>
+                )}
               </div>
             )}
           </>

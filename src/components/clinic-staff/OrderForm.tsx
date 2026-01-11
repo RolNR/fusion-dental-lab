@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ScanType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { FileUpload } from '@/components/ui/FileUpload';
 import { Icons } from '@/components/ui/Icons';
 import { Doctor } from '@/types/user';
-import { getScanTypeOptions } from '@/lib/scanTypeUtils';
 import type { SpeechRecognition } from '@/types/speech-recognition';
-import { FileCategory } from '@/types/file';
+import { OrderInfoSection } from './order-form/OrderInfoSection';
+import { DescriptionSection } from './order-form/DescriptionSection';
+import { MouthPhotosSection } from './order-form/MouthPhotosSection';
+import { MaterialAndColorSection } from './order-form/MaterialAndColorSection';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
 import { WorkTypeSection } from './order-form/WorkTypeSection';
 import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
@@ -22,6 +22,7 @@ import { ColorExtendedSection } from './order-form/ColorExtendedSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { ImplantSection } from './order-form/ImplantSection';
 import { OrderFormProps } from './order-form/OrderForm.types';
+import { TeethNumberSection } from './order-form/TeethNumberSection';
 import {
   fetchCurrentDoctor,
   fetchDoctors,
@@ -29,6 +30,7 @@ import {
   initializeFormState,
   parseAIPrompt,
 } from './order-form/orderFormUtils';
+import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -317,23 +319,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       </div>
 
-      <Input
-        label="Nombre del Paciente"
-        type="text"
-        value={formData.patientName}
-        onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
-        required
+      {/* Order Info Section */}
+      <OrderInfoSection
+        patientName={formData.patientName}
+        fechaEntregaDeseada={formData.fechaEntregaDeseada}
+        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
         disabled={isLoading}
-        placeholder="Juan Pérez"
-      />
-
-      <Input
-        label="Fecha de Entrega Deseada"
-        type="date"
-        value={formData.fechaEntregaDeseada}
-        onChange={(e) => setFormData({ ...formData, fechaEntregaDeseada: e.target.value })}
-        disabled={isLoading}
-        helperText="Fecha en que necesitas el trabajo completado"
       />
 
       {/* Case Type Section */}
@@ -352,48 +343,20 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onChange={(updates) => setFormData({ ...formData, ...updates })}
       />
 
-      <Textarea
-        label="Descripción"
-        id="description"
-        value={formData.description}
-        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+      {/* Description Section */}
+      <DescriptionSection
+        description={formData.description}
+        onChange={(value) => setFormData({ ...formData, description: value })}
         disabled={isLoading}
-        rows={3}
-        placeholder="Descripción del trabajo dental..."
+      />
+      {/* Teeth Number Section */}
+      <TeethNumberSection
+        teethNumbers={formData.teethNumbers}
+        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        disabled={isLoading}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
-        <Input
-          label="Números de Dientes"
-          type="text"
-          value={formData.teethNumbers}
-          onChange={(e) => setFormData({ ...formData, teethNumbers: e.target.value })}
-          disabled={isLoading}
-          placeholder="11, 12, 21, 22"
-        />
-
-        <Select
-          label="Tipo de Escaneo"
-          id="scanType"
-          value={formData.scanType || ''}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              scanType: e.target.value ? (e.target.value as ScanType) : null,
-            })
-          }
-          disabled={isLoading}
-        >
-          {getScanTypeOptions().map((option) => (
-            <option key={option.value || 'none'} value={option.value || ''}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-
       {/* Impression Extended Section */}
-
       <ImpressionExtendedSection
         scanType={formData.scanType ?? undefined}
         escanerUtilizado={formData.escanerUtilizado ?? undefined}
@@ -401,73 +364,22 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         tipoSilicon={formData.tipoSilicon ?? undefined}
         notaModeloFisico={formData.notaModeloFisico}
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        disabled={isLoading}
+        upperFile={upperFile}
+        lowerFile={lowerFile}
+        biteFile={biteFile}
+        onUpperFileChange={setUpperFile}
+        onLowerFileChange={setLowerFile}
+        onBiteFileChange={setBiteFile}
       />
 
-      {/* Digital Scan File Uploads */}
-      {formData.scanType === ScanType.DIGITAL_SCAN && (
-        <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <h3 className="text-lg font-semibold text-foreground">Archivos de Escaneo Digital</h3>
-          <p className="text-sm text-muted-foreground -mt-2">
-            Sube los archivos STL o PLY de los escaneos. Los archivos superior, inferior y de
-            mordida son obligatorios.
-          </p>
-
-          <div className="grid grid-cols-1 gap-4 sm:gap-6">
-            <FileUpload
-              label="Escaneo Superior (Upper)"
-              accept=".stl,.ply"
-              maxSize={50}
-              value={upperFile}
-              onChange={setUpperFile}
-              required
-              category={FileCategory.SCAN_UPPER}
-            />
-
-            <FileUpload
-              label="Escaneo Inferior (Lower)"
-              accept=".stl,.ply"
-              maxSize={50}
-              value={lowerFile}
-              onChange={setLowerFile}
-              required
-              category={FileCategory.SCAN_LOWER}
-            />
-
-            <FileUpload
-              label="Escaneo de Mordida (Bite)"
-              accept=".stl,.ply"
-              maxSize={50}
-              value={biteFile}
-              onChange={setBiteFile}
-              required
-              category={FileCategory.SCAN_BITE}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Mouth Photos Section - Optional */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">Fotos Intraorales (Opcional)</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Sube fotos de la boca del paciente para referencia adicional
-          </p>
-        </div>
-
-        <FileUpload
-          label="Foto Intraoral"
-          accept=".jpg,.jpeg,.png,.webp"
-          maxSize={10}
-          value={null}
-          onChange={() => {}}
-          category={FileCategory.MOUTH_PHOTO}
-          orderId={orderId}
-          onUploadComplete={(fileId) => {
-            console.log('Mouth photo uploaded:', fileId);
-          }}
-        />
-      </div>
+      <MouthPhotosSection
+        orderId={orderId}
+        onUploadComplete={(fileId) => {
+          console.log('Mouth photo uploaded:', fileId);
+        }}
+      />
 
       {/* Implant Section */}
       <ImplantSection
@@ -476,34 +388,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onChange={(updates) => setFormData({ ...formData, ...updates })}
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
-        <Input
-          label="Material"
-          type="text"
-          value={formData.material}
-          onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-          disabled={isLoading}
-          placeholder="Zirconia, Porcelana..."
-        />
-
-        <Input
-          label="Marca del Material"
-          type="text"
-          value={formData.materialBrand}
-          onChange={(e) => setFormData({ ...formData, materialBrand: e.target.value })}
-          disabled={isLoading}
-          placeholder="IPS e.max..."
-        />
-
-        <Input
-          label="Color"
-          type="text"
-          value={formData.color}
-          onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-          disabled={isLoading}
-          placeholder="A2, B1..."
-        />
-      </div>
+      {/* Material and Color Section */}
+      <MaterialAndColorSection
+        material={formData.material}
+        materialBrand={formData.materialBrand}
+        color={formData.color}
+        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        disabled={isLoading}
+      />
 
       {/* Occlusion Section */}
       <OcclusionSection
@@ -530,14 +422,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
       />
 
-      <Textarea
-        label="Notas Adicionales"
-        id="notes"
-        value={formData.notes}
-        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-        disabled={isLoading}
-        rows={4}
-        placeholder="Instrucciones especiales, observaciones..."
+      <AdditionalNotesSection
+        additionalNotes={formData.notes}
+        onChange={(value) => setFormData({ ...formData, notes: value })}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
