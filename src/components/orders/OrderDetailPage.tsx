@@ -23,6 +23,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
   const router = useRouter();
   const orderId = params.orderId as string;
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
 
   const redirectPath = `/${role}/orders`;
 
@@ -76,6 +77,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             orderId={orderId}
             canDelete={order.status === OrderStatus.DRAFT || order.status === OrderStatus.NEEDS_INFO}
             onFileDeleted={() => refetch()}
+            refreshTrigger={fileRefreshTrigger}
           />
         </div>
 
@@ -125,6 +127,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             orderId={orderId}
             onClose={() => {
               setShowUploadModal(false);
+              setFileRefreshTrigger(prev => prev + 1);
               refetch();
             }}
           />

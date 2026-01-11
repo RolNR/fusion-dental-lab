@@ -28,9 +28,10 @@ interface FileListProps {
   orderId: string;
   canDelete?: boolean;
   onFileDeleted?: () => void;
+  refreshTrigger?: number;
 }
 
-export function FileList({ orderId, canDelete = false, onFileDeleted }: FileListProps) {
+export function FileList({ orderId, canDelete = false, onFileDeleted, refreshTrigger }: FileListProps) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export function FileList({ orderId, canDelete = false, onFileDeleted }: FileList
 
   useEffect(() => {
     fetchFiles();
-  }, [orderId]);
+  }, [orderId, refreshTrigger]);
 
   const fetchFiles = async () => {
     try {
