@@ -92,9 +92,7 @@ export function StaffForm({ initialData, staffId, staffType, onSuccess }: StaffF
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.general && (
-        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">
-          {errors.general}
-        </div>
+        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">{errors.general}</div>
       )}
 
       <Input

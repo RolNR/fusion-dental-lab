@@ -48,8 +48,16 @@ export async function createAuditLog(params: AuditLogParams) {
         entityType,
         entityId,
         userId,
-        oldValue: oldValue ? (typeof oldValue === 'string' ? oldValue : JSON.stringify(oldValue)) : undefined,
-        newValue: newValue ? (typeof newValue === 'string' ? newValue : JSON.stringify(newValue)) : undefined,
+        oldValue: oldValue
+          ? typeof oldValue === 'string'
+            ? oldValue
+            : JSON.stringify(oldValue)
+          : undefined,
+        newValue: newValue
+          ? typeof newValue === 'string'
+            ? newValue
+            : JSON.stringify(newValue)
+          : undefined,
         metadata: metadata || undefined,
         ipAddress: ipAddress || undefined,
         userAgent: userAgent || undefined,

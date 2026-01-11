@@ -60,7 +60,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         setDoctors(doctors);
         // Set first doctor as default if creating new order
         if (!orderId && doctors.length > 0) {
-          setFormData(prev => ({ ...prev, doctorId: doctors[0].id }));
+          setFormData((prev) => ({ ...prev, doctorId: doctors[0].id }));
         }
       });
     }
@@ -89,9 +89,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           }
 
           if (finalTranscript) {
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
-              aiPrompt: prev.aiPrompt + finalTranscript
+              aiPrompt: prev.aiPrompt + finalTranscript,
             }));
           }
         };
@@ -100,7 +100,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           console.error('Speech recognition error:', event.error);
           setIsListening(false);
           if (event.error === 'not-allowed') {
-            setAiError('Permiso de micrófono denegado. Por favor, habilita el micrófono en la configuración del navegador.');
+            setAiError(
+              'Permiso de micrófono denegado. Por favor, habilita el micrófono en la configuración del navegador.'
+            );
           }
         };
 
@@ -158,15 +160,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         biteFile,
       };
 
-      await saveOrderUtil(
-        orderId,
-        role,
-        formData,
-        files,
-        submitForReview,
-        onSuccess,
-        router
-      );
+      await saveOrderUtil(orderId, role, formData, files, submitForReview, onSuccess, router);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
@@ -187,7 +181,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       const parsedData = await parseAIPrompt(formData.aiPrompt);
 
       // Auto-fill form fields with parsed data
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         ...parsedData,
         // Keep existing values if AI didn't provide them
@@ -214,13 +208,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       )}
 
       {role === 'doctor' && (
-        <Select
-          label="Doctor"
-          id="doctorId"
-          value=""
-          onChange={() => {}}
-          disabled={true}
-        >
+        <Select label="Doctor" id="doctorId" value="" onChange={() => {}} disabled={true}>
           <option value="">{currentDoctorName || 'Cargando...'}</option>
         </Select>
       )}
@@ -244,7 +232,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           </Select>
           {doctors.length === 0 && (
             <p className="mt-2 text-sm text-warning">
-              No tienes doctores asignados. Contacta al administrador de la clínica para que te asigne doctores.
+              No tienes doctores asignados. Contacta al administrador de la clínica para que te
+              asigne doctores.
             </p>
           )}
         </div>
@@ -254,16 +243,25 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 sm:p-6">
         <div className="flex items-start gap-3 mb-3">
           <div className="rounded-full bg-primary/10 p-2">
-            <svg className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            <svg
+              className="h-5 w-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-foreground">
-              Llenar formulario con IA
-            </h3>
+            <h3 className="text-lg font-semibold text-foreground">Llenar formulario con IA</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Describe la orden en lenguaje natural y la IA completará automáticamente los campos del formulario
+              Describe la orden en lenguaje natural y la IA completará automáticamente los campos
+              del formulario
             </p>
           </div>
         </div>
@@ -315,51 +313,44 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               </p>
             )}
           </div>
-          {aiError && (
-            <p className="text-sm text-danger font-medium">{aiError}</p>
-          )}
+          {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2">
-        <Input
-          label="Nombre del Paciente"
-          type="text"
-          value={formData.patientName}
-          onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
-          required
-          disabled={isLoading}
-          placeholder="Juan Pérez"
-        />
+      <Input
+        label="Nombre del Paciente"
+        type="text"
+        value={formData.patientName}
+        onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+        required
+        disabled={isLoading}
+        placeholder="Juan Pérez"
+      />
 
-        <Input
-          label="Fecha de Entrega Deseada"
-          type="date"
-          value={formData.fechaEntregaDeseada}
-          onChange={(e) => setFormData({ ...formData, fechaEntregaDeseada: e.target.value })}
-          disabled={isLoading}
-          helperText="Fecha en que necesitas el trabajo completado"
-        />
-      </div>
+      <Input
+        label="Fecha de Entrega Deseada"
+        type="date"
+        value={formData.fechaEntregaDeseada}
+        onChange={(e) => setFormData({ ...formData, fechaEntregaDeseada: e.target.value })}
+        disabled={isLoading}
+        helperText="Fecha en que necesitas el trabajo completado"
+      />
 
       {/* Case Type Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <CaseTypeSection
-          tipoCaso={formData.tipoCaso ?? undefined}
-          motivoGarantia={formData.motivoGarantia}
-          seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
-          onChange={(updates) => setFormData({ ...formData, ...updates })}
-        />
-      </div>
+
+      <CaseTypeSection
+        tipoCaso={formData.tipoCaso ?? undefined}
+        motivoGarantia={formData.motivoGarantia}
+        seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
+        onChange={(updates) => setFormData({ ...formData, ...updates })}
+      />
 
       {/* Work Type Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <WorkTypeSection
-          tipoTrabajo={formData.tipoTrabajo ?? undefined}
-          tipoRestauracion={formData.tipoRestauracion ?? undefined}
-          onChange={(updates) => setFormData({ ...formData, ...updates })}
-        />
-      </div>
+      <WorkTypeSection
+        tipoTrabajo={formData.tipoTrabajo ?? undefined}
+        tipoRestauracion={formData.tipoRestauracion ?? undefined}
+        onChange={(updates) => setFormData({ ...formData, ...updates })}
+      />
 
       <Textarea
         label="Descripción"
@@ -385,7 +376,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           label="Tipo de Escaneo"
           id="scanType"
           value={formData.scanType || ''}
-          onChange={(e) => setFormData({ ...formData, scanType: e.target.value ? e.target.value as ScanType : null })}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              scanType: e.target.value ? (e.target.value as ScanType) : null,
+            })
+          }
           disabled={isLoading}
         >
           {getScanTypeOptions().map((option) => (
@@ -397,25 +393,23 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       </div>
 
       {/* Impression Extended Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <ImpressionExtendedSection
-          scanType={formData.scanType ?? undefined}
-          escanerUtilizado={formData.escanerUtilizado ?? undefined}
-          otroEscaner={formData.otroEscaner}
-          tipoSilicon={formData.tipoSilicon ?? undefined}
-          notaModeloFisico={formData.notaModeloFisico}
-          onChange={(field, value) => setFormData({ ...formData, [field]: value })}
-        />
-      </div>
+
+      <ImpressionExtendedSection
+        scanType={formData.scanType ?? undefined}
+        escanerUtilizado={formData.escanerUtilizado ?? undefined}
+        otroEscaner={formData.otroEscaner}
+        tipoSilicon={formData.tipoSilicon ?? undefined}
+        notaModeloFisico={formData.notaModeloFisico}
+        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+      />
 
       {/* Digital Scan File Uploads */}
       {formData.scanType === ScanType.DIGITAL_SCAN && (
         <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <h3 className="text-lg font-semibold text-foreground">
-            Archivos de Escaneo Digital
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground">Archivos de Escaneo Digital</h3>
           <p className="text-sm text-muted-foreground -mt-2">
-            Sube los archivos STL o PLY de los escaneos. Los archivos superior, inferior y de mordida son obligatorios.
+            Sube los archivos STL o PLY de los escaneos. Los archivos superior, inferior y de
+            mordida son obligatorios.
           </p>
 
           <div className="grid grid-cols-1 gap-4 sm:gap-6">
@@ -455,9 +449,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       {/* Mouth Photos Section - Optional */}
       <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
         <div>
-          <h3 className="text-lg font-semibold text-foreground">
-            Fotos Intraorales (Opcional)
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground">Fotos Intraorales (Opcional)</h3>
           <p className="text-sm text-muted-foreground mt-1">
             Sube fotos de la boca del paciente para referencia adicional
           </p>
@@ -478,13 +470,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       </div>
 
       {/* Implant Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <ImplantSection
-          trabajoSobreImplante={formData.trabajoSobreImplante}
-          informacionImplante={formData.informacionImplante}
-          onChange={(updates) => setFormData({ ...formData, ...updates })}
-        />
-      </div>
+      <ImplantSection
+        trabajoSobreImplante={formData.trabajoSobreImplante}
+        informacionImplante={formData.informacionImplante}
+        onChange={(updates) => setFormData({ ...formData, ...updates })}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3">
         <Input
@@ -516,37 +506,29 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       </div>
 
       {/* Occlusion Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <OcclusionSection
-          oclusionDiseno={formData.oclusionDiseno}
-          onChange={(value) => setFormData({ ...formData, oclusionDiseno: value })}
-        />
-      </div>
+      <OcclusionSection
+        oclusionDiseno={formData.oclusionDiseno}
+        onChange={(value) => setFormData({ ...formData, oclusionDiseno: value })}
+      />
 
       {/* Material Sent Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <MaterialSentSection
-          materialSent={formData.materialSent}
-          onChange={(value) => setFormData({ ...formData, materialSent: value })}
-        />
-      </div>
+      <MaterialSentSection
+        materialSent={formData.materialSent}
+        onChange={(value) => setFormData({ ...formData, materialSent: value })}
+      />
 
       {/* Color Extended Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <ColorExtendedSection
-          colorInfo={formData.colorInfo}
-          onChange={(value) => setFormData({ ...formData, colorInfo: value })}
-        />
-      </div>
+      <ColorExtendedSection
+        colorInfo={formData.colorInfo}
+        onChange={(value) => setFormData({ ...formData, colorInfo: value })}
+      />
 
       {/* Submission Type Section */}
-      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
-        <SubmissionTypeSection
-          submissionType={formData.submissionType ?? undefined}
-          articulatedBy={formData.articulatedBy ?? undefined}
-          onChange={(field, value) => setFormData({ ...formData, [field]: value })}
-        />
-      </div>
+      <SubmissionTypeSection
+        submissionType={formData.submissionType ?? undefined}
+        articulatedBy={formData.articulatedBy ?? undefined}
+        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+      />
 
       <Textarea
         label="Notas Adicionales"

@@ -1,7 +1,7 @@
 'use client';
 
 import { SubmissionType, ArticulatedBy } from '@prisma/client';
-import { Radio } from '@/components/ui/Radio';
+import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type SubmissionTypeSectionProps = {
   submissionType?: SubmissionType;
@@ -19,69 +19,96 @@ export function SubmissionTypeSection({
   onChange,
   errors,
 }: SubmissionTypeSectionProps) {
+  const submissionTypes = [
+    {
+      value: 'prueba_estructura',
+      label: 'Prueba de Estructura',
+      subtitle: 'Verificación estructural',
+      icon: 'layers' as const,
+    },
+    {
+      value: 'prueba_estetica',
+      label: 'Prueba Estética',
+      subtitle: 'Verificación estética',
+      icon: 'eye' as const,
+    },
+    {
+      value: 'terminado',
+      label: 'Terminado',
+      subtitle: 'Trabajo finalizado',
+      icon: 'check' as const,
+    },
+  ];
+
+  const articulatedByOptions = [
+    {
+      value: 'doctor',
+      label: 'Doctor',
+      subtitle: 'Articulado por el doctor',
+      icon: 'user' as const,
+    },
+    {
+      value: 'laboratorio',
+      label: 'Laboratorio',
+      subtitle: 'Articulado por el laboratorio',
+      icon: 'settings' as const,
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Submission Type */}
-      <div>
-        <h3 className="text-lg font-semibold text-foreground mb-4">
-          Tipo de Entrega
-        </h3>
-        <div className="space-y-3">
-          <Radio
-            name="submissionType"
-            value="prueba_estructura"
-            checked={submissionType === 'prueba_estructura'}
-            onChange={(e) => onChange('submissionType', e.target.value)}
-            label="Prueba de Estructura"
-          />
+    <SectionContainer>
+      <SectionHeader
+        icon="upload"
+        title="Tipo de Entrega y Articulación"
+        description="Especifica cómo se entregará el trabajo"
+        required
+      />
 
-          <Radio
-            name="submissionType"
-            value="prueba_estetica"
-            checked={submissionType === 'prueba_estetica'}
-            onChange={(e) => onChange('submissionType', e.target.value)}
-            label="Prueba Estética"
-          />
-
-          <Radio
-            name="submissionType"
-            value="terminado"
-            checked={submissionType === 'terminado' || !submissionType}
-            onChange={(e) => onChange('submissionType', e.target.value)}
-            label="Terminado"
-          />
+      <div className="space-y-6 p-6">
+        {/* Submission Type */}
+        <div>
+          <FieldLabel label="Tipo de Entrega" required />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {submissionTypes.map((type) => (
+              <ButtonCard
+                key={type.value}
+                icon={type.icon}
+                title={type.label}
+                subtitle={type.subtitle}
+                selected={
+                  submissionType === type.value || (!submissionType && type.value === 'terminado')
+                }
+                onClick={() => onChange('submissionType', type.value)}
+              />
+            ))}
+          </div>
+          {errors?.submissionType && (
+            <p className="mt-2 text-sm text-danger font-medium">{errors.submissionType}</p>
+          )}
         </div>
-        {errors?.submissionType && (
-          <p className="mt-2 text-sm text-danger font-medium">{errors.submissionType}</p>
-        )}
-      </div>
 
-      {/* Articulated By */}
-      <div>
-        <h3 className="text-lg font-semibold text-foreground mb-4">
-          Articulado Por
-        </h3>
-        <div className="space-y-3">
-          <Radio
-            name="articulatedBy"
-            value="doctor"
-            checked={articulatedBy === 'doctor' || !articulatedBy}
-            onChange={(e) => onChange('articulatedBy', e.target.value)}
-            label="Doctor"
-          />
-
-          <Radio
-            name="articulatedBy"
-            value="laboratorio"
-            checked={articulatedBy === 'laboratorio'}
-            onChange={(e) => onChange('articulatedBy', e.target.value)}
-            label="Laboratorio"
-          />
+        {/* Articulated By */}
+        <div>
+          <FieldLabel label="Articulado Por" required />
+          <div className="grid grid-cols-2 gap-3">
+            {articulatedByOptions.map((option) => (
+              <ButtonCard
+                key={option.value}
+                icon={option.icon}
+                title={option.label}
+                subtitle={option.subtitle}
+                selected={
+                  articulatedBy === option.value || (!articulatedBy && option.value === 'doctor')
+                }
+                onClick={() => onChange('articulatedBy', option.value)}
+              />
+            ))}
+          </div>
+          {errors?.articulatedBy && (
+            <p className="mt-2 text-sm text-danger font-medium">{errors.articulatedBy}</p>
+          )}
         </div>
-        {errors?.articulatedBy && (
-          <p className="mt-2 text-sm text-danger font-medium">{errors.articulatedBy}</p>
-        )}
       </div>
-    </div>
+    </SectionContainer>
   );
 }

@@ -46,12 +46,24 @@ const variantStyles = {
   },
 } as const;
 
-export function StatsCard({ title, value, icon, description, variant = 'default' }: StatsCardProps) {
+export function StatsCard({
+  title,
+  value,
+  icon,
+  description,
+  variant = 'default',
+}: StatsCardProps) {
   const styles = variantStyles[variant];
 
   return (
-    <div className={`rounded-lg ${styles.background} p-4 shadow-sm border ${styles.border} transition-all duration-200 hover:shadow-md`}>
-      <p className={`text-xs font-semibold ${styles.titleColor} uppercase tracking-wide text-center`}>{title}</p>
+    <div
+      className={`rounded-lg ${styles.background} p-4 shadow-sm border ${styles.border} transition-all duration-200 hover:shadow-md`}
+    >
+      <p
+        className={`text-xs font-semibold ${styles.titleColor} uppercase tracking-wide text-center`}
+      >
+        {title}
+      </p>
       <p className={`mt-2 text-2xl font-bold ${styles.valueColor} text-center`}>{value}</p>
     </div>
   );

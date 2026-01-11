@@ -36,11 +36,7 @@ export default function DoctorDashboard() {
   const [activeClinicName, setActiveClinicName] = useState<string>('');
 
   // Use the new custom hook for alerts
-  const {
-    alerts,
-    loading: alertsLoading,
-    setAlerts,
-  } = useAlerts({ role: Role.DOCTOR });
+  const { alerts, loading: alertsLoading, setAlerts } = useAlerts({ role: Role.DOCTOR });
 
   // Use the alert actions hook
   const { handleMarkAsRead, handleDeleteAlert } = useAlertActions({
@@ -68,10 +64,17 @@ export default function DoctorDashboard() {
 
       const newStats = {
         total: fetchedOrders.length,
-        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT).length,
-        submitted: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW).length,
-        inProgress: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS).length,
-        completed: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.COMPLETED).length,
+        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT)
+          .length,
+        submitted: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW
+        ).length,
+        inProgress: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS
+        ).length,
+        completed: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.COMPLETED
+        ).length,
       };
 
       setStats(newStats);
@@ -121,16 +124,8 @@ export default function DoctorDashboard() {
         </div>
 
         <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-          <StatsCard
-            title="Total Órdenes"
-            value={stats.total}
-            description="Todas tus órdenes"
-          />
-          <StatsCard
-            title="Borradores"
-            value={stats.draft}
-            description="En edición"
-          />
+          <StatsCard title="Total Órdenes" value={stats.total} description="Todas tus órdenes" />
+          <StatsCard title="Borradores" value={stats.draft} description="En edición" />
           <StatsCard
             title="En Proceso"
             value={stats.submitted + stats.inProgress}
@@ -160,19 +155,13 @@ export default function DoctorDashboard() {
                 </Link>
               </div>
               <div className="overflow-x-auto">
-                <OrdersTable
-                  orders={orders}
-                  baseUrl="/doctor/orders"
-                  showDoctorColumn={false}
-                />
+                <OrdersTable orders={orders} baseUrl="/doctor/orders" showDoctorColumn={false} />
               </div>
               {orders.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground p-4">
                   <p className="mb-4">No tienes órdenes aún</p>
                   <Link href="/doctor/orders/new">
-                    <Button variant="primary">
-                      Crear tu Primera Orden
-                    </Button>
+                    <Button variant="primary">Crear tu Primera Orden</Button>
                   </Link>
                 </div>
               )}

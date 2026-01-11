@@ -38,10 +38,7 @@ export async function GET(
     });
 
     if (!accessCheck.hasAccess) {
-      return NextResponse.json(
-        { error: accessCheck.error },
-        { status: accessCheck.statusCode }
-      );
+      return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
     // Fetch order with full details
@@ -90,19 +87,13 @@ export async function GET(
     });
 
     if (!order) {
-      return NextResponse.json(
-        { error: 'Orden no encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
     }
 
     return NextResponse.json({ order }, { status: 200 });
   } catch (error) {
     console.error('Error fetching order:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener orden' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener orden' }, { status: 500 });
   }
 }
 
@@ -140,10 +131,7 @@ export async function PATCH(
     });
 
     if (!accessCheck.hasAccess) {
-      return NextResponse.json(
-        { error: accessCheck.error },
-        { status: accessCheck.statusCode }
-      );
+      return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
     // Validate request body
@@ -187,10 +175,7 @@ export async function PATCH(
     });
 
     if (!updateResult.success) {
-      return NextResponse.json(
-        { error: updateResult.error },
-        { status: updateResult.statusCode }
-      );
+      return NextResponse.json({ error: updateResult.error }, { status: updateResult.statusCode });
     }
 
     return NextResponse.json(updateResult.order);

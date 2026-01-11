@@ -12,10 +12,7 @@ export const THUMBNAIL_SUFFIX = '-thumb.webp';
  * @param storageKey - Original file storage key
  * @returns Thumbnail storage key
  */
-export async function processImage(
-  imageBuffer: Buffer,
-  storageKey: string
-): Promise<string> {
+export async function processImage(imageBuffer: Buffer, storageKey: string): Promise<string> {
   // Convert to WebP
   const webpBuffer = await sharp(imageBuffer)
     .webp({ quality: THUMBNAIL_QUALITY })

@@ -36,11 +36,7 @@ export default function SignOutPage() {
             </Button>
 
             <Link href="/" className="block">
-              <Button
-                variant="secondary"
-                className="w-full"
-                disabled={isSigningOut}
-              >
+              <Button variant="secondary" className="w-full" disabled={isSigningOut}>
                 Cancelar
               </Button>
             </Link>

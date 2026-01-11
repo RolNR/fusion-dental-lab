@@ -45,17 +45,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!membership) {
-      return NextResponse.json(
-        { error: 'No tienes acceso a esta clínica' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'No tienes acceso a esta clínica' }, { status: 403 });
     }
 
     if (!membership.clinic.isActive) {
-      return NextResponse.json(
-        { error: 'Esta clínica no está activa' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Esta clínica no está activa' }, { status: 400 });
     }
 
     // Get old active clinic for audit log
@@ -95,9 +89,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error updating active clinic:', error);
-    return NextResponse.json(
-      { error: 'Error al cambiar clínica' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cambiar clínica' }, { status: 500 });
   }
 }

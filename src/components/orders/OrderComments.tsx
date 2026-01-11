@@ -38,10 +38,7 @@ export function OrderComments({ comments }: OrderCommentsProps) {
 
       <div className="space-y-4">
         {comments.map((comment) => (
-          <div
-            key={comment.id}
-            className="bg-background border border-border-input rounded-md p-4"
-          >
+          <div key={comment.id} className="bg-background border border-border-input rounded-md p-4">
             <div className="flex items-start justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-foreground">
@@ -55,9 +52,7 @@ export function OrderComments({ comments }: OrderCommentsProps) {
                 {formatDate(comment.createdAt, true)}
               </time>
             </div>
-            <p className="text-sm text-foreground whitespace-pre-wrap">
-              {comment.content}
-            </p>
+            <p className="text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
           </div>
         ))}
       </div>

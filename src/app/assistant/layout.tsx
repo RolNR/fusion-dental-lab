@@ -3,11 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ClinicStaffNav } from '@/components/clinic-staff/ClinicStaffNav';
 
-export default async function AssistantLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AssistantLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
 
   if (!session) {

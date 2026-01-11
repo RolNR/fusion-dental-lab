@@ -49,10 +49,7 @@ export async function GET(
     return NextResponse.json({ order });
   } catch (error) {
     console.error('Error fetching order:', error);
-    return NextResponse.json(
-      { error: 'Error al cargar orden' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cargar orden' }, { status: 500 });
   }
 }
 
@@ -124,17 +121,11 @@ export async function PATCH(
     return NextResponse.json({ order });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error updating order:', err);
-    return NextResponse.json(
-      { error: 'Error al actualizar orden' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar orden' }, { status: 500 });
   }
 }
 
@@ -188,9 +179,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error deleting order:', error);
-    return NextResponse.json(
-      { error: 'Error al eliminar orden' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar orden' }, { status: 500 });
   }
 }

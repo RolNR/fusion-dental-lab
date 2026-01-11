@@ -1,18 +1,18 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { SessionProvider } from "@/components/providers/SessionProvider";
-import { ToastProvider } from "@/contexts/ToastContext";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { SessionProvider } from '@/components/providers/SessionProvider';
+import { ToastProvider } from '@/contexts/ToastContext';
+import './globals.css';
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "LabWiseLink | Gestión de Órdenes Dentales",
-  description: "Plataforma de gestión de órdenes entre dentistas y laboratorios dentales",
+  title: 'LabWiseLink | Gestión de Órdenes Dentales',
+  description: 'Plataforma de gestión de órdenes entre dentistas y laboratorios dentales',
 };
 
 export default function RootLayout({
@@ -22,9 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body
-        className={`${inter.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased`}>
         <SessionProvider>
           <ToastProvider>{children}</ToastProvider>
         </SessionProvider>

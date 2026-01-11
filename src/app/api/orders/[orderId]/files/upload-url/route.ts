@@ -62,14 +62,17 @@ export async function POST(
     } else {
       if (!ALLOWED_SCAN_TYPES.includes(ext)) {
         return NextResponse.json(
-          { error: `Tipo de archivo no válido para escaneos. Se aceptan: ${ALLOWED_SCAN_TYPES.join(', ')}` },
+          {
+            error: `Tipo de archivo no válido para escaneos. Se aceptan: ${ALLOWED_SCAN_TYPES.join(', ')}`,
+          },
           { status: 400 }
         );
       }
     }
 
     // Validate file size
-    const maxSizeMB = validatedData.category === FileCategory.MOUTH_PHOTO ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB;
+    const maxSizeMB =
+      validatedData.category === FileCategory.MOUTH_PHOTO ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB;
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
     if (validatedData.fileSize > maxSizeBytes) {
@@ -80,11 +83,7 @@ export async function POST(
     }
 
     // Generate storage key and pre-signed URL
-    const storageKey = generateStorageKey(
-      orderId,
-      validatedData.category,
-      validatedData.fileName
-    );
+    const storageKey = generateStorageKey(orderId, validatedData.category, validatedData.fileName);
 
     const uploadUrl = await generateUploadUrl(
       storageKey,
@@ -102,10 +101,7 @@ export async function POST(
     );
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error generating upload URL:', err);

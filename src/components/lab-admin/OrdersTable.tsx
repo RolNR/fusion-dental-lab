@@ -11,33 +11,35 @@ interface OrdersTableProps {
   showDoctorColumn?: boolean;
 }
 
-export function OrdersTable({ orders, baseUrl = '/lab-admin/orders', showDoctorColumn = true }: OrdersTableProps) {
+export function OrdersTable({
+  orders,
+  baseUrl = '/lab-admin/orders',
+  showDoctorColumn = true,
+}: OrdersTableProps) {
   const columns: TableColumn<OrderWithRelations>[] = [
     {
       header: 'Número de Orden',
       accessor: (order) => (
         <div>
-          <div className="text-sm font-medium text-foreground">
-            {order.orderNumber}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {order.patientName}
-          </div>
+          <div className="text-sm font-medium text-foreground">{order.orderNumber}</div>
+          <div className="text-sm text-muted-foreground">{order.patientName}</div>
         </div>
       ),
     },
     {
       header: 'Clínica',
-      accessor: (order) => (
-        <span className="text-sm text-foreground">{order.clinic.name}</span>
-      ),
+      accessor: (order) => <span className="text-sm text-foreground">{order.clinic.name}</span>,
     },
-    ...(showDoctorColumn ? [{
-      header: 'Doctor',
-      accessor: (order: OrderWithRelations) => (
-        <span className="text-sm text-foreground">{order.doctor?.name || '-'}</span>
-      ),
-    }] : []),
+    ...(showDoctorColumn
+      ? [
+          {
+            header: 'Doctor',
+            accessor: (order: OrderWithRelations) => (
+              <span className="text-sm text-foreground">{order.doctor?.name || '-'}</span>
+            ),
+          },
+        ]
+      : []),
     {
       header: 'Estado',
       accessor: (order) => (

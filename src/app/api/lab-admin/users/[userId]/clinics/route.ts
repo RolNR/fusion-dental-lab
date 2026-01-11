@@ -32,10 +32,7 @@ export async function PUT(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Verify user exists and is a DOCTOR
@@ -49,10 +46,7 @@ export async function PUT(
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     if (user.role !== Role.DOCTOR) {
@@ -108,10 +102,7 @@ export async function PUT(
 
       // 3. Update activeClinicId if necessary
       // If current activeClinicId is null or not in new clinic list, set to primary
-      if (
-        !user.activeClinicId ||
-        !validatedData.clinicIds.includes(user.activeClinicId)
-      ) {
+      if (!user.activeClinicId || !validatedData.clinicIds.includes(user.activeClinicId)) {
         await tx.user.update({
           where: { id: userId },
           data: { activeClinicId: validatedData.primaryClinicId },

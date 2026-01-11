@@ -10,7 +10,13 @@ interface OrderHeaderProps {
   backLabel?: string;
 }
 
-export function OrderHeader({ orderNumber, status, createdAt, backUrl, backLabel = 'Volver a Órdenes' }: OrderHeaderProps) {
+export function OrderHeader({
+  orderNumber,
+  status,
+  createdAt,
+  backUrl,
+  backLabel = 'Volver a Órdenes',
+}: OrderHeaderProps) {
   return (
     <div className="mb-8">
       <Link href={backUrl} className="text-primary hover:text-primary/80 text-sm font-medium">
@@ -22,14 +28,17 @@ export function OrderHeader({ orderNumber, status, createdAt, backUrl, backLabel
             Orden #{orderNumber}
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Creada el {new Date(createdAt).toLocaleDateString('es-ES', {
+            Creada el{' '}
+            {new Date(createdAt).toLocaleDateString('es-ES', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
             })}
           </p>
         </div>
-        <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(status)}`}>
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(status)}`}
+        >
           {getStatusLabel(status)}
         </span>
       </div>

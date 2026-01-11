@@ -74,17 +74,12 @@ export default function ClinicDetailPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="mb-4">
-            <Link
-              href="/lab-admin/clinics"
-              className="text-sm text-primary hover:text-primary/80"
-            >
+            <Link href="/lab-admin/clinics" className="text-sm text-primary hover:text-primary/80">
               ← Volver a Clínicas
             </Link>
           </div>
           <h1 className="text-3xl font-bold text-foreground">{clinic.name}</h1>
-          <p className="mt-2 text-muted-foreground">
-            Detalles de la clínica
-          </p>
+          <p className="mt-2 text-muted-foreground">Detalles de la clínica</p>
         </div>
         <Link href={`/lab-admin/clinics/${clinicId}/edit`}>
           <Button variant="primary">Editar Clínica</Button>
@@ -95,9 +90,7 @@ export default function ClinicDetailPage() {
       <div className="mb-8">
         <span
           className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
-            clinic.isActive
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
+            clinic.isActive ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
           }`}
         >
           {clinic.isActive ? 'Activa' : 'Inactiva'}
@@ -146,36 +139,24 @@ export default function ClinicDetailPage() {
           value={clinic._count.assistants}
           description="Asistentes activos"
         />
-        <StatsCard
-          title="Órdenes"
-          value={clinic._count.orders}
-          description="Órdenes totales"
-        />
+        <StatsCard title="Órdenes" value={clinic._count.orders} description="Órdenes totales" />
       </div>
 
       {/* Clinic Information */}
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <h2 className="mb-6 text-xl font-semibold text-foreground">
-          Información de Contacto
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-foreground">Información de Contacto</h2>
         <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Email</dt>
-            <dd className="mt-1 text-sm text-foreground">
-              {clinic.email || '-'}
-            </dd>
+            <dd className="mt-1 text-sm text-foreground">{clinic.email || '-'}</dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Teléfono</dt>
-            <dd className="mt-1 text-sm text-foreground">
-              {clinic.phone || '-'}
-            </dd>
+            <dd className="mt-1 text-sm text-foreground">{clinic.phone || '-'}</dd>
           </div>
           <div className="sm:col-span-2">
             <dt className="text-sm font-medium text-muted-foreground">Dirección</dt>
-            <dd className="mt-1 text-sm text-foreground">
-              {clinic.address || '-'}
-            </dd>
+            <dd className="mt-1 text-sm text-foreground">{clinic.address || '-'}</dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Fecha de Registro</dt>

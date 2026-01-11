@@ -38,9 +38,8 @@ export function useProfileUpdate(): UseProfileUpdateResult {
       setSuccess(result.message || 'Perfil actualizado exitosamente');
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error
-        ? err.message
-        : 'Error desconocido al actualizar el perfil';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido al actualizar el perfil';
       setError(errorMessage);
       return false;
     } finally {

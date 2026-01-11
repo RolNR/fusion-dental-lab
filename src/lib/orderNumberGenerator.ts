@@ -24,10 +24,13 @@ const ORDER_NUMBER_PAD_CHAR = '0';
  */
 function generateClinicCode(clinicName: string): string {
   // Remove special characters and extra spaces
-  const cleaned = clinicName.trim().toUpperCase().replace(/[^A-Z\s]/g, '');
+  const cleaned = clinicName
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z\s]/g, '');
 
   // Split by spaces
-  const words = cleaned.split(/\s+/).filter(word => word.length > 0);
+  const words = cleaned.split(/\s+/).filter((word) => word.length > 0);
 
   if (words.length === 0) {
     return FALLBACK_CLINIC_CODE;
@@ -62,10 +65,7 @@ function generateClinicCode(clinicName: string): string {
  * @param patientName - The patient's full name
  * @returns The generated order number
  */
-export async function generateOrderNumber(
-  clinicId: string,
-  patientName: string
-): Promise<string> {
+export async function generateOrderNumber(clinicId: string, patientName: string): Promise<string> {
   // Get clinic name
   const clinic = await prisma.clinic.findUnique({
     where: { id: clinicId },
@@ -113,12 +113,12 @@ function extractInitials(name: string): string {
     .trim()
     .toUpperCase()
     .split(/[\s-]+/)
-    .filter(word => word.length > 0);
+    .filter((word) => word.length > 0);
 
   // Take first letter of each word, max length
   const initials = words
     .slice(0, MAX_PATIENT_INITIALS_LENGTH)
-    .map(word => word[0])
+    .map((word) => word[0])
     .join('');
 
   // If we got less than minimum initials, pad

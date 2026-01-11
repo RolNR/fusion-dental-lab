@@ -23,10 +23,7 @@ export async function DELETE(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Verify assistant belongs to this clinic
@@ -39,10 +36,7 @@ export async function DELETE(
     });
 
     if (!assistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     // Verify doctor belongs to this clinic via DoctorClinic junction table
@@ -64,10 +58,7 @@ export async function DELETE(
     });
 
     if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
-      return NextResponse.json(
-        { error: 'Doctor no encontrado en esta clínica' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Doctor no encontrado en esta clínica' }, { status: 404 });
     }
 
     // Check if assignment exists
@@ -97,15 +88,9 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json(
-      { message: 'Doctor removido exitosamente' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Doctor removido exitosamente' }, { status: 200 });
   } catch (err) {
     console.error('Error removing doctor from assistant:', err);
-    return NextResponse.json(
-      { error: 'Error al remover doctor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al remover doctor' }, { status: 500 });
   }
 }

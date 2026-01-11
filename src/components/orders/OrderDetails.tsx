@@ -6,7 +6,11 @@ interface OrderDetailsProps {
   showDoctorInfo?: boolean;
 }
 
-export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = false }: OrderDetailsProps) {
+export function OrderDetails({
+  order,
+  showClinicInfo = true,
+  showDoctorInfo = false,
+}: OrderDetailsProps) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
@@ -30,7 +34,9 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {order.fechaEntregaDeseada && (
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Fecha de Entrega Deseada</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Fecha de Entrega Deseada
+              </dt>
               <dd className="mt-1 text-sm text-foreground">
                 {new Date(order.fechaEntregaDeseada).toLocaleDateString('es-ES')}
               </dd>
@@ -166,15 +172,21 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Marca del Implante</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.informacionImplante.marcaImplante}</dd>
+              <dd className="mt-1 text-sm text-foreground">
+                {order.informacionImplante.marcaImplante}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Sistema de Conexión</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.informacionImplante.sistemaConexion}</dd>
+              <dd className="mt-1 text-sm text-foreground">
+                {order.informacionImplante.sistemaConexion}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Número de Implantes</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.informacionImplante.numeroImplantes}</dd>
+              <dd className="mt-1 text-sm text-foreground">
+                {order.informacionImplante.numeroImplantes}
+              </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
@@ -195,7 +207,9 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Condición de Tejido Blando</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Condición de Tejido Blando
+              </dt>
               <dd className="mt-1 text-sm text-foreground capitalize">
                 {order.informacionImplante.condicionTejidoBlando}
               </dd>
@@ -216,14 +230,18 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Espacio Interoclusal Suficiente</dt>
+              <dt className="text-sm font-medium text-muted-foreground">
+                Espacio Interoclusal Suficiente
+              </dt>
               <dd className="mt-1 text-sm text-foreground">
                 {order.oclusionDiseno.espacioInteroclusalSuficiente ? 'Sí' : 'No'}
               </dd>
             </div>
             {order.oclusionDiseno.solucionEspacioInsuficiente && (
               <div>
-                <dt className="text-sm font-medium text-muted-foreground">Solución para Espacio Insuficiente</dt>
+                <dt className="text-sm font-medium text-muted-foreground">
+                  Solución para Espacio Insuficiente
+                </dt>
                 <dd className="mt-1 text-sm text-foreground capitalize">
                   {order.oclusionDiseno.solucionEspacioInsuficiente.replace(/_/g, ' ')}
                 </dd>
@@ -258,12 +276,16 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
             )}
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Mamelones</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">{order.colorInfo.mamelones}</dd>
+              <dd className="mt-1 text-sm text-foreground capitalize">
+                {order.colorInfo.mamelones}
+              </dd>
             </div>
             {order.colorInfo.texture && order.colorInfo.texture.length > 0 && (
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Textura</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.colorInfo.texture.join(', ')}</dd>
+                <dd className="mt-1 text-sm text-foreground">
+                  {order.colorInfo.texture.join(', ')}
+                </dd>
               </div>
             )}
             {order.colorInfo.gloss && order.colorInfo.gloss.length > 0 && (
@@ -287,13 +309,14 @@ export function OrderDetails({ order, showClinicInfo = true, showDoctorInfo = fa
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
           <h2 className="text-xl font-bold text-foreground mb-4">Material Enviado</h2>
           <dl className="grid grid-cols-1 gap-2">
-            {Object.entries(order.materialSent).map(([key, value]) => (
-              value && (
-                <div key={key} className="flex items-center">
-                  <dd className="text-sm text-foreground">✓ {key.replace(/_/g, ' ')}</dd>
-                </div>
-              )
-            ))}
+            {Object.entries(order.materialSent).map(
+              ([key, value]) =>
+                value && (
+                  <div key={key} className="flex items-center">
+                    <dd className="text-sm text-foreground">✓ {key.replace(/_/g, ' ')}</dd>
+                  </div>
+                )
+            )}
           </dl>
         </div>
       )}

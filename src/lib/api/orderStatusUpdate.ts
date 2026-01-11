@@ -153,10 +153,9 @@ export async function updateOrderStatus({
       ]);
 
       // Prepare recipients (doctor + all assistants)
-      const recipients = [
-        doctor,
-        ...doctorAssistants.map((da) => da.assistant),
-      ].filter((r): r is NonNullable<typeof r> => !!r);
+      const recipients = [doctor, ...doctorAssistants.map((da) => da.assistant)].filter(
+        (r): r is NonNullable<typeof r> => !!r
+      );
 
       if (recipients.length > 0) {
         const alertMessage = `Se requiere información adicional para la orden #${updatedOrder.orderNumber} del paciente ${updatedOrder.patientName}`;

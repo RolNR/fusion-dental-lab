@@ -119,9 +119,7 @@ export function UserMenu({ basePath, isMobile = false, onClose }: UserMenuProps)
             <p className="text-sm font-semibold text-foreground truncate">
               {session.user.name || 'Usuario'}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {session.user.email}
-            </p>
+            <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
           </div>
 
           {/* Menu Items */}
@@ -139,11 +137,7 @@ export function UserMenu({ basePath, isMobile = false, onClose }: UserMenuProps)
           {/* Logout Section */}
           <div className="border-t border-border pt-1">
             <div className="px-4 py-2">
-              <LogoutButton
-                variant="ghost"
-                showIcon={true}
-                className="w-full justify-start"
-              />
+              <LogoutButton variant="ghost" showIcon={true} className="w-full justify-start" />
             </div>
           </div>
         </div>

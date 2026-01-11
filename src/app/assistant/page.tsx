@@ -35,11 +35,7 @@ export default function AssistantDashboard() {
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Use the new custom hook for alerts
-  const {
-    alerts,
-    loading: alertsLoading,
-    setAlerts,
-  } = useAlerts({ role: Role.CLINIC_ASSISTANT });
+  const { alerts, loading: alertsLoading, setAlerts } = useAlerts({ role: Role.CLINIC_ASSISTANT });
 
   // Use the alert actions hook
   const { handleMarkAsRead, handleDeleteAlert } = useAlertActions({
@@ -66,10 +62,17 @@ export default function AssistantDashboard() {
 
       const newStats = {
         total: fetchedOrders.length,
-        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT).length,
-        submitted: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW).length,
-        inProgress: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS).length,
-        completed: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.COMPLETED).length,
+        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT)
+          .length,
+        submitted: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW
+        ).length,
+        inProgress: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS
+        ).length,
+        completed: fetchedOrders.filter(
+          (o: OrderWithRelations) => o.status === OrderStatus.COMPLETED
+        ).length,
       };
 
       setStats(newStats);
@@ -102,16 +105,8 @@ export default function AssistantDashboard() {
         </div>
 
         <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-          <StatsCard
-            title="Total Órdenes"
-            value={stats.total}
-            description="Todas las órdenes"
-          />
-          <StatsCard
-            title="Borradores"
-            value={stats.draft}
-            description="En edición"
-          />
+          <StatsCard title="Total Órdenes" value={stats.total} description="Todas las órdenes" />
+          <StatsCard title="Borradores" value={stats.draft} description="En edición" />
           <StatsCard
             title="En Proceso"
             value={stats.submitted + stats.inProgress}
@@ -141,19 +136,13 @@ export default function AssistantDashboard() {
                 </Link>
               </div>
               <div className="overflow-x-auto">
-                <OrdersTable
-                  orders={orders}
-                  baseUrl="/assistant/orders"
-                  showDoctorColumn={true}
-                />
+                <OrdersTable orders={orders} baseUrl="/assistant/orders" showDoctorColumn={true} />
               </div>
               {orders.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground p-4">
                   <p className="mb-4">No hay órdenes aún</p>
                   <Link href="/assistant/orders/new">
-                    <Button variant="primary">
-                      Crear Primera Orden
-                    </Button>
+                    <Button variant="primary">Crear Primera Orden</Button>
                   </Link>
                 </div>
               )}

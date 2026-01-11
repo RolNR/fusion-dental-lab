@@ -109,10 +109,7 @@ export async function POST(
     return NextResponse.json({ file }, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error processing upload:', err);

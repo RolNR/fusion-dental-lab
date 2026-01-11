@@ -12,12 +12,7 @@ const createUserSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-  role: z.enum([
-    'LAB_COLLABORATOR',
-    'CLINIC_ADMIN',
-    'DOCTOR',
-    'CLINIC_ASSISTANT',
-  ]),
+  role: z.enum(['LAB_COLLABORATOR', 'CLINIC_ADMIN', 'DOCTOR', 'CLINIC_ASSISTANT']),
   clinicId: z.string().optional(), // Required for clinic users
 });
 
@@ -38,10 +33,7 @@ export async function GET(request: NextRequest) {
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Get query params for filtering
@@ -130,10 +122,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ users }, { status: 200 });
   } catch (error) {
     console.error('Error fetching users:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener usuarios' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener usuarios' }, { status: 500 });
   }
 }
 
@@ -154,10 +143,7 @@ export async function POST(request: NextRequest) {
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Parse and validate request body
@@ -170,18 +156,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'Ya existe un usuario con ese email' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Ya existe un usuario con ese email' }, { status: 409 });
     }
 
     // Validate clinic requirement for clinic roles
-    if (
-      ['CLINIC_ADMIN', 'DOCTOR', 'CLINIC_ASSISTANT'].includes(
-        validatedData.role
-      )
-    ) {
+    if (['CLINIC_ADMIN', 'DOCTOR', 'CLINIC_ASSISTANT'].includes(validatedData.role)) {
       if (!validatedData.clinicId) {
         return NextResponse.json(
           { error: 'clinicId es requerido para usuarios de clínica' },
@@ -317,9 +296,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating user:', error);
-    return NextResponse.json(
-      { error: 'Error al crear usuario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 });
   }
 }

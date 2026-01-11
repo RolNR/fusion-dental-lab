@@ -35,7 +35,10 @@ export async function DELETE(
     }
 
     // Only allow deletion if order is DRAFT or NEEDS_INFO
-    if (result.order!.status !== OrderStatus.DRAFT && result.order!.status !== OrderStatus.NEEDS_INFO) {
+    if (
+      result.order!.status !== OrderStatus.DRAFT &&
+      result.order!.status !== OrderStatus.NEEDS_INFO
+    ) {
       return NextResponse.json(
         { error: 'Solo puedes eliminar archivos en órdenes con estado DRAFT o NEEDS_INFO' },
         { status: 403 }

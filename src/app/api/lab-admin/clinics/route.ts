@@ -31,10 +31,7 @@ export async function GET(request: NextRequest) {
     // Get laboratory ID from session
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Fetch all clinics for this laboratory
@@ -60,10 +57,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ clinics }, { status: 200 });
   } catch (error) {
     console.error('Error fetching clinics:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener clínicas' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener clínicas' }, { status: 500 });
   }
 }
 
@@ -85,10 +79,7 @@ export async function POST(request: NextRequest) {
     // Get laboratory ID from session
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Parse and validate request body
@@ -140,9 +131,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating clinic:', error);
-    return NextResponse.json(
-      { error: 'Error al crear clínica' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear clínica' }, { status: 500 });
   }
 }

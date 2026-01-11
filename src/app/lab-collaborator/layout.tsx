@@ -8,11 +8,7 @@ export const metadata = {
   description: 'Panel de colaborador del laboratorio',
 };
 
-export default async function LabCollaboratorLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function LabCollaboratorLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAuth();
 
   // Only LAB_COLLABORATOR can access this area

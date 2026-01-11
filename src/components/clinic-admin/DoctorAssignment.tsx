@@ -103,9 +103,7 @@ export function DoctorAssignment({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-border bg-background p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">
-          Doctores Asignados
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Doctores Asignados</h3>
         <p className="text-sm text-muted-foreground">Cargando doctores...</p>
       </div>
     );
@@ -114,19 +112,13 @@ export function DoctorAssignment({
   return (
     <div className="rounded-lg border border-border bg-background p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground">
-          Doctores Asignados
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">Doctores Asignados</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Selecciona los doctores con los que este asistente puede trabajar
         </p>
       </div>
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-danger/10 p-3 text-sm text-danger">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-lg bg-danger/10 p-3 text-sm text-danger">{error}</div>}
 
       {success && (
         <div className="mb-4 rounded-lg bg-success/10 p-3 text-sm text-success">
@@ -135,9 +127,7 @@ export function DoctorAssignment({
       )}
 
       {allDoctors.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No hay doctores disponibles en esta clínica
-        </p>
+        <p className="text-sm text-muted-foreground">No hay doctores disponibles en esta clínica</p>
       ) : (
         <>
           <div className="space-y-2 mb-4">
@@ -153,9 +143,7 @@ export function DoctorAssignment({
                   className="mt-0.5"
                 />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {doctor.name}
-                  </p>
+                  <p className="text-sm font-medium text-foreground">{doctor.name}</p>
                   <p className="text-xs text-muted-foreground">{doctor.email}</p>
                 </div>
                 {assignedDoctorIds.has(doctor.id) && (

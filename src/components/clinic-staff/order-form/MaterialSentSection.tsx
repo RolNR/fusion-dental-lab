@@ -1,6 +1,7 @@
 'use client';
 
 import { Checkbox } from '@/components/ui/Checkbox';
+import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
 type MaterialSentSectionProps = {
   materialSent?: Record<string, boolean>;
@@ -21,11 +22,7 @@ const COMMON_MATERIALS = [
   { key: 'radiografia', label: 'Radiografía' },
 ];
 
-export function MaterialSentSection({
-  materialSent,
-  onChange,
-  errors,
-}: MaterialSentSectionProps) {
+export function MaterialSentSection({ materialSent, onChange, errors }: MaterialSentSectionProps) {
   const handleMaterialToggle = (key: string, checked: boolean) => {
     const updated = {
       ...materialSent,
@@ -38,33 +35,35 @@ export function MaterialSentSection({
     }
 
     // If no materials selected, set to undefined
-    const hasAnySelected = Object.values(updated).some(v => v === true);
+    const hasAnySelected = Object.values(updated).some((v) => v === true);
     onChange(hasAnySelected ? updated : undefined);
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-foreground mb-4">
-        Materiales Enviados
-      </h3>
-      <p className="text-sm text-muted-foreground -mt-2 mb-4">
-        Marca los materiales que se están enviando al laboratorio
-      </p>
+    <SectionContainer>
+      <SectionHeader
+        icon="upload"
+        title="Materiales Enviados"
+        description="Marca los materiales que se están enviando al laboratorio"
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {COMMON_MATERIALS.map((material) => (
-          <Checkbox
-            key={material.key}
-            label={material.label}
-            checked={materialSent?.[material.key] === true}
-            onChange={(e) => handleMaterialToggle(material.key, e.target.checked)}
-          />
-        ))}
+      <div className="space-y-4 p-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {COMMON_MATERIALS.map((material) => (
+            <div key={material.key} className="rounded-lg border border-border bg-muted/30 p-3">
+              <Checkbox
+                label={material.label}
+                checked={materialSent?.[material.key] === true}
+                onChange={(e) => handleMaterialToggle(material.key, e.target.checked)}
+              />
+            </div>
+          ))}
+        </div>
+
+        {errors?.materialSent && (
+          <p className="mt-2 text-sm text-danger font-medium">{errors.materialSent}</p>
+        )}
       </div>
-
-      {errors?.materialSent && (
-        <p className="mt-2 text-sm text-danger font-medium">{errors.materialSent}</p>
-      )}
-    </div>
+    </SectionContainer>
   );
 }

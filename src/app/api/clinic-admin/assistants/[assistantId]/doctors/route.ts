@@ -28,10 +28,7 @@ export async function POST(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Verify assistant belongs to this clinic
@@ -44,10 +41,7 @@ export async function POST(
     });
 
     if (!assistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -72,10 +66,7 @@ export async function POST(
     });
 
     if (!doctorMembership || doctorMembership.doctor.role !== Role.DOCTOR) {
-      return NextResponse.json(
-        { error: 'Doctor no encontrado en esta clínica' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Doctor no encontrado en esta clínica' }, { status: 404 });
     }
 
     // Check if assignment already exists
@@ -103,22 +94,13 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(
-      { message: 'Doctor asignado exitosamente' },
-      { status: 201 }
-    );
+    return NextResponse.json({ message: 'Doctor asignado exitosamente' }, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error assigning doctor to assistant:', err);
-    return NextResponse.json(
-      { error: 'Error al asignar doctor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al asignar doctor' }, { status: 500 });
   }
 }

@@ -44,10 +44,7 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
       });
 
       if (!accessCheck.hasAccess) {
-        return NextResponse.json(
-          { error: accessCheck.error },
-          { status: accessCheck.statusCode }
-        );
+        return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
       }
 
       // Update order status to PENDING_REVIEW
@@ -68,10 +65,7 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
       return NextResponse.json(updateResult.order);
     } catch (error) {
       console.error('Error submitting order:', error);
-      return NextResponse.json(
-        { error: 'Error al enviar la orden' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Error al enviar la orden' }, { status: 500 });
     }
   };
 }

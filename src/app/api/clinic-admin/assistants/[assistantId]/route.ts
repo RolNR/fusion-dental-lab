@@ -35,10 +35,7 @@ export async function GET(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Fetch assistant with assigned doctors
@@ -69,19 +66,13 @@ export async function GET(
     });
 
     if (!assistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json({ assistant }, { status: 200 });
   } catch (error) {
     console.error('Error fetching assistant:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener asistente' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener asistente' }, { status: 500 });
   }
 }
 
@@ -106,10 +97,7 @@ export async function PATCH(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Verify assistant belongs to this clinic
@@ -122,10 +110,7 @@ export async function PATCH(
     });
 
     if (!existingAssistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     // Parse and validate request body
@@ -139,10 +124,7 @@ export async function PATCH(
       });
 
       if (emailInUse) {
-        return NextResponse.json(
-          { error: 'El email ya está en uso' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'El email ya está en uso' }, { status: 400 });
       }
     }
 
@@ -197,10 +179,7 @@ export async function PATCH(
     }
 
     console.error('Error updating assistant:', error);
-    return NextResponse.json(
-      { error: 'Error al actualizar asistente' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar asistente' }, { status: 500 });
   }
 }
 
@@ -225,10 +204,7 @@ export async function DELETE(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Verify assistant belongs to this clinic
@@ -241,10 +217,7 @@ export async function DELETE(
     });
 
     if (!existingAssistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     // Delete assistant
@@ -252,15 +225,9 @@ export async function DELETE(
       where: { id: assistantId },
     });
 
-    return NextResponse.json(
-      { message: 'Asistente eliminado exitosamente' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Asistente eliminado exitosamente' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting assistant:', error);
-    return NextResponse.json(
-      { error: 'Error al eliminar asistente' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar asistente' }, { status: 500 });
   }
 }

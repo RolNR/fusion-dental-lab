@@ -14,12 +14,8 @@ export default function NewAssistantPage() {
         >
           ← Volver a Asistentes
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Nuevo Asistente
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Crea un nuevo asistente para la clínica
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Nuevo Asistente</h1>
+        <p className="mt-2 text-muted-foreground">Crea un nuevo asistente para la clínica</p>
       </div>
 
       {/* Form */}

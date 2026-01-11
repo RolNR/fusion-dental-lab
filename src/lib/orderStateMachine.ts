@@ -101,10 +101,7 @@ const ROLE_TRANSITIONS: Record<Role, Record<OrderStatus, OrderStatus[]>> = {
 /**
  * Check if a state transition is valid regardless of user role
  */
-export function isValidTransition(
-  currentStatus: OrderStatus,
-  newStatus: OrderStatus
-): boolean {
+export function isValidTransition(currentStatus: OrderStatus, newStatus: OrderStatus): boolean {
   const allowedTransitions = STATE_TRANSITIONS[currentStatus];
   return allowedTransitions.includes(newStatus);
 }
@@ -142,10 +139,7 @@ export function getValidNextStates(currentStatus: OrderStatus): OrderStatus[] {
 /**
  * Get all valid next states for a user with a given role
  */
-export function getValidNextStatesForRole(
-  role: Role,
-  currentStatus: OrderStatus
-): OrderStatus[] {
+export function getValidNextStatesForRole(role: Role, currentStatus: OrderStatus): OrderStatus[] {
   const roleTransitions = ROLE_TRANSITIONS[role];
   if (!roleTransitions) {
     return [];

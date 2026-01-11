@@ -41,10 +41,7 @@ export function getStatusColor(status: OrderStatus): string {
 /**
  * Order statuses that can be edited
  */
-export const EDITABLE_STATUSES: OrderStatus[] = [
-  OrderStatus.DRAFT,
-  OrderStatus.NEEDS_INFO,
-];
+export const EDITABLE_STATUSES: OrderStatus[] = [OrderStatus.DRAFT, OrderStatus.NEEDS_INFO];
 
 /**
  * Check if an order with given status can be edited

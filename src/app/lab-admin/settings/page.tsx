@@ -15,9 +15,7 @@ export default async function LabAdminSettingsPage() {
       <div className="mx-auto max-w-3xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Configuración de Perfil</h1>
-          <p className="mt-2 text-muted-foreground">
-            Administra la información de tu cuenta
-          </p>
+          <p className="mt-2 text-muted-foreground">Administra la información de tu cuenta</p>
         </div>
 
         <ProfileSettingsForm user={session.user} />

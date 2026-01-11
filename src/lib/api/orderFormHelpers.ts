@@ -29,11 +29,7 @@ interface OrderFiles {
 /**
  * Upload a single file to R2 via pre-signed URL
  */
-async function uploadFileToR2(
-  orderId: string,
-  file: File,
-  category: string
-): Promise<void> {
+async function uploadFileToR2(orderId: string, file: File, category: string): Promise<void> {
   const mimeType = getFileMimeType(file);
 
   // Step 1: Get pre-signed URL
@@ -90,10 +86,7 @@ async function uploadFileToR2(
 /**
  * Upload files to R2 after order creation
  */
-async function uploadFilesToR2(
-  orderId: string,
-  files: OrderFiles
-): Promise<void> {
+async function uploadFilesToR2(orderId: string, files: OrderFiles): Promise<void> {
   const uploads: Promise<void>[] = [];
 
   if (files.upperFile) {
@@ -139,7 +132,9 @@ export async function createOrder(
     } catch (err) {
       // Files failed to upload, but order was created
       console.error('Error uploading files:', err);
-      throw new Error('Orden creada pero error al subir archivos. Por favor, añade los archivos desde la vista de detalle.');
+      throw new Error(
+        'Orden creada pero error al subir archivos. Por favor, añade los archivos desde la vista de detalle.'
+      );
     }
   }
 
@@ -174,7 +169,9 @@ export async function updateOrder(
     } catch (err) {
       // Files failed to upload, but order was updated
       console.error('Error uploading files:', err);
-      throw new Error('Orden actualizada pero error al subir archivos. Por favor, añade los archivos desde la vista de detalle.');
+      throw new Error(
+        'Orden actualizada pero error al subir archivos. Por favor, añade los archivos desde la vista de detalle.'
+      );
     }
   }
 }
@@ -182,10 +179,7 @@ export async function updateOrder(
 /**
  * Submit an order for review
  */
-export async function submitOrderForReview(
-  role: RoleType,
-  orderId: string
-): Promise<void> {
+export async function submitOrderForReview(role: RoleType, orderId: string): Promise<void> {
   const response = await fetch(buildOrderSubmitPath(role, orderId), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

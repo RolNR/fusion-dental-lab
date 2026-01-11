@@ -8,11 +8,7 @@ export const metadata = {
   description: 'Panel de administración del laboratorio',
 };
 
-export default async function LabAdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function LabAdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireAuth();
 
   // Only LAB_ADMIN can access this area

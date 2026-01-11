@@ -35,11 +35,7 @@ export default withAuth(
     }
 
     // Redirect doctors with active clinic away from clinic selection page
-    if (
-      token?.role === Role.DOCTOR &&
-      token?.activeClinicId &&
-      path === '/doctor/select-clinic'
-    ) {
+    if (token?.role === Role.DOCTOR && token?.activeClinicId && path === '/doctor/select-clinic') {
       return NextResponse.redirect(new URL('/doctor', req.url));
     }
 

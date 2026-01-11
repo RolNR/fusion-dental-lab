@@ -29,9 +29,7 @@ export function CopyableField({ label, value, placeholder = '-' }: CopyableField
 
   return (
     <div>
-      <dt className="text-sm font-medium text-muted-foreground">
-        {label}
-      </dt>
+      <dt className="text-sm font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-1 text-sm text-foreground flex items-center gap-2">
         <span>{displayValue}</span>
         {showCopyButton && (
@@ -42,11 +40,7 @@ export function CopyableField({ label, value, placeholder = '-' }: CopyableField
             title={`Copiar ${label.toLowerCase()}`}
             className="p-1 h-auto min-h-0"
           >
-            {copied ? (
-              <Icons.check size={16} />
-            ) : (
-              <Icons.copy size={16} />
-            )}
+            {copied ? <Icons.check size={16} /> : <Icons.copy size={16} />}
           </Button>
         )}
       </dd>

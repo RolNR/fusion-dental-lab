@@ -77,9 +77,7 @@ export default function AssistantDetailPage() {
             </Link>
           </div>
           <h1 className="text-3xl font-bold text-foreground">{assistant.name}</h1>
-          <p className="mt-2 text-muted-foreground">
-            Detalles del asistente
-          </p>
+          <p className="mt-2 text-muted-foreground">Detalles del asistente</p>
         </div>
         <Link href={`/clinic-admin/assistants/${assistantId}/edit`}>
           <Button variant="primary">Editar Asistente</Button>
@@ -88,9 +86,7 @@ export default function AssistantDetailPage() {
 
       {/* Assistant Information */}
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <h2 className="mb-6 text-xl font-semibold text-foreground">
-          Información del Asistente
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-foreground">Información del Asistente</h2>
         <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Nombre</dt>

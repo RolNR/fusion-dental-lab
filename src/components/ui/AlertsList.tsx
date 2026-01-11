@@ -47,7 +47,13 @@ const getStatusLabel = (status: AlertStatus) => {
   return labels[status];
 };
 
-export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, onDelete, loading }: AlertsListProps) {
+export function AlertsList({
+  alerts,
+  baseUrl = '/doctor/orders',
+  onMarkAsRead,
+  onDelete,
+  loading,
+}: AlertsListProps) {
   if (loading) {
     return (
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
@@ -61,9 +67,7 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, o
     return (
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
         <h2 className="text-xl font-bold text-foreground mb-4">Alertas</h2>
-        <div className="text-center text-muted-foreground py-8">
-          No tienes alertas pendientes
-        </div>
+        <div className="text-center text-muted-foreground py-8">No tienes alertas pendientes</div>
       </div>
     );
   }
@@ -72,9 +76,9 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, o
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-foreground">Alertas</h2>
-        {alerts.filter(a => a.status === 'UNREAD').length > 0 && (
+        {alerts.filter((a) => a.status === 'UNREAD').length > 0 && (
           <span className="rounded-full bg-warning px-2.5 py-0.5 text-xs font-semibold text-warning-foreground">
-            {alerts.filter(a => a.status === 'UNREAD').length} nuevas
+            {alerts.filter((a) => a.status === 'UNREAD').length} nuevas
           </span>
         )}
       </div>
@@ -93,9 +97,7 @@ export function AlertsList({ alerts, baseUrl = '/doctor/orders', onMarkAsRead, o
                 Orden #{alert.order.orderNumber}
               </Link>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium">
-                  {getStatusLabel(alert.status)}
-                </span>
+                <span className="text-xs font-medium">{getStatusLabel(alert.status)}</span>
                 {(alert.status === 'RESOLVED' || alert.status === 'READ') && onDelete && (
                   <Button
                     variant="ghost"

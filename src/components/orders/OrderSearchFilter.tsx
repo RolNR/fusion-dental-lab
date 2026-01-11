@@ -45,10 +45,7 @@ export function OrderSearchFilter({
 
       {/* Status filter */}
       <div className="w-full sm:w-64">
-        <Select
-          value={statusFilter}
-          onChange={(e) => onStatusChange(e.target.value)}
-        >
+        <Select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)}>
           {showAllStatus && <option value="">Todos los estados</option>}
           <option value="DRAFT">Borrador</option>
           <option value="PENDING_REVIEW">Pendiente Revisión</option>

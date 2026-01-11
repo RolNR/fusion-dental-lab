@@ -39,9 +39,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ alerts });
   } catch (err) {
     console.error('Error fetching alerts:', err);
-    return NextResponse.json(
-      { error: 'Error al cargar alertas' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cargar alertas' }, { status: 500 });
   }
 }

@@ -15,12 +15,8 @@ export default function NewCollaboratorPage() {
         >
           ← Volver a Colaboradores
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Nuevo Colaborador
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Crea un nuevo colaborador para el laboratorio
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Nuevo Colaborador</h1>
+        <p className="mt-2 text-muted-foreground">Crea un nuevo colaborador para el laboratorio</p>
       </div>
 
       {/* Form */}

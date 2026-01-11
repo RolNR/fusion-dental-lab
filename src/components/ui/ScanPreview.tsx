@@ -70,10 +70,7 @@ export function ScanPreview({ file, onClose }: ScanPreviewProps) {
 
   return (
     <div className="relative w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden border border-border">
-      <Canvas
-        camera={{ position: [0, 0, 100], fov: 50 }}
-        style={{ width: '100%', height: '100%' }}
-      >
+      <Canvas camera={{ position: [0, 0, 100], fov: 50 }} style={{ width: '100%', height: '100%' }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <directionalLight position={[-10, -10, -5]} intensity={0.3} />
@@ -89,9 +86,7 @@ export function ScanPreview({ file, onClose }: ScanPreviewProps) {
       </Canvas>
 
       <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border">
-        <p className="text-xs font-medium text-foreground">
-          Usa el mouse para rotar, zoom y mover
-        </p>
+        <p className="text-xs font-medium text-foreground">Usa el mouse para rotar, zoom y mover</p>
       </div>
 
       {onClose && (

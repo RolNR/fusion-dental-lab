@@ -69,9 +69,7 @@ export default function ClinicsPage() {
       accessor: (clinic) => (
         <div>
           <div className="text-sm font-medium text-foreground">{clinic.name}</div>
-          {clinic.address && (
-            <div className="text-sm text-muted-foreground">{clinic.address}</div>
-          )}
+          {clinic.address && <div className="text-sm text-muted-foreground">{clinic.address}</div>}
         </div>
       ),
     },
@@ -79,12 +77,8 @@ export default function ClinicsPage() {
       header: 'Contacto',
       accessor: (clinic) => (
         <div>
-          {clinic.email && (
-            <div className="text-sm text-foreground">{clinic.email}</div>
-          )}
-          {clinic.phone && (
-            <div className="text-sm text-muted-foreground">{clinic.phone}</div>
-          )}
+          {clinic.email && <div className="text-sm text-foreground">{clinic.email}</div>}
+          {clinic.phone && <div className="text-sm text-muted-foreground">{clinic.phone}</div>}
           {!clinic.email && !clinic.phone && (
             <span className="text-sm text-muted-foreground">-</span>
           )}
@@ -117,9 +111,7 @@ export default function ClinicsPage() {
       accessor: (clinic) => (
         <span
           className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-            clinic.isActive
-              ? 'bg-success/10 text-success'
-              : 'bg-danger/10 text-danger'
+            clinic.isActive ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'
           }`}
         >
           {clinic.isActive ? 'Activa' : 'Inactiva'}

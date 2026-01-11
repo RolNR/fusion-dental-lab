@@ -21,10 +21,7 @@ export async function GET() {
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Fetch clinic with counts
@@ -47,10 +44,7 @@ export async function GET() {
     });
 
     if (!clinic) {
-      return NextResponse.json(
-        { error: 'Clínica no encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 });
     }
 
     // Get order stats by status
@@ -64,18 +58,18 @@ export async function GET() {
 
     const stats = {
       clinic,
-      ordersByStatus: orderStats.reduce((acc, stat) => {
-        acc[stat.status] = stat._count;
-        return acc;
-      }, {} as Record<string, number>),
+      ordersByStatus: orderStats.reduce(
+        (acc, stat) => {
+          acc[stat.status] = stat._count;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
     };
 
     return NextResponse.json(stats, { status: 200 });
   } catch (error) {
     console.error('Error fetching clinic stats:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener estadísticas' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener estadísticas' }, { status: 500 });
   }
 }

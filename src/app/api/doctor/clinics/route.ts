@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         { isPrimary: 'desc' }, // Primary clinic first
-        { createdAt: 'asc' },  // Then by creation order
+        { createdAt: 'asc' }, // Then by creation order
       ],
     });
 
@@ -54,9 +54,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ clinics }, { status: 200 });
   } catch (error) {
     console.error('Error fetching doctor clinics:', error);
-    return NextResponse.json(
-      { error: 'Error al cargar clínicas' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cargar clínicas' }, { status: 500 });
   }
 }

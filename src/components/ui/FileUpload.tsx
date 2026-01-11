@@ -141,7 +141,7 @@ export function FileUpload({
 
     // Validate file extension
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    const acceptedExtensions = accept.split(',').map(ext => ext.trim().toLowerCase());
+    const acceptedExtensions = accept.split(',').map((ext) => ext.trim().toLowerCase());
 
     if (!acceptedExtensions.includes(fileExtension)) {
       setValidationError(`Tipo de archivo no válido. Se aceptan: ${accept}`);
@@ -235,82 +235,75 @@ export function FileUpload({
       )}
 
       {/* File selection / upload area */}
-      {uploadState !== 'uploading' && uploadState !== 'processing' && uploadState !== 'complete' && (
-        <>
-          {!value ? (
-            <div
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              className={`relative rounded-lg border-2 border-dashed transition-colors ${
-                dragActive
-                  ? 'border-primary bg-primary/5'
-                  : error || validationError
-                  ? 'border-danger bg-danger/5'
-                  : 'border-border bg-muted hover:border-primary/50'
-              }`}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept={accept}
-                onChange={handleChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                required={required}
-                disabled={false}
-              />
-              <div className="flex flex-col items-center justify-center px-6 py-8 text-center">
-                <Icons.upload className="h-10 w-10 text-muted-foreground mb-3" />
-                <p className="text-sm font-medium text-foreground mb-1">
-                  Arrastra el archivo aquí o haz clic para seleccionar
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {accept.toUpperCase()} (Máx. {maxSize}MB)
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="rounded-lg border border-border bg-background p-4">
-                <div className="flex items-start gap-3">
-                  <Icons.file className="h-10 w-10 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {value.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {formatFileSize(value.size)}
-                    </p>
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setShowPreview(!showPreview)}
-                    >
-                      <Icons.eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      size="sm"
-                      onClick={handleRemove}
-                    >
-                      <Icons.trash className="h-4 w-4" />
-                    </Button>
-                  </div>
+      {uploadState !== 'uploading' &&
+        uploadState !== 'processing' &&
+        uploadState !== 'complete' && (
+          <>
+            {!value ? (
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                className={`relative rounded-lg border-2 border-dashed transition-colors ${
+                  dragActive
+                    ? 'border-primary bg-primary/5'
+                    : error || validationError
+                      ? 'border-danger bg-danger/5'
+                      : 'border-border bg-muted hover:border-primary/50'
+                }`}
+              >
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept={accept}
+                  onChange={handleChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  required={required}
+                  disabled={false}
+                />
+                <div className="flex flex-col items-center justify-center px-6 py-8 text-center">
+                  <Icons.upload className="h-10 w-10 text-muted-foreground mb-3" />
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    Arrastra el archivo aquí o haz clic para seleccionar
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {accept.toUpperCase()} (Máx. {maxSize}MB)
+                  </p>
                 </div>
               </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="rounded-lg border border-border bg-background p-4">
+                  <div className="flex items-start gap-3">
+                    <Icons.file className="h-10 w-10 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatFileSize(value.size)}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowPreview(!showPreview)}
+                      >
+                        <Icons.eye className="h-4 w-4" />
+                      </Button>
+                      <Button type="button" variant="danger" size="sm" onClick={handleRemove}>
+                        <Icons.trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
 
-              {showPreview && (
-                <ScanPreview file={value} onClose={() => setShowPreview(false)} />
-              )}
-            </div>
-          )}
-        </>
-      )}
+                {showPreview && <ScanPreview file={value} onClose={() => setShowPreview(false)} />}
+              </div>
+            )}
+          </>
+        )}
 
       {(error || validationError) && (
         <p className="text-sm text-danger">{error || validationError}</p>

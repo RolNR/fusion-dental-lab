@@ -107,12 +107,9 @@ export default function SelectClinicPage() {
         <div className="max-w-md w-full bg-background rounded-lg shadow-lg border border-border p-8">
           <div className="text-center">
             <Icons.alertCircle className="h-12 w-12 text-danger mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Sin clínicas asignadas
-            </h1>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Sin clínicas asignadas</h1>
             <p className="text-muted-foreground mb-6">
-              No tienes clínicas asignadas. Por favor, contacta al administrador del
-              laboratorio.
+              No tienes clínicas asignadas. Por favor, contacta al administrador del laboratorio.
             </p>
           </div>
         </div>
@@ -159,9 +156,7 @@ export default function SelectClinicPage() {
 
               {/* Clinic Info */}
               <div className="pr-10">
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {clinic.name}
-                </h3>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{clinic.name}</h3>
                 {clinic.isPrimary && (
                   <span className="inline-block text-xs font-medium bg-primary/20 text-primary px-3 py-1 rounded-full">
                     Clínica principal

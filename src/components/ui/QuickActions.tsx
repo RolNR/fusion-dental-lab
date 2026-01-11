@@ -13,7 +13,11 @@ interface QuickActionsProps {
   columns?: 1 | 2 | 3;
 }
 
-export function QuickActions({ title = 'Acciones Rápidas', actions, columns = 3 }: QuickActionsProps) {
+export function QuickActions({
+  title = 'Acciones Rápidas',
+  actions,
+  columns = 3,
+}: QuickActionsProps) {
   const gridCols = {
     1: 'grid-cols-1 gap-3',
     2: 'grid-cols-1 gap-3 sm:grid-cols-2',

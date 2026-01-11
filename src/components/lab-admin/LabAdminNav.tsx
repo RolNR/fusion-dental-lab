@@ -10,11 +10,6 @@ const navItems = [
 
 export function LabAdminNav() {
   return (
-    <NavBar
-      basePath="/lab-admin"
-      navItems={navItems}
-      roleLabel="Admin"
-      roleBadgeColor="primary"
-    />
+    <NavBar basePath="/lab-admin" navItems={navItems} roleLabel="Admin" roleBadgeColor="primary" />
   );
 }

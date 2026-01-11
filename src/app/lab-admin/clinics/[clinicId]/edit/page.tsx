@@ -61,12 +61,8 @@ export default function EditClinicPage() {
         >
           ← Volver a Detalles
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Editar Clínica
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Actualiza la información de {clinic.name}
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Editar Clínica</h1>
+        <p className="mt-2 text-muted-foreground">Actualiza la información de {clinic.name}</p>
       </div>
 
       {/* Form */}

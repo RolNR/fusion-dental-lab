@@ -31,10 +31,7 @@ export async function GET() {
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Fetch all doctors for this clinic via DoctorClinic junction table
@@ -63,10 +60,7 @@ export async function GET() {
     return NextResponse.json({ doctors }, { status: 200 });
   } catch (error) {
     console.error('Error fetching doctors:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener doctores' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener doctores' }, { status: 500 });
   }
 }
 
@@ -87,10 +81,7 @@ export async function POST(request: NextRequest) {
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Parse and validate request body
@@ -103,10 +94,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'El email ya está en uso' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'El email ya está en uso' }, { status: 400 });
     }
 
     // Hash password
@@ -166,9 +154,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating doctor:', error);
-    return NextResponse.json(
-      { error: 'Error al crear doctor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear doctor' }, { status: 500 });
   }
 }

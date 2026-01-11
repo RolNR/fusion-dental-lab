@@ -99,7 +99,7 @@ export function StatusChangeControl({
             label="Nuevo Estado"
             value={selectedStatus || ''}
             onChange={(e) => {
-              setSelectedStatus(e.target.value as OrderStatus || null);
+              setSelectedStatus((e.target.value as OrderStatus) || null);
               setError(null);
             }}
             disabled={isChanging}
@@ -169,7 +169,9 @@ export function StatusChangeControl({
           {requiresComment && comment && (
             <div className="rounded-lg bg-muted p-3 border border-border break-words">
               <p className="text-sm font-medium text-foreground mb-1">Comentario:</p>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{comment}</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                {comment}
+              </p>
             </div>
           )}
           <div className="flex flex-col sm:flex-row gap-3">

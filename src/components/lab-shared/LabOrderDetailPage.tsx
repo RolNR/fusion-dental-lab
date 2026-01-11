@@ -41,11 +41,7 @@ function CopyButton({ value, label }: CopyButtonProps) {
       title={`Copiar ${label}`}
       className="ml-2 p-1 h-auto min-h-0"
     >
-      {copied ? (
-        <Icons.check size={16} />
-      ) : (
-        <Icons.copy size={16} />
-      )}
+      {copied ? <Icons.check size={16} /> : <Icons.copy size={16} />}
     </Button>
   );
 }
@@ -109,10 +105,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
       {/* Header */}
       <div className="mb-8">
         <div className="mb-4">
-          <Link
-            href={backUrl}
-            className="text-sm text-primary hover:text-primary/80"
-          >
+          <Link href={backUrl} className="text-sm text-primary hover:text-primary/80">
             ← Volver a Órdenes
           </Link>
         </div>
@@ -143,28 +136,30 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
         <div className="lg:col-span-2 space-y-6">
           {/* Patient & Order Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Información de la Orden
-            </h2>
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Información de la Orden</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Nombre del Paciente" value={order.patientName} />
               <CopyableField label="ID del Paciente" value={order.patientId} />
               <CopyableField label="Fecha de Creación" value={formatDate(order.createdAt, true)} />
-              <CopyableField label="Última Actualización" value={formatDate(order.updatedAt, true)} />
+              <CopyableField
+                label="Última Actualización"
+                value={formatDate(order.updatedAt, true)}
+              />
             </dl>
           </div>
 
           {/* Dental Details */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Detalles Dentales
-            </h2>
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
               <CopyableField label="Material" value={order.material} />
               <CopyableField label="Marca del Material" value={order.materialBrand} />
               <CopyableField label="Color" value={order.color} />
-              <CopyableField label="Tipo de Escaneo" value={order.scanType ? getScanTypeLabel(order.scanType) : null} />
+              <CopyableField
+                label="Tipo de Escaneo"
+                value={order.scanType ? getScanTypeLabel(order.scanType) : null}
+              />
             </dl>
             {order.description && (
               <div className="mt-4">
@@ -199,9 +194,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
 
           {/* Clinic Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Clínica
-            </h2>
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Clínica</h2>
             <dl className="space-y-3">
               <CopyableField label="Nombre" value={order.clinic.name} />
               <CopyableField label="Email" value={order.clinic.email} />
@@ -212,9 +205,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
 
           {/* Doctor Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Doctor
-            </h2>
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Doctor</h2>
             <dl className="space-y-3">
               <CopyableField label="Nombre" value={order.doctor.name} />
               <CopyableField label="Email" value={order.doctor.email} />
@@ -223,9 +214,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
 
           {/* Created By Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">
-              Creado Por
-            </h2>
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Creado Por</h2>
             <dl className="space-y-3">
               <CopyableField label="Nombre" value={order.createdBy.name} />
               <CopyableField label="Email" value={order.createdBy.email} />

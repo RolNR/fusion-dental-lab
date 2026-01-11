@@ -30,9 +30,7 @@ export function Table<T>({
   if (data.length === 0) {
     return (
       <div className="rounded-xl bg-background p-12 text-center shadow-md border border-border">
-        <h3 className="text-lg font-semibold text-foreground mb-2">
-          {emptyMessage}
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground mb-2">{emptyMessage}</h3>
         {emptyAction && <div className="mt-6">{emptyAction}</div>}
       </div>
     );
@@ -67,9 +65,7 @@ export function Table<T>({
                   <span className="text-sm font-medium text-muted-foreground mr-4">
                     {column.mobileLabel || column.header}
                   </span>
-                  <div className="text-sm text-right flex-1">
-                    {content}
-                  </div>
+                  <div className="text-sm text-right flex-1">{content}</div>
                 </div>
               );
             })}

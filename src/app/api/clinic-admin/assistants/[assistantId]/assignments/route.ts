@@ -28,10 +28,7 @@ export async function PUT(
 
     const clinicId = session.user.clinicId;
     if (!clinicId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a una clínica' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a una clínica' }, { status: 400 });
     }
 
     // Verify assistant belongs to this clinic
@@ -44,10 +41,7 @@ export async function PUT(
     });
 
     if (!assistant) {
-      return NextResponse.json(
-        { error: 'Asistente no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Asistente no encontrado' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -100,16 +94,10 @@ export async function PUT(
     );
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error updating doctor assignments:', err);
-    return NextResponse.json(
-      { error: 'Error al actualizar asignaciones' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar asignaciones' }, { status: 500 });
   }
 }

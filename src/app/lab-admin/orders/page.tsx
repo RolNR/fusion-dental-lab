@@ -51,9 +51,7 @@ export default function OrdersPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="rounded-lg bg-danger/10 p-6 text-danger">
-          Error: {error}
-        </div>
+        <div className="rounded-lg bg-danger/10 p-6 text-danger">Error: {error}</div>
       </div>
     );
   }
@@ -63,9 +61,7 @@ export default function OrdersPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Órdenes</h1>
-        <p className="mt-2 text-muted-foreground">
-          Todas las órdenes del laboratorio
-        </p>
+        <p className="mt-2 text-muted-foreground">Todas las órdenes del laboratorio</p>
       </div>
 
       {/* Search and Filters */}

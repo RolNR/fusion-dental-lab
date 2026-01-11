@@ -13,7 +13,11 @@ interface DoctorAssignmentsProps {
   onUpdate: () => void;
 }
 
-export function DoctorAssignments({ assistantId, assignedDoctors, onUpdate }: DoctorAssignmentsProps) {
+export function DoctorAssignments({
+  assistantId,
+  assignedDoctors,
+  onUpdate,
+}: DoctorAssignmentsProps) {
   const [availableDoctors, setAvailableDoctors] = useState<Doctor[]>([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
@@ -82,20 +86,14 @@ export function DoctorAssignments({ assistantId, assignedDoctors, onUpdate }: Do
     }
   }
 
-  const assignedDoctorIds = assignedDoctors.map(ad => ad.doctor.id);
-  const unassignedDoctors = availableDoctors.filter(d => !assignedDoctorIds.includes(d.id));
+  const assignedDoctorIds = assignedDoctors.map((ad) => ad.doctor.id);
+  const unassignedDoctors = availableDoctors.filter((d) => !assignedDoctorIds.includes(d.id));
 
   return (
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-      <h2 className="mb-6 text-xl font-semibold text-foreground">
-        Doctores Asignados
-      </h2>
+      <h2 className="mb-6 text-xl font-semibold text-foreground">Doctores Asignados</h2>
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-danger/10 p-4 text-sm text-danger">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 rounded-lg bg-danger/10 p-4 text-sm text-danger">{error}</div>}
 
       {/* Assign new doctor */}
       {unassignedDoctors.length > 0 && (
@@ -127,9 +125,7 @@ export function DoctorAssignments({ assistantId, assignedDoctors, onUpdate }: Do
 
       {/* List of assigned doctors */}
       {assignedDoctors.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No hay doctores asignados a este asistente.
-        </p>
+        <p className="text-sm text-muted-foreground">No hay doctores asignados a este asistente.</p>
       ) : (
         <div className="space-y-3">
           {assignedDoctors.map(({ doctor }) => (
@@ -141,10 +137,7 @@ export function DoctorAssignments({ assistantId, assignedDoctors, onUpdate }: Do
                 <p className="font-medium text-foreground">{doctor.name}</p>
                 <p className="text-sm text-muted-foreground">{doctor.email}</p>
               </div>
-              <Button
-                variant="danger"
-                onClick={() => handleRemoveDoctor(doctor.id)}
-              >
+              <Button variant="danger" onClick={() => handleRemoveDoctor(doctor.id)}>
                 Remover
               </Button>
             </div>

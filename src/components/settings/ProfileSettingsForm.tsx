@@ -210,9 +210,7 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
                 label="Contraseña actual"
                 required
                 value={formData.currentPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, currentPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
                 error={errors.currentPassword}
                 placeholder="Tu contraseña actual"
               />
@@ -221,9 +219,7 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
                 label="Nueva contraseña"
                 required
                 value={formData.newPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, newPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
                 error={errors.newPassword}
                 placeholder="Mínimo 8 caracteres"
               />
@@ -232,9 +228,7 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
                 label="Confirmar nueva contraseña"
                 required
                 value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 error={errors.confirmPassword}
                 placeholder="Repite tu nueva contraseña"
               />

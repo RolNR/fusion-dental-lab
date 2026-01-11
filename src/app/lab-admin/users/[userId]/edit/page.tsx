@@ -76,12 +76,8 @@ export default function EditUserPage() {
         >
           ← Volver a Detalles
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Editar Usuario
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Actualiza la información de {user.name}
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Editar Usuario</h1>
+        <p className="mt-2 text-muted-foreground">Actualiza la información de {user.name}</p>
       </div>
 
       {/* Form */}

@@ -58,7 +58,7 @@ export function useAlerts({ role }: UseAlertsOptions) {
 
         // Add the new alert to the top of the list, preventing duplicates
         setAlerts((prevAlerts) => {
-          if (prevAlerts.some(a => a.id === newAlert.id)) {
+          if (prevAlerts.some((a) => a.id === newAlert.id)) {
             return prevAlerts;
           }
           return [newAlert, ...prevAlerts];
@@ -70,7 +70,6 @@ export function useAlerts({ role }: UseAlertsOptions) {
           'info',
           DEFAULT_TOAST_DURATION
         );
-
       } catch (e) {
         console.error('Failed to parse SSE event data:', e);
       }

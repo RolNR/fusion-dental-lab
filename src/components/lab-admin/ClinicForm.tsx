@@ -30,7 +30,13 @@ interface ErrorApiResponse {
   details?: Array<{ field: string; message: string }>;
 }
 
-export function ClinicForm({ initialData, clinicId, onSuccess, asModal = false, onCancel }: ClinicFormProps) {
+export function ClinicForm({
+  initialData,
+  clinicId,
+  onSuccess,
+  asModal = false,
+  onCancel,
+}: ClinicFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -46,9 +52,7 @@ export function ClinicForm({ initialData, clinicId, onSuccess, asModal = false, 
     setIsLoading(true);
 
     try {
-      const url = clinicId
-        ? `/api/lab-admin/clinics/${clinicId}`
-        : '/api/lab-admin/clinics';
+      const url = clinicId ? `/api/lab-admin/clinics/${clinicId}` : '/api/lab-admin/clinics';
       const method = clinicId ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {
@@ -99,9 +103,7 @@ export function ClinicForm({ initialData, clinicId, onSuccess, asModal = false, 
   const formContent = (
     <>
       {errors.general && (
-        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">
-          {errors.general}
-        </div>
+        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">{errors.general}</div>
       )}
 
       <Input
@@ -153,16 +155,12 @@ export function ClinicForm({ initialData, clinicId, onSuccess, asModal = false, 
           Cancelar
         </Button>
         <Button
-          type={asModal ? "button" : "submit"}
+          type={asModal ? 'button' : 'submit'}
           variant="primary"
           disabled={isLoading}
           onClick={asModal ? submitForm : undefined}
         >
-          {isLoading
-            ? 'Guardando...'
-            : clinicId
-              ? 'Actualizar Clínica'
-              : 'Crear Clínica'}
+          {isLoading ? 'Guardando...' : clinicId ? 'Actualizar Clínica' : 'Crear Clínica'}
         </Button>
       </div>
     </>

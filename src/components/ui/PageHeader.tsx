@@ -18,13 +18,9 @@ export function PageHeader({ title, description, action, children }: PageHeaderP
     <div className="mb-6 sm:mb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
-            {title}
-          </h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">{title}</h1>
           {description && (
-            <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-              {description}
-            </p>
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground">{description}</p>
           )}
         </div>
         {action && (

@@ -60,18 +60,12 @@ export async function POST(request: NextRequest) {
     const { prompt } = await request.json();
 
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      return NextResponse.json(
-        { error: 'El prompt es requerido' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'El prompt es requerido' }, { status: 400 });
     }
 
     // Check if Anthropic API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'API key de Anthropic no configurada' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'API key de Anthropic no configurada' }, { status: 500 });
     }
 
     // Initialize Anthropic client
@@ -93,9 +87,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Extract the text content from Claude's response
-    const responseText = message.content[0].type === 'text'
-      ? message.content[0].text
-      : '';
+    const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
 
     // Parse the JSON response
     let parsedData;
@@ -112,7 +104,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Error al procesar la respuesta de la IA',
-          details: responseText
+          details: responseText,
         },
         { status: 500 }
       );
@@ -122,13 +114,12 @@ export async function POST(request: NextRequest) {
       success: true,
       data: parsedData,
     });
-
   } catch (error) {
     console.error('Error in parse-ai-prompt:', error);
     return NextResponse.json(
       {
         error: 'Error al procesar el prompt con IA',
-        details: error instanceof Error ? error.message : 'Error desconocido'
+        details: error instanceof Error ? error.message : 'Error desconocido',
       },
       { status: 500 }
     );

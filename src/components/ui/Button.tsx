@@ -28,9 +28,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const widthStyles = fullWidth ? 'w-full' : '';
 
     const variantStyles = {
-      primary: 'bg-primary text-primary-foreground hover:bg-primary-hover focus:ring-primary shadow-sm hover:shadow-md',
-      secondary: 'bg-secondary/10 text-secondary hover:bg-secondary/20 focus:ring-secondary border border-border',
-      danger: 'bg-danger text-danger-foreground hover:bg-danger-hover focus:ring-danger shadow-sm hover:shadow-md',
+      primary:
+        'bg-primary text-primary-foreground hover:bg-primary-hover focus:ring-primary shadow-sm hover:shadow-md',
+      secondary:
+        'bg-secondary/10 text-secondary hover:bg-secondary/20 focus:ring-secondary border border-border',
+      danger:
+        'bg-danger text-danger-foreground hover:bg-danger-hover focus:ring-danger shadow-sm hover:shadow-md',
       ghost: 'bg-transparent text-foreground hover:bg-muted focus:ring-primary',
     };
 

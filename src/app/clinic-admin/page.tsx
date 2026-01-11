@@ -70,9 +70,7 @@ export default function ClinicAdminDashboard() {
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
           Panel de Administración de Clínica
         </h1>
-        <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-          {stats.clinic.name}
-        </p>
+        <p className="mt-2 text-sm sm:text-base text-muted-foreground">{stats.clinic.name}</p>
       </div>
 
       {/* Clinic Info */}

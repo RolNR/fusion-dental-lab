@@ -29,10 +29,7 @@ export async function GET(request: NextRequest) {
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Validate query parameters
@@ -93,9 +90,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders }, { status: 200 });
   } catch (error) {
     console.error('Error fetching orders:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener órdenes' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
   }
 }

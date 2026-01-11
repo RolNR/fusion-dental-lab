@@ -44,7 +44,13 @@ interface UpdateUserPayload {
   password?: string;
 }
 
-export function UserForm({ initialData, userId, roleFixed = false, initialClinicId, onSuccess }: UserFormProps) {
+export function UserForm({
+  initialData,
+  userId,
+  roleFixed = false,
+  initialClinicId,
+  onSuccess,
+}: UserFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -78,11 +84,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
   }, [fetchClinics]);
 
   const requiresClinic = (role: Role | '') => {
-    return (
-      role === 'CLINIC_ADMIN' ||
-      role === 'DOCTOR' ||
-      role === 'CLINIC_ASSISTANT'
-    );
+    return role === 'CLINIC_ADMIN' || role === 'DOCTOR' || role === 'CLINIC_ASSISTANT';
   };
 
   const getRoleDisplayName = (role: Role | ''): string => {
@@ -98,15 +100,18 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
     }
   };
 
-  const handleClinicCreated = useCallback(async (createdClinicId?: string) => {
-    setIsCreateClinicModalOpen(false);
-    // Refrescar lista de clínicas
-    await fetchClinics();
-    // Auto-seleccionar la clínica recién creada usando su ID
-    if (createdClinicId) {
-      setFormData(prevFormData => ({ ...prevFormData, clinicId: createdClinicId }));
-    }
-  }, [fetchClinics]);
+  const handleClinicCreated = useCallback(
+    async (createdClinicId?: string) => {
+      setIsCreateClinicModalOpen(false);
+      // Refrescar lista de clínicas
+      await fetchClinics();
+      // Auto-seleccionar la clínica recién creada usando su ID
+      if (createdClinicId) {
+        setFormData((prevFormData) => ({ ...prevFormData, clinicId: createdClinicId }));
+      }
+    },
+    [fetchClinics]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,9 +189,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors.general && (
-        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">
-          {errors.general}
-        </div>
+        <div className="rounded-md bg-danger/10 p-4 text-sm text-danger">{errors.general}</div>
       )}
 
       <Input
@@ -216,9 +219,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
           label="Rol"
           name="role"
           value={formData.role}
-          onChange={(e) =>
-            setFormData({ ...formData, role: e.target.value as Role })
-          }
+          onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
           error={errors.role}
           required
         >
@@ -232,12 +233,8 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
 
       {!userId && roleFixed && formData.role && (
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">
-            Rol
-          </label>
-          <p className="text-sm text-muted-foreground">
-            Colaborador del Laboratorio
-          </p>
+          <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
+          <p className="text-sm text-muted-foreground">Colaborador del Laboratorio</p>
         </div>
       )}
 
@@ -254,7 +251,8 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
                     No hay clínicas disponibles
                   </h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Para agregar un {getRoleDisplayName(formData.role)}, primero necesitas crear una clínica.
+                    Para agregar un {getRoleDisplayName(formData.role)}, primero necesitas crear una
+                    clínica.
                   </p>
                   {featureFlags.enableCreateClinicInUserForm && (
                     <Button
@@ -275,9 +273,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
                 label="Clínica"
                 name="clinicId"
                 value={formData.clinicId}
-                onChange={(e) =>
-                  setFormData({ ...formData, clinicId: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, clinicId: e.target.value })}
                 error={errors.clinicId}
                 required
               >
@@ -324,11 +320,7 @@ export function UserForm({ initialData, userId, roleFixed = false, initialClinic
           Cancelar
         </Button>
         <Button type="submit" variant="primary" disabled={isLoading}>
-          {isLoading
-            ? 'Guardando...'
-            : userId
-              ? 'Actualizar Usuario'
-              : 'Crear Usuario'}
+          {isLoading ? 'Guardando...' : userId ? 'Actualizar Usuario' : 'Crear Usuario'}
         </Button>
       </div>
 

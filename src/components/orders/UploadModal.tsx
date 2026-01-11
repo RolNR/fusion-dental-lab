@@ -46,12 +46,7 @@ export function UploadModal({ orderId, onClose }: UploadModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div className="relative w-full max-w-lg mx-4 rounded-lg border border-border bg-background p-6 shadow-lg">
         {/* Close button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="absolute top-4 right-4"
-        >
+        <Button variant="ghost" size="sm" onClick={onClose} className="absolute top-4 right-4">
           <Icons.x className="h-4 w-4" />
         </Button>
 

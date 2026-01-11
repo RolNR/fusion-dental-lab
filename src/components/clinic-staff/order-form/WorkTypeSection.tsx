@@ -1,8 +1,8 @@
 'use client';
 
 import { WorkType, RestorationType } from '@prisma/client';
-import { Radio } from '@/components/ui/Radio';
 import { Select } from '@/components/ui/Select';
+import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type WorkTypeSectionProps = {
   tipoTrabajo?: WorkType;
@@ -29,56 +29,72 @@ export function WorkTypeSection({
     }
   };
 
+  const workTypes = [
+    {
+      value: 'restauracion',
+      label: 'Restauración',
+      subtitle: 'Trabajo de restauración dental',
+      icon: 'settings' as const,
+    },
+    { value: 'otro', label: 'Otro', subtitle: 'Otro tipo de trabajo', icon: 'file' as const },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-lg font-semibold text-foreground mb-4">
-          Tipo de Trabajo
-        </h3>
+    <SectionContainer>
+      <SectionHeader
+        icon="settings"
+        title="Tipo de Trabajo"
+        description="Selecciona el tipo de trabajo a realizar"
+        required
+      />
 
-        {/* Work Type Radio Buttons */}
-        <div className="space-y-3">
-          <Radio
-            name="tipoTrabajo"
-            value="restauracion"
-            checked={tipoTrabajo === 'restauracion' || !tipoTrabajo}
-            onChange={(e) => handleTipoTrabajoChange(e.target.value as WorkType)}
-            label="Restauración"
-          />
-
-          <Radio
-            name="tipoTrabajo"
-            value="otro"
-            checked={tipoTrabajo === 'otro'}
-            onChange={(e) => handleTipoTrabajoChange(e.target.value as WorkType)}
-            label="Otro"
-          />
+      <div className="space-y-6 p-6">
+        {/* Work Type Selection */}
+        <div>
+          <FieldLabel label="Tipo de Trabajo" required />
+          <div className="grid grid-cols-2 gap-3">
+            {workTypes.map((type) => (
+              <ButtonCard
+                key={type.value}
+                icon={type.icon}
+                title={type.label}
+                subtitle={type.subtitle}
+                selected={
+                  tipoTrabajo === type.value || (!tipoTrabajo && type.value === 'restauracion')
+                }
+                onClick={() => handleTipoTrabajoChange(type.value as WorkType)}
+              />
+            ))}
+          </div>
+          {errors?.tipoTrabajo && (
+            <p className="mt-2 text-sm text-danger font-medium">{errors.tipoTrabajo}</p>
+          )}
         </div>
 
-        {errors?.tipoTrabajo && (
-          <p className="mt-2 text-sm text-danger font-medium">{errors.tipoTrabajo}</p>
+        {/* Restoration Type - Conditionally Rendered */}
+        {tipoTrabajo === 'restauracion' && (
+          <div className="rounded-lg border border-border bg-muted/30 p-4">
+            <Select
+              label="Tipo de Restauración"
+              value={tipoRestauracion || ''}
+              onChange={(e) =>
+                onChange({
+                  tipoRestauracion: (e.target.value || undefined) as RestorationType | undefined,
+                })
+              }
+              error={errors?.tipoRestauracion}
+            >
+              <option value="">Selecciona un tipo</option>
+              <option value="corona">Corona</option>
+              <option value="puente">Puente</option>
+              <option value="inlay">Inlay</option>
+              <option value="onlay">Onlay</option>
+              <option value="carilla">Carilla</option>
+              <option value="provisional">Provisional</option>
+            </Select>
+          </div>
         )}
       </div>
-
-      {/* Restoration Type - Conditionally Rendered */}
-      {tipoTrabajo === 'restauracion' && (
-        <div className="rounded-lg bg-muted p-4">
-          <Select
-            label="Tipo de Restauración"
-            value={tipoRestauracion || ''}
-            onChange={(e) => onChange({ tipoRestauracion: (e.target.value || undefined) as RestorationType | undefined })}
-            error={errors?.tipoRestauracion}
-          >
-            <option value="">Selecciona un tipo</option>
-            <option value="corona">Corona</option>
-            <option value="puente">Puente</option>
-            <option value="inlay">Inlay</option>
-            <option value="onlay">Onlay</option>
-            <option value="carilla">Carilla</option>
-            <option value="provisional">Provisional</option>
-          </Select>
-        </div>
-      )}
-    </div>
+    </SectionContainer>
   );
 }

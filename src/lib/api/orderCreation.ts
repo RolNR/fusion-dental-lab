@@ -52,7 +52,7 @@ export async function createOrderWithRetry(params: CreateOrderParams) {
         console.warn(lastError.message);
 
         // Small delay before retry to reduce collision probability
-        await new Promise(resolve => setTimeout(resolve, 50 * (attempt + 1)));
+        await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
         continue;
       }
 

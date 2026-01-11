@@ -43,11 +43,7 @@ const getClinicName = (user: UserWithClinic) => {
   }
 
   // For other roles
-  return (
-    user.clinic?.name ||
-    user.assistantClinic?.name ||
-    '-'
-  );
+  return user.clinic?.name || user.assistantClinic?.name || '-';
 };
 
 export default function UsersPage() {
@@ -59,9 +55,7 @@ export default function UsersPage() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const url = roleFilter
-          ? `/api/lab-admin/users?role=${roleFilter}`
-          : '/api/lab-admin/users';
+        const url = roleFilter ? `/api/lab-admin/users?role=${roleFilter}` : '/api/lab-admin/users';
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error('Error al cargar usuarios');
@@ -118,7 +112,11 @@ export default function UsersPage() {
       header: 'Clínica',
       accessor: (user) => {
         // For doctors: show all clinics with primary badge
-        if (user.role === Role.DOCTOR && user.clinicMemberships && user.clinicMemberships.length > 0) {
+        if (
+          user.role === Role.DOCTOR &&
+          user.clinicMemberships &&
+          user.clinicMemberships.length > 0
+        ) {
           return (
             <div className="flex flex-wrap gap-1">
               {user.clinicMemberships.map((membership) => (
@@ -131,9 +129,7 @@ export default function UsersPage() {
                   }`}
                 >
                   {membership.clinic.name}
-                  {membership.isPrimary && (
-                    <span className="text-[10px]">★</span>
-                  )}
+                  {membership.isPrimary && <span className="text-[10px]">★</span>}
                 </span>
               ))}
             </div>

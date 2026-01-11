@@ -66,12 +66,8 @@ export default function EditDoctorPage() {
         >
           ← Volver a Detalles
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Editar Doctor
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Actualiza la información de {doctor.name}
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Editar Doctor</h1>
+        <p className="mt-2 text-muted-foreground">Actualiza la información de {doctor.name}</p>
       </div>
 
       {/* Form */}

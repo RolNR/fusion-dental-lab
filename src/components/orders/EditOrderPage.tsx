@@ -49,10 +49,10 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">Editar Orden</h1>
-          <p className="mt-2 text-muted-foreground">
-            Orden #{order.orderNumber}
-          </p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
+            Editar Orden
+          </h1>
+          <p className="mt-2 text-muted-foreground">Orden #{order.orderNumber}</p>
         </div>
 
         {order.status === OrderStatus.NEEDS_INFO && order.comments && (

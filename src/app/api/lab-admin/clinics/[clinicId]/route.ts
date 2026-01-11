@@ -35,10 +35,7 @@ export async function GET(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Fetch clinic with full details
@@ -60,19 +57,13 @@ export async function GET(
     });
 
     if (!clinic) {
-      return NextResponse.json(
-        { error: 'Clínica no encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 });
     }
 
     return NextResponse.json({ clinic }, { status: 200 });
   } catch (error) {
     console.error('Error fetching clinic:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener clínica' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener clínica' }, { status: 500 });
   }
 }
 
@@ -97,10 +88,7 @@ export async function PATCH(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Verify clinic belongs to this laboratory
@@ -112,10 +100,7 @@ export async function PATCH(
     });
 
     if (!existingClinic) {
-      return NextResponse.json(
-        { error: 'Clínica no encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 });
     }
 
     // Parse and validate request body
@@ -161,10 +146,7 @@ export async function PATCH(
     }
 
     console.error('Error updating clinic:', error);
-    return NextResponse.json(
-      { error: 'Error al actualizar clínica' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar clínica' }, { status: 500 });
   }
 }
 
@@ -189,10 +171,7 @@ export async function DELETE(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Verify clinic belongs to this laboratory
@@ -204,10 +183,7 @@ export async function DELETE(
     });
 
     if (!existingClinic) {
-      return NextResponse.json(
-        { error: 'Clínica no encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Clínica no encontrada' }, { status: 404 });
     }
 
     // Soft delete by setting isActive to false
@@ -216,15 +192,9 @@ export async function DELETE(
       data: { isActive: false },
     });
 
-    return NextResponse.json(
-      { message: 'Clínica desactivada exitosamente' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Clínica desactivada exitosamente' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting clinic:', error);
-    return NextResponse.json(
-      { error: 'Error al eliminar clínica' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar clínica' }, { status: 500 });
   }
 }

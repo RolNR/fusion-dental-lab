@@ -68,14 +68,20 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           <OrderComments comments={order.comments} />
         )}
 
-        <OrderDetails order={order} showClinicInfo={!showDoctorInfo} showDoctorInfo={showDoctorInfo} />
+        <OrderDetails
+          order={order}
+          showClinicInfo={!showDoctorInfo}
+          showDoctorInfo={showDoctorInfo}
+        />
 
         {/* Files Section */}
         <div className="mt-6 rounded-xl bg-background p-6 shadow-md border border-border">
           <h2 className="text-xl font-bold text-foreground mb-4">Archivos Adjuntos</h2>
           <FileList
             orderId={orderId}
-            canDelete={order.status === OrderStatus.DRAFT || order.status === OrderStatus.NEEDS_INFO}
+            canDelete={
+              order.status === OrderStatus.DRAFT || order.status === OrderStatus.NEEDS_INFO
+            }
             onFileDeleted={() => refetch()}
             refreshTrigger={fileRefreshTrigger}
           />
@@ -127,7 +133,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             orderId={orderId}
             onClose={() => {
               setShowUploadModal(false);
-              setFileRefreshTrigger(prev => prev + 1);
+              setFileRefreshTrigger((prev) => prev + 1);
               refetch();
             }}
           />

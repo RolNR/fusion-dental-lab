@@ -166,9 +166,7 @@ export function ClinicSelector({ isMobile = false, onClose }: ClinicSelectorProp
             {clinic.isCurrent && <Icons.check className="h-5 w-5" />}
           </Button>
         ))}
-        {error && (
-          <div className="px-4 py-2 text-sm text-danger">{error}</div>
-        )}
+        {error && <div className="px-4 py-2 text-sm text-danger">{error}</div>}
       </div>
     );
   }

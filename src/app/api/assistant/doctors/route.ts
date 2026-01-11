@@ -27,14 +27,11 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const doctors = assignments.map(a => a.doctor);
+    const doctors = assignments.map((a) => a.doctor);
 
     return NextResponse.json({ doctors });
   } catch (error) {
     console.error('Error fetching assigned doctors:', error);
-    return NextResponse.json(
-      { error: 'Error al cargar doctores' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cargar doctores' }, { status: 500 });
   }
 }

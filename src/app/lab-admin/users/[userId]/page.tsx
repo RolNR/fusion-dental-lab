@@ -46,12 +46,7 @@ const getRoleLabel = (role: Role) => {
 };
 
 const getClinicName = (user: UserDetail) => {
-  return (
-    user.clinic?.name ||
-    user.doctorClinic?.name ||
-    user.assistantClinic?.name ||
-    null
-  );
+  return user.clinic?.name || user.doctorClinic?.name || user.assistantClinic?.name || null;
 };
 
 export default function UserDetailPage() {
@@ -107,17 +102,12 @@ export default function UserDetailPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <div className="mb-4">
-            <Link
-              href="/lab-admin/users"
-              className="text-sm text-primary hover:text-primary/80"
-            >
+            <Link href="/lab-admin/users" className="text-sm text-primary hover:text-primary/80">
               ← Volver a Usuarios
             </Link>
           </div>
           <h1 className="text-3xl font-bold text-foreground">{user.name}</h1>
-          <p className="mt-2 text-muted-foreground">
-            Detalles del usuario
-          </p>
+          <p className="mt-2 text-muted-foreground">Detalles del usuario</p>
         </div>
         <Link href={`/lab-admin/users/${userId}/edit`}>
           <Button variant="primary">Editar Usuario</Button>
@@ -133,9 +123,7 @@ export default function UserDetailPage() {
 
       {/* User Information */}
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-        <h2 className="mb-6 text-xl font-semibold text-foreground">
-          Información del Usuario
-        </h2>
+        <h2 className="mb-6 text-xl font-semibold text-foreground">Información del Usuario</h2>
         <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Nombre</dt>
@@ -147,9 +135,7 @@ export default function UserDetailPage() {
           </div>
           <div>
             <dt className="text-sm font-medium text-muted-foreground">Rol</dt>
-            <dd className="mt-1 text-sm text-foreground">
-              {getRoleLabel(user.role)}
-            </dd>
+            <dd className="mt-1 text-sm text-foreground">{getRoleLabel(user.role)}</dd>
           </div>
           {clinicName && (
             <div>

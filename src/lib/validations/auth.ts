@@ -18,7 +18,10 @@ const passwordSchema = z
 export const registerSchema = z.object({
   email: z.string().email('Correo electrónico inválido').toLowerCase(),
   password: passwordSchema,
-  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100, 'El nombre es demasiado largo'),
+  name: z
+    .string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(100, 'El nombre es demasiado largo'),
   role: z.nativeEnum(Role, {
     message: 'El rol debe ser DENTIST, LAB o ADMIN',
   }),

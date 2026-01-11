@@ -152,15 +152,13 @@ export default async function LabCollaboratorDashboard() {
       {/* Recent Orders */}
       <div className="rounded-xl bg-background p-4 sm:p-6 shadow-md border border-border">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-foreground">
-            Órdenes Recientes
-          </h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground">Órdenes Recientes</h2>
           <span className="text-sm text-muted-foreground">
             Mostrando últimas {orders.length} órdenes
           </span>
         </div>
         <OrdersTable
-          orders={orders.map(order => ({
+          orders={orders.map((order) => ({
             ...order,
             createdAt: order.createdAt.toISOString(),
           }))}

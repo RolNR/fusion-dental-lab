@@ -11,10 +11,7 @@ import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
 const updateUserSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').optional(),
   email: z.string().email('Email inválido').optional(),
-  password: z
-    .string()
-    .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .optional(),
+  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').optional(),
 });
 
 // GET /api/lab-admin/users/[userId] - Get specific user details
@@ -38,10 +35,7 @@ export async function GET(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Fetch user
@@ -108,19 +102,13 @@ export async function GET(
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
     console.error('Error fetching user:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener usuario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener usuario' }, { status: 500 });
   }
 }
 
@@ -145,10 +133,7 @@ export async function PATCH(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Verify user belongs to this laboratory
@@ -165,10 +150,7 @@ export async function PATCH(
     });
 
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     // Cannot edit LAB_ADMIN users
@@ -190,10 +172,7 @@ export async function PATCH(
       });
 
       if (emailExists) {
-        return NextResponse.json(
-          { error: 'Ya existe un usuario con ese email' },
-          { status: 409 }
-        );
+        return NextResponse.json({ error: 'Ya existe un usuario con ese email' }, { status: 409 });
       }
     }
 
@@ -241,10 +220,7 @@ export async function PATCH(
     }
 
     console.error('Error updating user:', error);
-    return NextResponse.json(
-      { error: 'Error al actualizar usuario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 });
   }
 }
 
@@ -269,10 +245,7 @@ export async function DELETE(
 
     const laboratoryId = session.user.laboratoryId;
     if (!laboratoryId) {
-      return NextResponse.json(
-        { error: 'Usuario no asociado a un laboratorio' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
     // Verify user belongs to this laboratory
@@ -289,10 +262,7 @@ export async function DELETE(
     });
 
     if (!existingUser) {
-      return NextResponse.json(
-        { error: 'Usuario no encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     // Cannot delete LAB_ADMIN users
@@ -308,15 +278,9 @@ export async function DELETE(
       where: { id: userId },
     });
 
-    return NextResponse.json(
-      { message: 'Usuario eliminado exitosamente' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Usuario eliminado exitosamente' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting user:', error);
-    return NextResponse.json(
-      { error: 'Error al eliminar usuario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 });
   }
 }

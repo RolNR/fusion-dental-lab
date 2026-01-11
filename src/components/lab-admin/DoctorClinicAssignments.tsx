@@ -134,15 +134,9 @@ export function DoctorClinicAssignments({
     <div className="rounded-lg border border-border bg-background p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">
-          Clínicas Asignadas
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">Clínicas Asignadas</h3>
         {!isEditing && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIsEditing(true)}
-          >
+          <Button variant="primary" size="sm" onClick={() => setIsEditing(true)}>
             Gestionar Clínicas
           </Button>
         )}
@@ -162,9 +156,7 @@ export function DoctorClinicAssignments({
       {!isEditing && (
         <div className="space-y-2">
           {initialMemberships.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No hay clínicas asignadas
-            </p>
+            <p className="text-sm text-muted-foreground">No hay clínicas asignadas</p>
           ) : (
             initialMemberships.map((membership) => (
               <div
@@ -190,8 +182,8 @@ export function DoctorClinicAssignments({
         <div className="space-y-4">
           {/* Instructions */}
           <p className="text-sm text-muted-foreground">
-            Selecciona las clínicas a las que pertenece este doctor. Marca una
-            como clínica principal usando el botón de radio.
+            Selecciona las clínicas a las que pertenece este doctor. Marca una como clínica
+            principal usando el botón de radio.
           </p>
 
           {/* Loading State */}
@@ -215,13 +207,9 @@ export function DoctorClinicAssignments({
                   >
                     <Checkbox
                       checked={isSelected}
-                      onChange={(e) =>
-                        handleToggleClinic(clinic.id, e.target.checked)
-                      }
+                      onChange={(e) => handleToggleClinic(clinic.id, e.target.checked)}
                     />
-                    <label className="flex-1 text-sm cursor-pointer">
-                      {clinic.name}
-                    </label>
+                    <label className="flex-1 text-sm cursor-pointer">{clinic.name}</label>
                     {isSelected && (
                       <>
                         <input
@@ -246,15 +234,11 @@ export function DoctorClinicAssignments({
 
           {/* Validation Messages */}
           {selectedClinicIds.size === 0 && (
-            <p className="text-sm text-danger">
-              Debes seleccionar al menos una clínica
-            </p>
+            <p className="text-sm text-danger">Debes seleccionar al menos una clínica</p>
           )}
 
           {selectedClinicIds.size > 0 && !primaryClinicId && (
-            <p className="text-sm text-warning">
-              Debes marcar una clínica como principal
-            </p>
+            <p className="text-sm text-warning">Debes marcar una clínica como principal</p>
           )}
 
           {/* Action Buttons */}
@@ -262,9 +246,7 @@ export function DoctorClinicAssignments({
             <Button
               variant="primary"
               onClick={handleSave}
-              disabled={
-                selectedClinicIds.size === 0 || !primaryClinicId || isSaving
-              }
+              disabled={selectedClinicIds.size === 0 || !primaryClinicId || isSaving}
               isLoading={isSaving}
             >
               Guardar Cambios

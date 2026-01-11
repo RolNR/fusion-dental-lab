@@ -32,17 +32,17 @@ export async function POST(
     });
 
     if (!accessCheck.hasAccess) {
-      return NextResponse.json(
-        { error: accessCheck.error },
-        { status: accessCheck.statusCode }
-      );
+      return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
     const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
 
     // Validate request body
     const commentSchema = z.object({
-      content: z.string().min(1, 'El comentario no puede estar vacío').max(2000, 'El comentario es demasiado largo'),
+      content: z
+        .string()
+        .min(1, 'El comentario no puede estar vacío')
+        .max(2000, 'El comentario es demasiado largo'),
       isInternal: z.boolean().optional().default(false),
     });
 
@@ -99,10 +99,7 @@ export async function POST(
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
     console.error('Error creating comment:', error);
-    return NextResponse.json(
-      { error: 'Error al crear el comentario' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear el comentario' }, { status: 500 });
   }
 }
 
@@ -132,14 +129,14 @@ export async function GET(
     });
 
     if (!accessCheck.hasAccess) {
-      return NextResponse.json(
-        { error: accessCheck.error },
-        { status: accessCheck.statusCode }
-      );
+      return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
     const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
-    const isClinicUser = userRole === Role.DOCTOR || userRole === Role.CLINIC_ASSISTANT || userRole === Role.CLINIC_ADMIN;
+    const isClinicUser =
+      userRole === Role.DOCTOR ||
+      userRole === Role.CLINIC_ASSISTANT ||
+      userRole === Role.CLINIC_ADMIN;
 
     // Fetch comments - exclude internal comments for clinic users
     const comments = await prisma.orderComment.findMany({
@@ -165,9 +162,6 @@ export async function GET(
     return NextResponse.json({ comments }, { status: 200 });
   } catch (error) {
     console.error('Error fetching comments:', error);
-    return NextResponse.json(
-      { error: 'Error al obtener los comentarios' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al obtener los comentarios' }, { status: 500 });
   }
 }

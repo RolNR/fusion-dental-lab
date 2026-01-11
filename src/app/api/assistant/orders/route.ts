@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const doctorIds = assignments.map(a => a.doctorId);
+    const doctorIds = assignments.map((a) => a.doctorId);
 
     // Validate query parameters
     const { searchParams } = new URL(request.url);
@@ -84,10 +84,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ orders });
   } catch (error) {
     console.error('Error fetching assistant orders:', error);
-    return NextResponse.json(
-      { error: 'Error al cargar órdenes' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al cargar órdenes' }, { status: 500 });
   }
 }
 
@@ -189,16 +186,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ order: orderWithDetails }, { status: 201 });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error creating order:', err);
-    return NextResponse.json(
-      { error: 'Error al crear orden' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al crear orden' }, { status: 500 });
   }
 }

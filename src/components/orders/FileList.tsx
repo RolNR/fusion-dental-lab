@@ -31,7 +31,12 @@ interface FileListProps {
   refreshTrigger?: number;
 }
 
-export function FileList({ orderId, canDelete = false, onFileDeleted, refreshTrigger }: FileListProps) {
+export function FileList({
+  orderId,
+  canDelete = false,
+  onFileDeleted,
+  refreshTrigger,
+}: FileListProps) {
   const [files, setFiles] = useState<FileData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

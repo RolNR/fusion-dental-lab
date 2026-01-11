@@ -44,10 +44,7 @@ export async function PUT(request: NextRequest) {
       });
 
       if (existingUser) {
-        return NextResponse.json(
-          { error: PROFILE_ERRORS.EMAIL_IN_USE },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: PROFILE_ERRORS.EMAIL_IN_USE }, { status: 400 });
       }
     }
 
@@ -129,9 +126,6 @@ export async function PUT(request: NextRequest) {
     }
 
     console.error('Error updating profile:', error);
-    return NextResponse.json(
-      { error: GENERIC_ERRORS.INTERNAL_SERVER_ERROR },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: GENERIC_ERRORS.INTERNAL_SERVER_ERROR }, { status: 500 });
   }
 }

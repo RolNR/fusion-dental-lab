@@ -61,10 +61,7 @@ export default function ClinicOrdersPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
-      <PageHeader
-        title="Órdenes"
-        description="Todas las órdenes de la clínica"
-      />
+      <PageHeader title="Órdenes" description="Todas las órdenes de la clínica" />
 
       {/* Search and Filters */}
       <div className="mb-6">

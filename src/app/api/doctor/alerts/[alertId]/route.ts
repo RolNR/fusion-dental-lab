@@ -68,17 +68,11 @@ export async function PATCH(
     return NextResponse.json({ alert });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: err.issues },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
     console.error('Error updating alert:', err);
-    return NextResponse.json(
-      { error: 'Error al actualizar alerta' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al actualizar alerta' }, { status: 500 });
   }
 }
 
@@ -103,18 +97,12 @@ export async function DELETE(
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: result.statusCode || 500 }
-      );
+      return NextResponse.json({ error: result.error }, { status: result.statusCode || 500 });
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Error deleting alert:', err);
-    return NextResponse.json(
-      { error: 'Error al eliminar alerta' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error al eliminar alerta' }, { status: 500 });
   }
 }

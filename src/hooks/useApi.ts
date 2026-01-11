@@ -35,10 +35,7 @@ interface UseApiResult<T> {
  * // Later...
  * await refetch();
  */
-export function useApi<T>(
-  url: string | null,
-  options?: UseApiOptions
-): UseApiResult<T> {
+export function useApi<T>(url: string | null, options?: UseApiOptions): UseApiResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,18 +56,14 @@ export function useApi<T>(
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || `Error: ${response.statusText}`
-        );
+        throw new Error(errorData.error || `Error: ${response.statusText}`);
       }
 
       const result = await response.json();
       setData(result);
       setError(null);
     } catch (err) {
-      const errorMessage = err instanceof Error
-        ? err.message
-        : 'Error desconocido al cargar datos';
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido al cargar datos';
       setError(errorMessage);
       setData(null);
       console.error('API fetch error:', err);

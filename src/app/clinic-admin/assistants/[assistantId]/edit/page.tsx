@@ -80,12 +80,8 @@ export default function EditAssistantPage() {
         >
           ← Volver a Detalles
         </Link>
-        <h1 className="mt-4 text-3xl font-bold text-foreground">
-          Editar Asistente
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Actualiza la información de {assistant.name}
-        </p>
+        <h1 className="mt-4 text-3xl font-bold text-foreground">Editar Asistente</h1>
+        <p className="mt-2 text-muted-foreground">Actualiza la información de {assistant.name}</p>
       </div>
 
       {/* Form */}

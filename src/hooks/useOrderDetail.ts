@@ -104,9 +104,7 @@ export function useOrderDetail({
       router.push(redirectPath);
     } catch (error) {
       console.error('Error deleting order:', error);
-      alert(
-        error instanceof Error ? error.message : 'Error al eliminar la orden'
-      );
+      alert(error instanceof Error ? error.message : 'Error al eliminar la orden');
     } finally {
       setDeleting(false);
     }
