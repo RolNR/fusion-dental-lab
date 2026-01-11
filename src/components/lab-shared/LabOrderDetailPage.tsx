@@ -12,6 +12,7 @@ import { StatusChangeControl } from '@/components/orders/StatusChangeControl';
 import { CopyableField } from '@/components/ui/CopyableField';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
+import { FileList } from '@/components/orders/FileList';
 import { useSession } from 'next-auth/react';
 
 interface CopyButtonProps {
@@ -178,39 +179,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
           </div>
 
           {/* Files */}
-          {order.files.length > 0 && (
-            <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
-                Archivos
-              </h2>
-              <div className="space-y-3">
-                {order.files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center justify-between rounded-lg border border-border p-3"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {file.originalName}
-                        <CopyButton value={file.originalName} label="nombre de archivo" />
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(file.fileSize)} • {formatDate(file.createdAt)}
-                      </p>
-                    </div>
-                    <a
-                      href={file.storageUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:text-primary/80"
-                    >
-                      Descargar
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+            <h2 className="mb-4 text-xl font-semibold text-foreground">Archivos</h2>
+            <FileList orderId={order.id} canDelete={false} />
+          </div>
         </div>
 
         {/* Right Column - Clinic & Doctor Info */}

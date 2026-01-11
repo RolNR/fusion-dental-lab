@@ -12,6 +12,7 @@ import { Icons } from '@/components/ui/Icons';
 import { Doctor } from '@/types/user';
 import { getScanTypeOptions } from '@/lib/scanTypeUtils';
 import type { SpeechRecognition } from '@/types/speech-recognition';
+import { FileCategory } from '@/types/file';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
 import { WorkTypeSection } from './order-form/WorkTypeSection';
 import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
@@ -425,6 +426,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               value={upperFile}
               onChange={setUpperFile}
               required
+              category={FileCategory.SCAN_UPPER}
             />
 
             <FileUpload
@@ -434,6 +436,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               value={lowerFile}
               onChange={setLowerFile}
               required
+              category={FileCategory.SCAN_LOWER}
             />
 
             <FileUpload
@@ -443,10 +446,36 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               value={biteFile}
               onChange={setBiteFile}
               required
+              category={FileCategory.SCAN_BITE}
             />
           </div>
         </div>
       )}
+
+      {/* Mouth Photos Section - Optional */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">
+            Fotos Intraorales (Opcional)
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Sube fotos de la boca del paciente para referencia adicional
+          </p>
+        </div>
+
+        <FileUpload
+          label="Foto Intraoral"
+          accept=".jpg,.jpeg,.png,.webp"
+          maxSize={10}
+          value={null}
+          onChange={() => {}}
+          category={FileCategory.MOUTH_PHOTO}
+          orderId={orderId}
+          onUploadComplete={(fileId) => {
+            console.log('Mouth photo uploaded:', fileId);
+          }}
+        />
+      </div>
 
       {/* Implant Section */}
       <div className="rounded-lg border border-border bg-muted/30 p-4 sm:p-6">
