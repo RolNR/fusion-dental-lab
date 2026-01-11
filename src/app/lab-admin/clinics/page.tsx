@@ -15,7 +15,7 @@ type ClinicWithCounts = {
   isActive: boolean;
   _count: {
     clinicAdmins: number;
-    doctors: number;
+    doctorMemberships: number;
     assistants: number;
     orders: number;
   };
@@ -97,12 +97,12 @@ export default function ClinicsPage() {
         <div>
           <div className="text-sm text-foreground">
             {clinic._count.clinicAdmins +
-              clinic._count.doctors +
+              clinic._count.doctorMemberships +
               clinic._count.assistants}{' '}
             usuarios
           </div>
           <div className="text-xs text-muted-foreground">
-            {clinic._count.doctors} doctores
+            {clinic._count.doctorMemberships} doctores
           </div>
         </div>
       ),
