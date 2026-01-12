@@ -60,21 +60,21 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "articulatedBy": "doctor" o "laboratorio",
 
   "oclusionDiseno": {
-    "tipoOclusion": "normal", "clase_i", "clase_ii", "clase_iii", "borde_a_borde", o "mordida_cruzada",
+    "tipoOclusion": SOLO usa uno de estos valores exactos: "normal", "clase_i", "clase_ii", "clase_iii", "borde_a_borde", "mordida_cruzada",
     "espacioInteroclusalSuficiente": true o false,
-    "solucionEspacioInsuficiente": "reduccion_oclusal", "aumento_vertical", o "ambas" (solo si espacioInteroclusalSuficiente es false)
+    "solucionEspacioInsuficiente": "reduccion_oclusal", "aumento_vertical", o "ambas" (opcional)
   },
 
   "colorInfo": {
-    "shadeType": "Tipo de guía de color (ej: VITA Classical, VITA 3D-Master)",
-    "shadeCode": "Código de color específico",
-    "colorimeter": "Nombre del colorímetro usado (opcional)",
-    "texture": ["lisa", "rugosa", "natural"],
-    "gloss": ["brillante", "mate", "satinado"],
-    "mamelones": "si" o "no",
+    "shadeType": "Tipo de guía de color - puede ser null",
+    "shadeCode": "Código de color - puede ser null",
+    "colorimeter": "Nombre del colorímetro (opcional)",
+    "texture": ["lisa"] o ["rugosa"] o ["natural"] o cualquier combinación - DEBE SER UN ARRAY,
+    "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY,
+    "mamelones": EXACTAMENTE "si" o "no",
     "translucency": {
       "level": número del 1 al 10,
-      "description": "Descripción de translucidez"
+      "description": "descripción de translucidez"
     }
   }
 }
@@ -85,9 +85,15 @@ Reglas CRÍTICAS:
 - Si no encuentras información para un campo, NO lo incluyas en el JSON de respuesta
 - Las fechas deben estar en formato YYYY-MM-DD
 - Para fechas relativas (ej: "en 5 días"), calcula la fecha desde hoy (${today})
-- Para objetos anidados (informacionImplante, oclusionDiseno, colorInfo), solo inclúyelos si encuentras AL MENOS un campo con información
 - Los números de dientes deben estar en notación FDI (11-48) o Universal (1-32)
-- Sé preciso y conservador - si no estás 100% seguro, omite el campo
+
+IMPORTANTE - Formato de valores:
+- Para "tipoOclusion": USA SOLO los valores EXACTOS permitidos. Si mencionan "mordida profunda", mapea a "mordida_cruzada" o "clase_ii" según el contexto.
+- Para "texture" y "gloss": SIEMPRE devuelve un ARRAY, aunque sea de un solo elemento: ["lisa"] NO "lisa"
+- Para "translucency": SIEMPRE incluye "description" aunque sea genérica como "translucidez media"
+- Para enums de implantes: usa EXACTAMENTE los valores especificados en minúsculas con guiones bajos
+
+- Sé preciso y conservador - si no estás 100% seguro de un valor enum, omite ese campo
 - Devuelve SOLO el JSON con los campos que pudiste extraer con certeza
 - NO inventes información - solo extrae lo que está explícitamente mencionado`;
 }

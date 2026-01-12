@@ -90,7 +90,18 @@ export function OrderReviewModal({
           <dl className="space-y-1">
             <DetailRow label="Nombre del Paciente" value={formData.patientName} />
             <DetailRow label="ID del Paciente" value={formData.patientId} />
-            <DetailRow label="Fecha de Entrega Deseada" value={formData.fechaEntregaDeseada} />
+            <DetailRow
+              label="Fecha de Entrega Deseada"
+              value={
+                formData.fechaEntregaDeseada
+                  ? new Date(formData.fechaEntregaDeseada).toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : undefined
+              }
+            />
           </dl>
 
           {/* AI Prompt */}
@@ -218,6 +229,83 @@ export function OrderReviewModal({
                     label="Articulado Por"
                     value={formData.articulatedBy === 'doctor' ? 'Doctor' : 'Laboratorio'}
                   />
+                )}
+              </dl>
+            </>
+          )}
+
+          {/* Occlusion Design */}
+          {formData.oclusionDiseno && (
+            <>
+              <SectionTitle>Diseño de Oclusión</SectionTitle>
+              <dl className="space-y-1">
+                <DetailRow
+                  label="Tipo de Oclusión"
+                  value={
+                    formData.oclusionDiseno.tipoOclusion === 'normal'
+                      ? 'Normal'
+                      : formData.oclusionDiseno.tipoOclusion === 'clase_i'
+                        ? 'Clase I'
+                        : formData.oclusionDiseno.tipoOclusion === 'clase_ii'
+                          ? 'Clase II'
+                          : formData.oclusionDiseno.tipoOclusion === 'clase_iii'
+                            ? 'Clase III'
+                            : formData.oclusionDiseno.tipoOclusion === 'borde_a_borde'
+                              ? 'Borde a Borde'
+                              : 'Mordida Cruzada'
+                  }
+                />
+                <DetailRow
+                  label="Espacio Interoclusal Suficiente"
+                  value={formData.oclusionDiseno.espacioInteroclusalSuficiente ? 'Sí' : 'No'}
+                />
+                {formData.oclusionDiseno.solucionEspacioInsuficiente && (
+                  <DetailRow
+                    label="Solución para Espacio Insuficiente"
+                    value={
+                      formData.oclusionDiseno.solucionEspacioInsuficiente === 'reduccion_oclusal'
+                        ? 'Reducción Oclusal'
+                        : formData.oclusionDiseno.solucionEspacioInsuficiente === 'aumento_vertical'
+                          ? 'Aumento Vertical'
+                          : 'Ambas'
+                    }
+                  />
+                )}
+              </dl>
+            </>
+          )}
+
+          {/* Extended Color Info */}
+          {formData.colorInfo && (
+            <>
+              <SectionTitle>Información Extendida de Color</SectionTitle>
+              <dl className="space-y-1">
+                <DetailRow label="Tipo de Guía de Color" value={formData.colorInfo.shadeType} />
+                <DetailRow label="Código de Color" value={formData.colorInfo.shadeCode} />
+                <DetailRow label="Colorímetro" value={formData.colorInfo.colorimeter} />
+                {formData.colorInfo.texture && formData.colorInfo.texture.length > 0 && (
+                  <DetailRow label="Textura" value={formData.colorInfo.texture.join(', ')} />
+                )}
+                {formData.colorInfo.gloss && formData.colorInfo.gloss.length > 0 && (
+                  <DetailRow label="Brillo" value={formData.colorInfo.gloss.join(', ')} />
+                )}
+                <DetailRow
+                  label="Mamelones"
+                  value={formData.colorInfo.mamelones === 'si' ? 'Sí' : 'No'}
+                />
+                {formData.colorInfo.translucency && (
+                  <>
+                    <DetailRow
+                      label="Nivel de Translucidez"
+                      value={`${formData.colorInfo.translucency.level}/10`}
+                    />
+                    {formData.colorInfo.translucency.description && (
+                      <DetailRow
+                        label="Descripción de Translucidez"
+                        value={formData.colorInfo.translucency.description}
+                      />
+                    )}
+                  </>
                 )}
               </dl>
             </>
