@@ -1,7 +1,6 @@
 'use client';
 
 import { WorkType, RestorationType } from '@prisma/client';
-import { Select } from '@/components/ui/Select';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type WorkTypeSectionProps = {
@@ -39,6 +38,45 @@ export function WorkTypeSection({
     { value: 'otro', label: 'Otro', subtitle: 'Otro tipo de trabajo', icon: 'file' as const },
   ];
 
+  const restorationTypes = [
+    {
+      value: 'corona',
+      label: 'Corona',
+      subtitle: 'Restauración completa',
+      icon: 'settings' as const,
+    },
+    {
+      value: 'puente',
+      label: 'Puente',
+      subtitle: 'Prótesis fija',
+      icon: 'copy' as const,
+    },
+    {
+      value: 'inlay',
+      label: 'Inlay',
+      subtitle: 'Restauración interna',
+      icon: 'upload' as const,
+    },
+    {
+      value: 'onlay',
+      label: 'Onlay',
+      subtitle: 'Restauración externa',
+      icon: 'file' as const,
+    },
+    {
+      value: 'carilla',
+      label: 'Carilla',
+      subtitle: 'Recubrimiento estético',
+      icon: 'user' as const,
+    },
+    {
+      value: 'provisional',
+      label: 'Provisional',
+      subtitle: 'Restauración temporal',
+      icon: 'alertCircle' as const,
+    },
+  ];
+
   return (
     <SectionContainer>
       <SectionHeader
@@ -73,25 +111,27 @@ export function WorkTypeSection({
 
         {/* Restoration Type - Conditionally Rendered */}
         {tipoTrabajo === 'restauracion' && (
-          <div className="rounded-lg border border-border bg-muted/30 p-4">
-            <Select
-              label="Tipo de Restauración"
-              value={tipoRestauracion || ''}
-              onChange={(e) =>
-                onChange({
-                  tipoRestauracion: (e.target.value || undefined) as RestorationType | undefined,
-                })
-              }
-              error={errors?.tipoRestauracion}
-            >
-              <option value="">Selecciona un tipo</option>
-              <option value="corona">Corona</option>
-              <option value="puente">Puente</option>
-              <option value="inlay">Inlay</option>
-              <option value="onlay">Onlay</option>
-              <option value="carilla">Carilla</option>
-              <option value="provisional">Provisional</option>
-            </Select>
+          <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+            <FieldLabel label="Tipo de Restauración" required />
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {restorationTypes.map((type) => (
+                <ButtonCard
+                  key={type.value}
+                  icon={type.icon}
+                  title={type.label}
+                  subtitle={type.subtitle}
+                  selected={tipoRestauracion === type.value}
+                  onClick={() =>
+                    onChange({
+                      tipoRestauracion: type.value as RestorationType,
+                    })
+                  }
+                />
+              ))}
+            </div>
+            {errors?.tipoRestauracion && (
+              <p className="mt-2 text-sm text-danger font-medium">{errors.tipoRestauracion}</p>
+            )}
           </div>
         )}
       </div>
