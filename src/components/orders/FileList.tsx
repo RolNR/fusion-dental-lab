@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { FileCategory, FILE_CATEGORY_LABELS } from '@/types/file';
+import { FilePreviewModal } from './FilePreviewModal';
 import Image from 'next/image';
 
 interface FileData {
@@ -42,6 +43,7 @@ export function FileList({
   const [error, setError] = useState<string | null>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<FileData | null>(null);
 
   useEffect(() => {
     fetchFiles();
@@ -139,101 +141,129 @@ export function FileList({
   }
 
   return (
-    <div className="space-y-3">
-      {files.map((file) => (
-        <div
-          key={file.id}
-          className="rounded-lg border border-border bg-background p-4 shadow-sm hover:shadow-md transition-shadow"
-        >
-          <div className="flex items-start gap-4">
-            {/* Thumbnail or Icon */}
-            <div className="flex-shrink-0">
-              {file.thumbnailUrl ? (
-                <div className="relative h-16 w-16 overflow-hidden rounded-md border border-border">
-                  <Image
-                    src={file.thumbnailUrl}
-                    alt={file.originalName}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-md border border-border bg-muted">
-                  <Icons.file className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-
-            {/* File Info */}
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-foreground truncate">
-                {file.originalName}
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-primary">
-                  {getCategoryLabel(file.category)}
-                </span>
-                <span>{formatFileSize(file.fileSize)}</span>
-                <span>•</span>
-                <span>{formatDate(file.createdAt)}</span>
+    <>
+      <div className="space-y-3">
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="rounded-lg border border-border bg-background p-4 shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="flex items-start gap-4">
+              {/* Thumbnail or Icon with Preview */}
+              <div className="flex-shrink-0">
+                {file.thumbnailUrl ? (
+                  <div
+                    className="group relative h-16 w-16 cursor-pointer overflow-hidden rounded-md border border-border"
+                    onClick={() => setPreviewFile(file)}
+                  >
+                    <Image
+                      src={file.thumbnailUrl}
+                      alt={file.originalName}
+                      fill
+                      className="object-cover transition-opacity group-hover:opacity-50"
+                    />
+                    {/* Eye icon overlay on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="rounded-full bg-primary p-2">
+                        <Icons.eye className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className="group relative flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-border bg-muted transition-colors hover:bg-muted/70"
+                    onClick={() => setPreviewFile(file)}
+                  >
+                    <Icons.file className="h-8 w-8 text-muted-foreground transition-opacity group-hover:opacity-50" />
+                    {/* Eye icon overlay on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="rounded-full bg-primary p-2">
+                        <Icons.eye className="h-4 w-4 text-primary-foreground" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Subido por: {file.uploadedBy.name}
-              </p>
-            </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              {/* Download Button */}
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => window.open(file.storageUrl, '_blank')}
-                className="whitespace-nowrap"
-              >
-                <Icons.download className="h-4 w-4 mr-1" />
-                Descargar
-              </Button>
+              {/* File Info */}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-semibold text-foreground truncate">
+                  {file.originalName}
+                </h4>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                    {getCategoryLabel(file.category)}
+                  </span>
+                  <span>{formatFileSize(file.fileSize)}</span>
+                  <span>•</span>
+                  <span>{formatDate(file.createdAt)}</span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Subido por: {file.uploadedBy.name}
+                </p>
+              </div>
 
-              {/* Delete Button */}
-              {canDelete && (
-                <>
-                  {showDeleteConfirm === file.id ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(file.id)}
-                        isLoading={deletingFileId === file.id}
-                        disabled={deletingFileId === file.id}
-                      >
-                        Confirmar
-                      </Button>
+              {/* Actions */}
+              <div className="flex items-center gap-2">
+                {/* Download Button */}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => window.open(file.storageUrl, '_blank')}
+                  className="whitespace-nowrap"
+                >
+                  <Icons.download className="h-4 w-4 mr-1" />
+                  Descargar
+                </Button>
+
+                {/* Delete Button */}
+                {canDelete && (
+                  <>
+                    {showDeleteConfirm === file.id ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDelete(file.id)}
+                          isLoading={deletingFileId === file.id}
+                          disabled={deletingFileId === file.id}
+                        >
+                          Confirmar
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowDeleteConfirm(null)}
+                          disabled={deletingFileId === file.id}
+                        >
+                          Cancelar
+                        </Button>
+                      </div>
+                    ) : (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setShowDeleteConfirm(null)}
-                        disabled={deletingFileId === file.id}
+                        onClick={() => setShowDeleteConfirm(file.id)}
+                        className="text-danger hover:text-danger"
                       >
-                        Cancelar
+                        <Icons.trash className="h-4 w-4" />
                       </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowDeleteConfirm(file.id)}
-                      className="text-danger hover:text-danger"
-                    >
-                      <Icons.trash className="h-4 w-4" />
-                    </Button>
-                  )}
-                </>
-              )}
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {/* Preview Modal */}
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
+    </>
   );
 }

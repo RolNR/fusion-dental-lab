@@ -8,32 +8,60 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
 
 interface ScanPreviewProps {
-  file: File;
+  file?: File;
+  url?: string;
   onClose?: () => void;
 }
 
-function Model({ url, fileExtension }: { url: string; fileExtension: string }) {
+function Model({ url, fileExtension, shouldRevokeUrl }: { url: string; fileExtension: string; shouldRevokeUrl: boolean }) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+
     if (fileExtension === '.stl') {
       const loader = new STLLoader();
-      loader.load(url, (loadedGeometry) => {
-        loadedGeometry.computeVertexNormals();
-        setGeometry(loadedGeometry);
-      });
+      loader.load(
+        url,
+        (loadedGeometry) => {
+          loadedGeometry.computeVertexNormals();
+          setGeometry(loadedGeometry);
+          setIsLoading(false);
+        },
+        undefined,
+        (err) => {
+          console.error('Error loading STL:', err);
+          setError('Error al cargar el archivo 3D');
+          setIsLoading(false);
+        }
+      );
     } else if (fileExtension === '.ply') {
       const loader = new PLYLoader();
-      loader.load(url, (loadedGeometry) => {
-        loadedGeometry.computeVertexNormals();
-        setGeometry(loadedGeometry);
-      });
+      loader.load(
+        url,
+        (loadedGeometry) => {
+          loadedGeometry.computeVertexNormals();
+          setGeometry(loadedGeometry);
+          setIsLoading(false);
+        },
+        undefined,
+        (err) => {
+          console.error('Error loading PLY:', err);
+          setError('Error al cargar el archivo 3D');
+          setIsLoading(false);
+        }
+      );
     }
 
     return () => {
-      URL.revokeObjectURL(url);
+      if (shouldRevokeUrl) {
+        URL.revokeObjectURL(url);
+      }
     };
-  }, [url, fileExtension]);
+  }, [url, fileExtension, shouldRevokeUrl]);
 
   if (!geometry) {
     return null;
@@ -48,17 +76,28 @@ function Model({ url, fileExtension }: { url: string; fileExtension: string }) {
   );
 }
 
-export function ScanPreview({ file, onClose }: ScanPreviewProps) {
+export function ScanPreview({ file, url, onClose }: ScanPreviewProps) {
   const [objectUrl, setObjectUrl] = useState<string>('');
-  const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const [fileExtension, setFileExtension] = useState<string>('');
 
   useEffect(() => {
-    const url = URL.createObjectURL(file);
-    setObjectUrl(url);
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [file]);
+    if (file) {
+      // Create object URL from File
+      const createdUrl = URL.createObjectURL(file);
+      setObjectUrl(createdUrl);
+      setFileExtension('.' + file.name.split('.').pop()?.toLowerCase());
+      return () => {
+        URL.revokeObjectURL(createdUrl);
+      };
+    } else if (url) {
+      // Use provided URL directly
+      setObjectUrl(url);
+      // Extract extension from URL
+      const urlPath = url.split('?')[0]; // Remove query params
+      const ext = '.' + urlPath.split('.').pop()?.toLowerCase();
+      setFileExtension(ext);
+    }
+  }, [file, url]);
 
   if (!objectUrl) {
     return (
@@ -68,13 +107,15 @@ export function ScanPreview({ file, onClose }: ScanPreviewProps) {
     );
   }
 
+  const shouldRevokeUrl = !!file; // Only revoke if we created it from a File
+
   return (
     <div className="relative w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden border border-border">
       <Canvas camera={{ position: [0, 0, 100], fov: 50 }} style={{ width: '100%', height: '100%' }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <directionalLight position={[-10, -10, -5]} intensity={0.3} />
-        <Model url={objectUrl} fileExtension={fileExtension} />
+        <Model url={objectUrl} fileExtension={fileExtension} shouldRevokeUrl={shouldRevokeUrl} />
         <OrbitControls
           enableZoom={true}
           enablePan={true}
