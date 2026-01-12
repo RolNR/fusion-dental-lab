@@ -59,8 +59,18 @@ export function ImpressionExtendedSection({
   };
 
   const scanTypeOptions = [
-    { value: ScanType.DIGITAL_SCAN, label: 'Escaneo Digital', subtitle: 'Captura digital intraoral', icon: 'upload' as const },
-    { value: ScanType.ANALOG_MOLD, label: 'Molde Análogo', subtitle: 'Impresión tradicional', icon: 'file' as const },
+    {
+      value: ScanType.DIGITAL_SCAN,
+      label: 'Escaneo Digital',
+      subtitle: 'Captura digital intraoral',
+      icon: 'upload' as const,
+    },
+    {
+      value: ScanType.ANALOG_MOLD,
+      label: 'Molde Análogo',
+      subtitle: 'Impresión tradicional',
+      icon: 'file' as const,
+    },
   ];
 
   return (

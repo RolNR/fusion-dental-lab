@@ -25,13 +25,10 @@ export function SectionContainer({ children, defaultCollapsed = false }: Section
     const childType = child.type as { displayName?: string; name?: string };
     if (childType?.name === 'SectionHeader' || childType?.displayName === 'SectionHeader') {
       // Clone SectionHeader with collapse props (cloneElement preserves existing props)
-      return cloneElement<SectionHeaderProps>(
-        child as ReactElement<SectionHeaderProps>,
-        {
-          isCollapsed,
-          onToggleCollapse: () => setIsCollapsed(!isCollapsed),
-        }
-      );
+      return cloneElement<SectionHeaderProps>(child as ReactElement<SectionHeaderProps>, {
+        isCollapsed,
+        onToggleCollapse: () => setIsCollapsed(!isCollapsed),
+      });
     }
 
     // Hide non-header children when collapsed

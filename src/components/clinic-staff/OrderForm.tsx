@@ -53,6 +53,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [lowerFile, setLowerFile] = useState<File | null>(null);
   const [biteFile, setBiteFile] = useState<File | null>(null);
 
+  // File upload state for mouth photos
+  const [mouthPhotoFile, setMouthPhotoFile] = useState<File | null>(null);
+
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
     if (role === 'doctor') {
@@ -160,6 +163,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         upperFile,
         lowerFile,
         biteFile,
+        mouthPhotoFile,
       };
 
       await saveOrderUtil(orderId, role, formData, files, submitForReview, onSuccess, router);
@@ -375,6 +379,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       {/* Mouth Photos Section - Optional */}
       <MouthPhotosSection
+        value={mouthPhotoFile}
+        onChange={setMouthPhotoFile}
         orderId={orderId}
         onUploadComplete={(fileId) => {
           console.log('Mouth photo uploaded:', fileId);

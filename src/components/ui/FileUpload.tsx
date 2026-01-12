@@ -304,8 +304,12 @@ export function FileUpload({
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <Icons.file className="h-5 w-5 text-primary flex-shrink-0" />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
-                          <p className="text-xs text-muted-foreground">{formatFileSize(value.size)}</p>
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {value.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {formatFileSize(value.size)}
+                          </p>
                         </div>
                       </div>
                       <Button type="button" variant="danger" size="sm" onClick={handleRemove}>
@@ -320,7 +324,9 @@ export function FileUpload({
                       <div className="flex items-start gap-3">
                         <Icons.file className="h-10 w-10 text-primary flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">{value.name}</p>
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {value.name}
+                          </p>
                           <p className="text-xs text-muted-foreground mt-1">
                             {formatFileSize(value.size)}
                           </p>
@@ -341,7 +347,9 @@ export function FileUpload({
                       </div>
                     </div>
 
-                    {showPreview && <ScanPreview file={value} onClose={() => setShowPreview(false)} />}
+                    {showPreview && (
+                      <ScanPreview file={value} onClose={() => setShowPreview(false)} />
+                    )}
                   </>
                 )}
               </div>

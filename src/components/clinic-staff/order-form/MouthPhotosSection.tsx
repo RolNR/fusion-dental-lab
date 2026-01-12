@@ -1,24 +1,22 @@
 'use client';
 
-import { useState } from 'react';
 import { FileUpload } from '@/components/ui/FileUpload';
 import { FileCategory } from '@/types/file';
-import {
-  SectionContainer,
-  SectionHeader,
-} from '@/components/ui/form';
+import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
 type MouthPhotosSectionProps = {
+  value?: File | null;
+  onChange: (file: File | null) => void;
   orderId?: string;
   onUploadComplete?: (fileId: string) => void;
 };
 
 export function MouthPhotosSection({
+  value,
+  onChange,
   orderId,
   onUploadComplete,
 }: MouthPhotosSectionProps) {
-  const [mouthPhotoFile, setMouthPhotoFile] = useState<File | null>(null);
-
   return (
     <SectionContainer>
       <SectionHeader
@@ -32,8 +30,8 @@ export function MouthPhotosSection({
           label="Foto Intraoral"
           accept=".jpg,.jpeg,.png,.webp"
           maxSize={10}
-          value={mouthPhotoFile}
-          onChange={setMouthPhotoFile}
+          value={value || null}
+          onChange={onChange}
           category={FileCategory.MOUTH_PHOTO}
           orderId={orderId}
           onUploadComplete={onUploadComplete}

@@ -1,10 +1,7 @@
 'use client';
 
 import { Textarea } from '@/components/ui/Textarea';
-import {
-  SectionContainer,
-  SectionHeader,
-} from '@/components/ui/form';
+import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
 type DescriptionSectionProps = {
   description: string;

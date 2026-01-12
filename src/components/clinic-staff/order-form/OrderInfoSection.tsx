@@ -1,10 +1,7 @@
 'use client';
 
 import { Input } from '@/components/ui/Input';
-import {
-  SectionContainer,
-  SectionHeader,
-} from '@/components/ui/form';
+import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
 type OrderInfoSectionProps = {
   patientName: string;

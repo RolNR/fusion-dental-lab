@@ -1,10 +1,7 @@
 'use client';
 
 import { Input } from '@/components/ui/Input';
-import {
-  SectionContainer,
-  SectionHeader,
-} from '@/components/ui/form';
+import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
 type TeethNumberSectionProps = {
   teethNumbers: string;
@@ -31,15 +28,15 @@ export function TeethNumberSection({
       />
 
       <div className="space-y-4 p-6">
-         <Input
-        label="Números de Dientes"
-        type="text"
-        value={teethNumbers || ''}
-        onChange={(e) => onChange('teethNumbers', e.target.value)}
-        disabled={disabled}
-        placeholder="11, 12, 21, 22"
-         error={errors?.teethNumbers}
-      />
+        <Input
+          label="Números de Dientes"
+          type="text"
+          value={teethNumbers || ''}
+          onChange={(e) => onChange('teethNumbers', e.target.value)}
+          disabled={disabled}
+          placeholder="11, 12, 21, 22"
+          error={errors?.teethNumbers}
+        />
       </div>
     </SectionContainer>
   );

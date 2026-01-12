@@ -5,6 +5,7 @@ import {
   updateOrder,
   submitOrderForReview,
   handleSuccessNavigation,
+  OrderFiles,
 } from '@/lib/api/orderFormHelpers';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
@@ -59,11 +60,7 @@ export function validateDigitalScanFiles(
 export async function handleCreateOrder(
   role: 'doctor' | 'assistant',
   formData: OrderFormState,
-  files: {
-    upperFile: File | null;
-    lowerFile: File | null;
-    biteFile: File | null;
-  },
+  files: OrderFiles,
   submitForReview: boolean
 ) {
   const newOrder = await createOrder(role, formData, files);
@@ -82,11 +79,7 @@ export async function handleUpdateOrder(
   role: 'doctor' | 'assistant',
   orderId: string,
   formData: OrderFormState,
-  files: {
-    upperFile: File | null;
-    lowerFile: File | null;
-    biteFile: File | null;
-  },
+  files: OrderFiles,
   submitForReview: boolean
 ) {
   await updateOrder(role, orderId, formData, files);
@@ -103,11 +96,7 @@ export async function saveOrder(
   orderId: string | undefined,
   role: 'doctor' | 'assistant',
   formData: OrderFormState,
-  files: {
-    upperFile: File | null;
-    lowerFile: File | null;
-    biteFile: File | null;
-  },
+  files: OrderFiles,
   submitForReview: boolean,
   onSuccess: (() => void) | undefined,
   router: AppRouterInstance
@@ -115,9 +104,9 @@ export async function saveOrder(
   // Validate digital scan files
   const validationError = validateDigitalScanFiles(
     formData.scanType,
-    files.upperFile,
-    files.lowerFile,
-    files.biteFile
+    files.upperFile ?? null,
+    files.lowerFile ?? null,
+    files.biteFile ?? null
   );
 
   if (validationError) {

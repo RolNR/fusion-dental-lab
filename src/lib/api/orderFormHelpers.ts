@@ -20,10 +20,11 @@ interface OrderFormData {
   doctorId: string;
 }
 
-interface OrderFiles {
+export interface OrderFiles {
   upperFile?: File | null;
   lowerFile?: File | null;
   biteFile?: File | null;
+  mouthPhotoFile?: File | null;
 }
 
 /**
@@ -98,6 +99,9 @@ async function uploadFilesToR2(orderId: string, files: OrderFiles): Promise<void
   if (files.biteFile) {
     uploads.push(uploadFileToR2(orderId, files.biteFile, 'scanBite'));
   }
+  if (files.mouthPhotoFile) {
+    uploads.push(uploadFileToR2(orderId, files.mouthPhotoFile, 'mouthPhoto'));
+  }
 
   // Upload all files in parallel
   await Promise.all(uploads);
@@ -126,7 +130,7 @@ export async function createOrder(
   const order = data.order;
 
   // Step 2: Upload files to R2 if provided
-  if (files && (files.upperFile || files.lowerFile || files.biteFile)) {
+  if (files && (files.upperFile || files.lowerFile || files.biteFile || files.mouthPhotoFile)) {
     try {
       await uploadFilesToR2(order.id, files);
     } catch (err) {
@@ -163,7 +167,7 @@ export async function updateOrder(
   }
 
   // Step 2: Upload files to R2 if provided
-  if (files && (files.upperFile || files.lowerFile || files.biteFile)) {
+  if (files && (files.upperFile || files.lowerFile || files.biteFile || files.mouthPhotoFile)) {
     try {
       await uploadFilesToR2(orderId, files);
     } catch (err) {
