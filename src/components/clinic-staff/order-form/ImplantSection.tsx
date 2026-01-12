@@ -52,6 +52,8 @@ export function ImplantSection({
       tipoAditamento: informacionImplante?.tipoAditamento ?? 'estandar',
       perfilEmergencia: informacionImplante?.perfilEmergencia ?? 'recto',
       condicionTejidoBlando: informacionImplante?.condicionTejidoBlando ?? 'sano',
+      radiografiaPeriapical: informacionImplante?.radiografiaPeriapical ?? '',
+      cbct: informacionImplante?.cbct ?? '',
       ...informacionImplante,
       [field]: value,
     } as ImplantInfo;
@@ -187,6 +189,26 @@ export function ImplantSection({
               <option value="inflamado">Inflamado</option>
               <option value="retraido">Retraído</option>
             </Select>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Radiografía Periapical"
+                type="text"
+                value={informacionImplante?.radiografiaPeriapical || ''}
+                onChange={(e) => handleImplantFieldChange('radiografiaPeriapical', e.target.value)}
+                placeholder="Descripción o ubicación de la radiografía"
+                required
+              />
+
+              <Input
+                label="CBCT"
+                type="text"
+                value={informacionImplante?.cbct || ''}
+                onChange={(e) => handleImplantFieldChange('cbct', e.target.value)}
+                placeholder="Descripción o ubicación del CBCT"
+                required
+              />
+            </div>
           </div>
         )}
       </div>
