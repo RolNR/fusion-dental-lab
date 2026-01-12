@@ -161,6 +161,11 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                 value={order.scanType ? getScanTypeLabel(order.scanType) : null}
               />
             </dl>
+            {order.aiPrompt && (
+              <div className="mt-4">
+                <CopyableField label="Prompt de IA" value={order.aiPrompt} />
+              </div>
+            )}
             {order.description && (
               <div className="mt-4">
                 <CopyableField label="Descripción" value={order.description} />
@@ -172,6 +177,74 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
               </div>
             )}
           </div>
+
+          {/* Implant Information */}
+          {order.trabajoSobreImplante && order.informacionImplante && (
+            <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+              <h2 className="mb-4 text-xl font-semibold text-foreground">
+                Información de Implantes
+              </h2>
+              <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <CopyableField
+                  label="Marca del Implante"
+                  value={order.informacionImplante.marcaImplante}
+                />
+                <CopyableField
+                  label="Sistema de Conexión"
+                  value={order.informacionImplante.sistemaConexion}
+                />
+                <CopyableField
+                  label="Número de Implantes"
+                  value={order.informacionImplante.numeroImplantes?.toString()}
+                />
+                <CopyableField
+                  label="Tipo de Restauración"
+                  value={
+                    order.informacionImplante.tipoRestauracion === 'individual'
+                      ? 'Individual'
+                      : order.informacionImplante.tipoRestauracion === 'ferulizada'
+                        ? 'Ferulizada'
+                        : 'Híbrida'
+                  }
+                />
+                <CopyableField
+                  label="Tipo de Aditamento"
+                  value={
+                    order.informacionImplante.tipoAditamento === 'estandar'
+                      ? 'Estándar'
+                      : order.informacionImplante.tipoAditamento === 'personalizado'
+                        ? 'Personalizado'
+                        : 'Multi-Unit'
+                  }
+                />
+                <CopyableField
+                  label="Perfil de Emergencia"
+                  value={
+                    order.informacionImplante.perfilEmergencia === 'recto'
+                      ? 'Recto'
+                      : order.informacionImplante.perfilEmergencia === 'concavo'
+                        ? 'Cóncavo'
+                        : 'Convexo'
+                  }
+                />
+                <CopyableField
+                  label="Condición del Tejido Blando"
+                  value={
+                    order.informacionImplante.condicionTejidoBlando === 'sano'
+                      ? 'Sano'
+                      : order.informacionImplante.condicionTejidoBlando === 'inflamado'
+                        ? 'Inflamado'
+                        : 'Retraído'
+                  }
+                />
+                <CopyableField
+                  label="Radiografía Periapical"
+                  value={order.informacionImplante.radiografiaPeriapical}
+                />
+                <CopyableField label="CBCT" value={order.informacionImplante.cbct} />
+              </dl>
+            </div>
+          )}
 
           {/* Files */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
