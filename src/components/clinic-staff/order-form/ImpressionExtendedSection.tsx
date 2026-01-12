@@ -50,10 +50,11 @@ export function ImpressionExtendedSection({
   onBiteFileChange,
 }: ImpressionExtendedSectionProps) {
   const handleEscanerChange = (value: string) => {
-    onChange('escanerUtilizado', value || undefined);
+    const scannerValue = value === '' ? null : (value as ScannerType);
+    onChange('escanerUtilizado', scannerValue || undefined);
 
     // Clear "other scanner" field if not "Otro"
-    if (value !== 'Otro') {
+    if (value !== ScannerType.Otro) {
       onChange('otroEscaner', undefined);
     }
   };
@@ -111,17 +112,19 @@ export function ImpressionExtendedSection({
               value={escanerUtilizado || ''}
               onChange={(e) => handleEscanerChange(e.target.value)}
               error={errors?.escanerUtilizado}
+              disabled={disabled}
+              required
             >
               <option value="">Selecciona un escáner</option>
-              <option value="iTero">iTero</option>
-              <option value="Medit">Medit</option>
-              <option value="ThreeShape">3Shape</option>
-              <option value="Carestream">Carestream</option>
-              <option value="Otro">Otro</option>
+              <option value={ScannerType.iTero}>iTero</option>
+              <option value={ScannerType.Medit}>Medit</option>
+              <option value={ScannerType.ThreeShape}>3Shape</option>
+              <option value={ScannerType.Carestream}>Carestream</option>
+              <option value={ScannerType.Otro}>Otro</option>
             </Select>
 
             {/* Other Scanner Name */}
-            {escanerUtilizado === 'Otro' && (
+            {escanerUtilizado === ScannerType.Otro && (
               <Input
                 label="Especifica el Escáner"
                 type="text"
@@ -129,6 +132,7 @@ export function ImpressionExtendedSection({
                 onChange={(e) => onChange('otroEscaner', e.target.value)}
                 placeholder="Nombre del escáner..."
                 error={errors?.otroEscaner}
+                required
               />
             )}
 

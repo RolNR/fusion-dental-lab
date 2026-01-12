@@ -31,6 +31,7 @@ import {
   parseAIPrompt,
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
+import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -40,6 +41,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
   const [isParsingAI, setIsParsingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Speech recognition state
   const [isListening, setIsListening] = useState(false);
@@ -151,7 +153,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Show review modal instead of immediately submitting
+    setShowReviewModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    // Called when user confirms in the review modal
     await handleSaveOrder(true);
+    setShowReviewModal(false);
   };
 
   const handleSaveOrder = async (submitForReview: boolean) => {
@@ -466,6 +475,16 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           Cancelar
         </Button>
       </div>
+
+      {/* Order Review Modal */}
+      {showReviewModal && (
+        <OrderReviewModal
+          formData={formData}
+          onConfirm={handleConfirmSubmit}
+          onCancel={() => setShowReviewModal(false)}
+          isSubmitting={isLoading}
+        />
+      )}
     </form>
   );
 }
