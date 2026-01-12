@@ -5,7 +5,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 // AI Configuration
 const AI_MODEL = 'claude-sonnet-4-20250514';
-const AI_MAX_TOKENS = 1024;
+const AI_MAX_TOKENS = 2048; // Increased to accommodate comprehensive order data
 
 /**
  * System prompt for extracting dental order information from natural language
@@ -19,23 +19,64 @@ Tu tarea es analizar el texto en lenguaje natural y extraer la información estr
 
 Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (todos opcionales):
 {
-  "patientName": "Nombre del paciente",
+  "patientName": "Nombre completo del paciente",
+  "patientId": "ID o número de paciente",
   "fechaEntregaDeseada": "Fecha en formato YYYY-MM-DD",
-  "teethNumbers": "Números de dientes separados por coma",
+  "teethNumbers": "Números de dientes separados por coma (ej: 11, 12, 21)",
+  "description": "Descripción general del caso",
+  "notes": "Notas adicionales o instrucciones especiales",
+
   "tipoCaso": "nuevo" o "garantia",
+  "motivoGarantia": "Razón de la garantía (solo si tipoCaso es 'garantia')",
+  "seDevuelveTrabajoOriginal": true o false (si devuelven el trabajo original en garantía),
+
   "tipoTrabajo": "restauracion" u "otro",
   "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
+
   "scanType": "DIGITAL_SCAN" o "ANALOG_MOLD",
   "escanerUtilizado": "iTero", "Medit", "ThreeShape", "Carestream", u "Otro",
   "otroEscaner": "Nombre del escáner si es 'Otro'",
-  "tipoSilicon": "adicion" o "condensacion",
-  "material": "Material como Zirconia, Porcelana, etc",
-  "materialBrand": "Marca del material como IPS e.max",
-  "color": "Código de color como A2, B1",
+  "tipoSilicon": "adicion" o "condensacion" (solo para moldes análogos),
+  "notaModeloFisico": "Observaciones sobre el modelo físico (solo para moldes análogos)",
+
+  "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
+  "materialBrand": "Marca del material como IPS e.max, Katana, Prettau",
+  "color": "Código de color como A2, B1, etc",
+
   "trabajoSobreImplante": true o false,
+  "informacionImplante": {
+    "marcaImplante": "Marca del implante (ej: Straumann, Nobel Biocare)",
+    "sistemaConexion": "Sistema de conexión (ej: Internal hex, External hex)",
+    "numeroImplantes": número de implantes (1, 2, 3, etc),
+    "tipoRestauracion": "individual", "ferulizada", o "hibrida",
+    "tipoAditamento": "estandar", "personalizado", o "multi_unit",
+    "perfilEmergencia": "recto", "concavo", o "convexo",
+    "condicionTejidoBlando": "sano", "inflamado", o "retraido",
+    "radiografiaPeriapical": "Descripción o ubicación de la radiografía",
+    "cbct": "Descripción o ubicación del CBCT"
+  },
+
   "submissionType": "prueba_estructura", "prueba_estetica", o "terminado",
   "articulatedBy": "doctor" o "laboratorio",
-  "notes": "Cualquier nota adicional extraída"
+
+  "oclusionDiseno": {
+    "tipoOclusion": "normal", "clase_i", "clase_ii", "clase_iii", "borde_a_borde", o "mordida_cruzada",
+    "espacioInteroclusalSuficiente": true o false,
+    "solucionEspacioInsuficiente": "reduccion_oclusal", "aumento_vertical", o "ambas" (solo si espacioInteroclusalSuficiente es false)
+  },
+
+  "colorInfo": {
+    "shadeType": "Tipo de guía de color (ej: VITA Classical, VITA 3D-Master)",
+    "shadeCode": "Código de color específico",
+    "colorimeter": "Nombre del colorímetro usado (opcional)",
+    "texture": ["lisa", "rugosa", "natural"],
+    "gloss": ["brillante", "mate", "satinado"],
+    "mamelones": "si" o "no",
+    "translucency": {
+      "level": número del 1 al 10,
+      "description": "Descripción de translucidez"
+    }
+  }
 }
 
 Reglas CRÍTICAS:
@@ -44,8 +85,11 @@ Reglas CRÍTICAS:
 - Si no encuentras información para un campo, NO lo incluyas en el JSON de respuesta
 - Las fechas deben estar en formato YYYY-MM-DD
 - Para fechas relativas (ej: "en 5 días"), calcula la fecha desde hoy (${today})
+- Para objetos anidados (informacionImplante, oclusionDiseno, colorInfo), solo inclúyelos si encuentras AL MENOS un campo con información
+- Los números de dientes deben estar en notación FDI (11-48) o Universal (1-32)
 - Sé preciso y conservador - si no estás 100% seguro, omite el campo
-- Devuelve SOLO el JSON con los campos que pudiste extraer con certeza`;
+- Devuelve SOLO el JSON con los campos que pudiste extraer con certeza
+- NO inventes información - solo extrae lo que está explícitamente mencionado`;
 }
 
 export async function POST(request: NextRequest) {
