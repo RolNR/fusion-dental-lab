@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { CaseType } from '@prisma/client';
 import { Textarea } from '@/components/ui/Textarea';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
@@ -18,15 +19,27 @@ type CaseTypeSectionProps = {
     motivoGarantia?: string;
     seDevuelveTrabajoOriginal?: string;
   };
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function CaseTypeSection({
-  tipoCaso,
-  motivoGarantia,
-  seDevuelveTrabajoOriginal,
-  onChange,
-  errors,
-}: CaseTypeSectionProps) {
+export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
+  (
+    {
+      tipoCaso,
+      motivoGarantia,
+      seDevuelveTrabajoOriginal,
+      onChange,
+      errors,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const handleTipoCasoChange = (value: CaseType) => {
     // Batch updates to avoid state update conflicts
     if (value === 'nuevo') {
@@ -51,7 +64,13 @@ export function CaseTypeSection({
   ];
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="fileText"
         title="Tipo de Caso"
@@ -125,3 +144,6 @@ export function CaseTypeSection({
     </SectionContainer>
   );
 }
+);
+
+CaseTypeSection.displayName = 'CaseTypeSection';

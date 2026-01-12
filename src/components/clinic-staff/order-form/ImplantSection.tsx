@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -23,14 +24,26 @@ type ImplantSectionProps = {
     perfilEmergencia?: string;
     condicionTejidoBlando?: string;
   };
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function ImplantSection({
-  trabajoSobreImplante,
-  informacionImplante,
-  onChange,
-  errors,
-}: ImplantSectionProps) {
+export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
+  (
+    {
+      trabajoSobreImplante,
+      informacionImplante,
+      onChange,
+      errors,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const handleToggle = (checked: boolean) => {
     if (checked) {
       onChange({ trabajoSobreImplante: true });
@@ -62,7 +75,13 @@ export function ImplantSection({
   };
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="settings"
         title="Información de Implantes"
@@ -214,4 +233,7 @@ export function ImplantSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+ImplantSection.displayName = 'ImplantSection';

@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { SubmissionType, ArticulatedBy } from '@prisma/client';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 
@@ -11,14 +12,26 @@ type SubmissionTypeSectionProps = {
     submissionType?: string;
     articulatedBy?: string;
   };
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function SubmissionTypeSection({
-  submissionType,
-  articulatedBy,
-  onChange,
-  errors,
-}: SubmissionTypeSectionProps) {
+export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSectionProps>(
+  (
+    {
+      submissionType,
+      articulatedBy,
+      onChange,
+      errors,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const submissionTypes = [
     {
       value: 'prueba_estructura',
@@ -56,7 +69,13 @@ export function SubmissionTypeSection({
   ];
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="upload"
         title="Tipo de Entrega y Articulación"
@@ -111,4 +130,7 @@ export function SubmissionTypeSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+SubmissionTypeSection.displayName = 'SubmissionTypeSection';

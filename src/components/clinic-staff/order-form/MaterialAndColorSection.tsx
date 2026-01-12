@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
 import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
@@ -14,18 +15,36 @@ type MaterialAndColorSectionProps = {
     color?: string;
   };
   disabled?: boolean;
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function MaterialAndColorSection({
-  material,
-  materialBrand,
-  color,
-  onChange,
-  errors,
-  disabled = false,
-}: MaterialAndColorSectionProps) {
+export const MaterialAndColorSection = forwardRef<HTMLDivElement, MaterialAndColorSectionProps>(
+  (
+    {
+      material,
+      materialBrand,
+      color,
+      onChange,
+      errors,
+      disabled = false,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="layers"
         title="Material y Color"
@@ -67,4 +86,7 @@ export function MaterialAndColorSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+MaterialAndColorSection.displayName = 'MaterialAndColorSection';

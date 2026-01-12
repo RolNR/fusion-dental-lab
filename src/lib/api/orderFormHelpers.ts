@@ -124,6 +124,16 @@ export async function createOrder(
 
   const data = await response.json();
   if (!response.ok) {
+    // Preserve validation error details if present
+    if (data.details && Array.isArray(data.details)) {
+      const error = new Error(data.error || 'Error al crear orden') as Error & {
+        details: Array<{ path?: string[]; message?: string }>;
+        error?: string;
+      };
+      error.details = data.details;
+      error.error = data.error;
+      throw error;
+    }
     throw new Error(data.error || 'Error al crear orden');
   }
 
@@ -163,6 +173,16 @@ export async function updateOrder(
 
   const data = await response.json();
   if (!response.ok) {
+    // Preserve validation error details if present
+    if (data.details && Array.isArray(data.details)) {
+      const error = new Error(data.error || 'Error al actualizar orden') as Error & {
+        details: Array<{ path?: string[]; message?: string }>;
+        error?: string;
+      };
+      error.details = data.details;
+      error.error = data.error;
+      throw error;
+    }
     throw new Error(data.error || 'Error al actualizar orden');
   }
 

@@ -10,6 +10,8 @@ interface SectionHeaderProps {
   required?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  hasErrors?: boolean;
+  errorCount?: number;
 }
 
 export function SectionHeader({
@@ -19,6 +21,8 @@ export function SectionHeader({
   required = false,
   isCollapsed = false,
   onToggleCollapse,
+  hasErrors = false,
+  errorCount,
 }: SectionHeaderProps) {
   const IconComponent = Icons[icon];
 
@@ -37,6 +41,11 @@ export function SectionHeader({
         {required && (
           <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary">
             Requerido
+          </span>
+        )}
+        {hasErrors && errorCount && (
+          <span className="rounded-full bg-danger px-3 py-1 text-xs font-semibold text-white">
+            {errorCount} {errorCount === 1 ? 'error' : 'errores'}
           </span>
         )}
         {onToggleCollapse && (

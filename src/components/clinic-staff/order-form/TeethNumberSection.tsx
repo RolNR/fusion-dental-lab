@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
 import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
@@ -10,16 +11,34 @@ type TeethNumberSectionProps = {
     teethNumbers?: string;
   };
   disabled?: boolean;
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function TeethNumberSection({
-  teethNumbers,
-  onChange,
-  errors,
-  disabled = false,
-}: TeethNumberSectionProps) {
+export const TeethNumberSection = forwardRef<HTMLDivElement, TeethNumberSectionProps>(
+  (
+    {
+      teethNumbers,
+      onChange,
+      errors,
+      disabled = false,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="user"
         title="Números de Dientes"
@@ -40,4 +59,7 @@ export function TeethNumberSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+TeethNumberSection.displayName = 'TeethNumberSection';

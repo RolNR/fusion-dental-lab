@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Textarea } from '@/components/ui/Textarea';
 import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
@@ -10,16 +11,34 @@ type DescriptionSectionProps = {
     description?: string;
   };
   disabled?: boolean;
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function DescriptionSection({
-  description,
-  onChange,
-  errors,
-  disabled = false,
-}: DescriptionSectionProps) {
+export const DescriptionSection = forwardRef<HTMLDivElement, DescriptionSectionProps>(
+  (
+    {
+      description,
+      onChange,
+      errors,
+      disabled = false,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="fileText"
         title="Descripción del Trabajo"
@@ -39,4 +58,7 @@ export function DescriptionSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+DescriptionSection.displayName = 'DescriptionSection';

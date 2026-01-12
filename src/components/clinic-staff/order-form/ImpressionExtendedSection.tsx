@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { ScanType, ScannerType, SiliconType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -31,24 +32,36 @@ type ImpressionExtendedSectionProps = {
   onUpperFileChange?: (file: File | null) => void;
   onLowerFileChange?: (file: File | null) => void;
   onBiteFileChange?: (file: File | null) => void;
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function ImpressionExtendedSection({
-  scanType,
-  escanerUtilizado,
-  otroEscaner,
-  tipoSilicon,
-  notaModeloFisico,
-  onChange,
-  errors,
-  disabled = false,
-  upperFile,
-  lowerFile,
-  biteFile,
-  onUpperFileChange,
-  onLowerFileChange,
-  onBiteFileChange,
-}: ImpressionExtendedSectionProps) {
+export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionExtendedSectionProps>(
+  (
+    {
+      scanType,
+      escanerUtilizado,
+      otroEscaner,
+      tipoSilicon,
+      notaModeloFisico,
+      onChange,
+      errors,
+      disabled = false,
+      upperFile,
+      lowerFile,
+      biteFile,
+      onUpperFileChange,
+      onLowerFileChange,
+      onBiteFileChange,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const handleEscanerChange = (value: string) => {
     const scannerValue = value === '' ? null : (value as ScannerType);
     onChange('escanerUtilizado', scannerValue || undefined);
@@ -75,7 +88,13 @@ export function ImpressionExtendedSection({
   ];
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="settings"
         title="Detalles de Impresión"
@@ -220,4 +239,7 @@ export function ImpressionExtendedSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+ImpressionExtendedSection.displayName = 'ImpressionExtendedSection';

@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { WorkType, RestorationType } from '@prisma/client';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 
@@ -11,14 +12,26 @@ type WorkTypeSectionProps = {
     tipoTrabajo?: string;
     tipoRestauracion?: string;
   };
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function WorkTypeSection({
-  tipoTrabajo,
-  tipoRestauracion,
-  onChange,
-  errors,
-}: WorkTypeSectionProps) {
+export const WorkTypeSection = forwardRef<HTMLDivElement, WorkTypeSectionProps>(
+  (
+    {
+      tipoTrabajo,
+      tipoRestauracion,
+      onChange,
+      errors,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const handleTipoTrabajoChange = (value: WorkType) => {
     // Batch updates to avoid state update conflicts
     if (value === 'otro') {
@@ -78,7 +91,13 @@ export function WorkTypeSection({
   ];
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="settings"
         title="Tipo de Trabajo"
@@ -137,4 +156,7 @@ export function WorkTypeSection({
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+WorkTypeSection.displayName = 'WorkTypeSection';

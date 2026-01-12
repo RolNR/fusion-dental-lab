@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Select } from '@/components/ui/Select';
 import { OcclusionInfo } from '@/types/order';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
@@ -12,9 +13,25 @@ type OcclusionSectionProps = {
     espacioInteroclusalSuficiente?: string;
     solucionEspacioInsuficiente?: string;
   };
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function OcclusionSection({ oclusionDiseno, onChange, errors }: OcclusionSectionProps) {
+export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps>(
+  (
+    {
+      oclusionDiseno,
+      onChange,
+      errors,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
   const handleFieldChange = (field: keyof OcclusionInfo, value: unknown) => {
     const updated = {
       ...oclusionDiseno,
@@ -52,7 +69,13 @@ export function OcclusionSection({ oclusionDiseno, onChange, errors }: Occlusion
   ];
 
   return (
-    <SectionContainer>
+    <SectionContainer
+      ref={ref}
+      hasErrors={hasErrors}
+      errorCount={errorCount}
+      collapsed={collapsed}
+      onCollapseChange={onCollapseChange}
+    >
       <SectionHeader
         icon="layers"
         title="Oclusión y Diseño"
@@ -139,4 +162,7 @@ export function OcclusionSection({ oclusionDiseno, onChange, errors }: Occlusion
       </div>
     </SectionContainer>
   );
-}
+  }
+);
+
+OcclusionSection.displayName = 'OcclusionSection';

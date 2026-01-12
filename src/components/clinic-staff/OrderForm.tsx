@@ -32,16 +32,29 @@ import {
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
 import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
+import { ValidationErrorSummary } from '@/components/orders/ValidationErrorSummary';
+import {
+  parseValidationError,
+  groupErrorsBySection,
+  ValidationErrorDetail,
+} from '@/types/validation';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Map<string, ValidationErrorDetail[]>>(
+    new Map()
+  );
+  const [showErrorSummary, setShowErrorSummary] = useState(false);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
   const [isParsingAI, setIsParsingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+
+  // Refs for scrolling to sections
+  const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Speech recognition state
   const [isListening, setIsListening] = useState(false);
@@ -165,6 +178,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const handleSaveOrder = async (submitForReview: boolean) => {
     setError(null);
+    setValidationErrors(new Map());
+    setShowErrorSummary(false);
     setIsLoading(true);
 
     try {
@@ -177,10 +192,76 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       await saveOrderUtil(orderId, role, formData, files, submitForReview, onSuccess, router);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+if (!(err instanceof Error)) {
+        setError('Error desconocido');
+        return;
+      }
+
+      // Check if it's a file validation error (client-side)
+      if (err.message.includes('archivos STL/PLY obligatorios')) {
+        const grouped = new Map();
+        grouped.set('impression', [
+          {
+            field: 'scanType',
+            message: err.message,
+          },
+        ]);
+        setValidationErrors(grouped);
+        setShowErrorSummary(true);
+        setError('Hay errores en el formulario');
+
+        setTimeout(() => scrollToSection('impression'), 100);
+        return;
+      }
+
+      // Check if it's a validation error with details
+      const validationError = parseValidationError(err);
+
+      if (validationError) {
+        const grouped = groupErrorsBySection(validationError.details);
+        setValidationErrors(grouped);
+        setShowErrorSummary(true);
+        setError(validationError.message);
+
+        // Scroll to first error section
+        const firstSection = Array.from(grouped.keys())[0];
+        if (firstSection) {
+          setTimeout(() => scrollToSection(firstSection), 100);
+        }
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = sectionRefs.current.get(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Add a small offset for better visibility
+      setTimeout(() => {
+        window.scrollBy({ top: -100, behavior: 'smooth' });
+      }, 300);
+    }
+  };
+
+  const registerSectionRef = (sectionId: string, element: HTMLDivElement | null) => {
+    if (element) {
+      sectionRefs.current.set(sectionId, element);
+    } else {
+      sectionRefs.current.delete(sectionId);
+    }
+  };
+
+  const getSectionErrorInfo = (sectionId: string) => {
+    const errors = validationErrors.get(sectionId);
+    const info = {
+      hasErrors: !!errors && errors.length > 0,
+      errorCount: errors?.length || 0,
+    };
+    return info;
   };
 
   const handleParseAIPrompt = async () => {
@@ -216,7 +297,17 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   return (
     <form onSubmit={handleSaveDraft} className="space-y-4 sm:space-y-6">
-      {error && (
+      {/* Validation Error Summary */}
+      {showErrorSummary && validationErrors.size > 0 && (
+        <ValidationErrorSummary
+          errorsBySection={validationErrors}
+          onSectionClick={scrollToSection}
+          onDismiss={() => setShowErrorSummary(false)}
+        />
+      )}
+
+      {/* Generic Error (fallback for non-validation errors) */}
+      {error && !showErrorSummary && (
         <div className="rounded-lg bg-danger/10 p-3 sm:p-4 text-sm sm:text-base text-danger">
           {error}
         </div>
@@ -334,43 +425,58 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       {/* Order Info Section */}
       <OrderInfoSection
+        ref={(el) => registerSectionRef('patient', el)}
         patientName={formData.patientName}
         fechaEntregaDeseada={formData.fechaEntregaDeseada}
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
         disabled={isLoading}
+        hasErrors={getSectionErrorInfo('patient').hasErrors}
+        errorCount={getSectionErrorInfo('patient').errorCount}
       />
 
       {/* Case Type Section */}
-
       <CaseTypeSection
+        ref={(el) => registerSectionRef('caseType', el)}
         tipoCaso={formData.tipoCaso ?? undefined}
         motivoGarantia={formData.motivoGarantia}
         seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
         onChange={(updates) => setFormData({ ...formData, ...updates })}
+        hasErrors={getSectionErrorInfo('caseType').hasErrors}
+        errorCount={getSectionErrorInfo('caseType').errorCount}
       />
 
       {/* Work Type Section */}
       <WorkTypeSection
+        ref={(el) => registerSectionRef('workType', el)}
         tipoTrabajo={formData.tipoTrabajo ?? undefined}
         tipoRestauracion={formData.tipoRestauracion ?? undefined}
         onChange={(updates) => setFormData({ ...formData, ...updates })}
+        hasErrors={getSectionErrorInfo('workType').hasErrors}
+        errorCount={getSectionErrorInfo('workType').errorCount}
       />
 
       {/* Description Section */}
       <DescriptionSection
+        ref={(el) => registerSectionRef('notes', el)}
         description={formData.description}
         onChange={(value) => setFormData({ ...formData, description: value })}
         disabled={isLoading}
+        hasErrors={getSectionErrorInfo('notes').hasErrors}
+        errorCount={getSectionErrorInfo('notes').errorCount}
       />
       {/* Teeth Number Section */}
       <TeethNumberSection
+        ref={(el) => registerSectionRef('teeth', el)}
         teethNumbers={formData.teethNumbers}
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
         disabled={isLoading}
+        hasErrors={getSectionErrorInfo('teeth').hasErrors}
+        errorCount={getSectionErrorInfo('teeth').errorCount}
       />
 
       {/* Impression Extended Section */}
       <ImpressionExtendedSection
+        ref={(el) => registerSectionRef('impression', el)}
         scanType={formData.scanType ?? undefined}
         escanerUtilizado={formData.escanerUtilizado ?? undefined}
         otroEscaner={formData.otroEscaner}
@@ -384,6 +490,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onUpperFileChange={setUpperFile}
         onLowerFileChange={setLowerFile}
         onBiteFileChange={setBiteFile}
+        hasErrors={getSectionErrorInfo('impression').hasErrors}
+        errorCount={getSectionErrorInfo('impression').errorCount}
       />
 
       {/* Mouth Photos Section - Optional */}
@@ -392,30 +500,39 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onChange={setMouthPhotoFile}
         orderId={orderId}
         onUploadComplete={(fileId) => {
-          console.log('Mouth photo uploaded:', fileId);
+          // No action needed after upload for now
         }}
       />
 
       {/* Implant Section */}
       <ImplantSection
+        ref={(el) => registerSectionRef('implant', el)}
         trabajoSobreImplante={formData.trabajoSobreImplante}
         informacionImplante={formData.informacionImplante}
         onChange={(updates) => setFormData({ ...formData, ...updates })}
+        hasErrors={getSectionErrorInfo('implant').hasErrors}
+        errorCount={getSectionErrorInfo('implant').errorCount}
       />
 
       {/* Material and Color Section */}
       <MaterialAndColorSection
+        ref={(el) => registerSectionRef('material', el)}
         material={formData.material}
         materialBrand={formData.materialBrand}
         color={formData.color}
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
         disabled={isLoading}
+        hasErrors={getSectionErrorInfo('material').hasErrors}
+        errorCount={getSectionErrorInfo('material').errorCount}
       />
 
       {/* Occlusion Section */}
       <OcclusionSection
+        ref={(el) => registerSectionRef('occlusion', el)}
         oclusionDiseno={formData.oclusionDiseno}
         onChange={(value) => setFormData({ ...formData, oclusionDiseno: value })}
+        hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+        errorCount={getSectionErrorInfo('occlusion').errorCount}
       />
 
       {/* Material Sent Section */}
@@ -432,14 +549,20 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       {/* Submission Type Section */}
       <SubmissionTypeSection
+        ref={(el) => registerSectionRef('submission', el)}
         submissionType={formData.submissionType ?? undefined}
         articulatedBy={formData.articulatedBy ?? undefined}
         onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        hasErrors={getSectionErrorInfo('submission').hasErrors}
+        errorCount={getSectionErrorInfo('submission').errorCount}
       />
 
       <AdditionalNotesSection
+        ref={(el) => registerSectionRef('notes', el)}
         additionalNotes={formData.notes}
         onChange={(value) => setFormData({ ...formData, notes: value })}
+        hasErrors={getSectionErrorInfo('notes').hasErrors}
+        errorCount={getSectionErrorInfo('notes').errorCount}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">

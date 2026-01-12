@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
 import { SectionContainer, SectionHeader } from '@/components/ui/form';
 
@@ -12,17 +13,35 @@ type OrderInfoSectionProps = {
     fechaEntregaDeseada?: string;
   };
   disabled?: boolean;
+  hasErrors?: boolean;
+  errorCount?: number;
+  collapsed?: boolean;
+  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export function OrderInfoSection({
-  patientName,
-  fechaEntregaDeseada,
-  onChange,
-  errors,
-  disabled = false,
-}: OrderInfoSectionProps) {
-  return (
-    <SectionContainer>
+export const OrderInfoSection = forwardRef<HTMLDivElement, OrderInfoSectionProps>(
+  (
+    {
+      patientName,
+      fechaEntregaDeseada,
+      onChange,
+      errors,
+      disabled = false,
+      hasErrors,
+      errorCount,
+      collapsed,
+      onCollapseChange,
+    },
+    ref
+  ) => {
+    return (
+      <SectionContainer
+        ref={ref}
+        hasErrors={hasErrors}
+        errorCount={errorCount}
+        collapsed={collapsed}
+        onCollapseChange={onCollapseChange}
+      >
       <SectionHeader
         icon="user"
         title="Información de la Orden"
@@ -55,3 +74,6 @@ export function OrderInfoSection({
     </SectionContainer>
   );
 }
+);
+
+OrderInfoSection.displayName = 'OrderInfoSection';
