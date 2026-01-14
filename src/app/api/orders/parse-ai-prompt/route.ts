@@ -41,7 +41,6 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
 
   "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
   "materialBrand": "Marca del material como IPS e.max, Katana, Prettau",
-  "color": "Código de color como A2, B1, etc",
 
   "trabajoSobreImplante": true o false,
   "informacionImplante": {
@@ -66,8 +65,8 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   },
 
   "colorInfo": {
-    "shadeType": "Tipo de guía de color - puede ser null",
-    "shadeCode": "Código de color - puede ser null",
+    "shadeType": SOLO uno de: "VITAPAN_CLASSICAL", "VITAPAN_3D_MASTER", "IVOCLAR_CHROMASCOP", "IVOCLAR_AD_BLEACH", "KURARAY_NORITAKE", "TRUBYTE_BIOFORM", "DURATONE" - o null si no se especifica. Por defecto usar "VITAPAN_CLASSICAL" si mencionan códigos tipo A2, B1, etc.,
+    "shadeCode": "Código de color como A2, A3, B1, 1M2, etc. - ESTE ES EL CAMPO PRINCIPAL PARA EL COLOR",
     "colorimeter": "Nombre del colorímetro (opcional)",
     "texture": ["lisa"] o ["rugosa"] o ["natural"] o cualquier combinación - DEBE SER UN ARRAY,
     "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY,
@@ -76,6 +75,35 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
       "level": número del 1 al 10,
       "description": "descripción de translucidez"
     }
+  },
+
+  "materialSent": {
+    // IMPRESIONES - marca true solo las que se mencionan explícitamente
+    "antagonista": true/false - si envían impresión de antagonista,
+    "arcada_completa_metalica_rigida": true/false - impresión arcada completa en cucharilla metálica rígida,
+    "arcada_completa_plastica_rigida": true/false - impresión arcada completa en cucharilla plástica rígida,
+    "arcada_completa_aluminio": true/false - impresión arcada completa en cucharilla de aluminio,
+    "arcada_completa_personalizada": true/false - impresión arcada completa en cucharilla personalizada,
+    "parcial_metalica_rigida": true/false - impresión parcial en cucharilla metálica rígida,
+    "parcial_plastica_rigida": true/false - impresión parcial en cucharilla plástica rígida,
+    "parcial_aluminio": true/false - impresión parcial en cucharilla de aluminio,
+    "cucharilla_doble": true/false - impresión en cucharilla doble,
+
+    // MODELOS - marca true solo los que se mencionan
+    "modelo_solido": true/false - modelo sólido,
+    "modelo_solido_reingreso": true/false - modelo sólido para reingreso,
+    "modelo_articulado": true/false - modelo articulado,
+    "modelo_encerado_prototipo": true/false - modelo con encerado o prototipo,
+
+    // REGISTROS - marca true solo los que se mencionan
+    "registro_mordida": true/false - registro de mordida,
+    "registro_oclusal": true/false - registro oclusal,
+    "registro_silicon": true/false - registro en silicón,
+    "registro_cera": true/false - registro en cera,
+
+    // ARCHIVOS - marca true solo los que se mencionan
+    "fotografia": true/false - fotografía del caso,
+    "radiografia": true/false - radiografía del caso
   }
 }
 
@@ -92,6 +120,19 @@ IMPORTANTE - Formato de valores:
 - Para "texture" y "gloss": SIEMPRE devuelve un ARRAY, aunque sea de un solo elemento: ["lisa"] NO "lisa"
 - Para "translucency": SIEMPRE incluye "description" aunque sea genérica como "translucidez media"
 - Para enums de implantes: usa EXACTAMENTE los valores especificados en minúsculas con guiones bajos
+
+IMPORTANTE - materialSent (Materiales Enviados):
+- SOLO incluye las keys que tengan valor true, NO incluyas las que son false
+- Busca menciones de: impresiones, modelos, registros de mordida, fotografías, radiografías
+- Palabras clave: "envío", "adjunto", "incluyo", "mando", "llevo", "con impresión", "con modelo", "con registro"
+- Si mencionan "impresión en cucharilla metálica" sin especificar arcada, usa "arcada_completa_metalica_rigida"
+- Si mencionan "modelo" sin más detalles, usa "modelo_solido"
+- Si mencionan "registro" o "mordida" sin especificar material, usa "registro_mordida"
+- Ejemplos de mapeo:
+  * "con fotografías" → fotografia: true
+  * "incluyo radiografía" → radiografia: true
+  * "envío modelo articulado" → modelo_articulado: true
+  * "impresión de antagonista y registro oclusal" → antagonista: true, registro_oclusal: true
 
 - Sé preciso y conservador - si no estás 100% seguro de un valor enum, omite ese campo
 - Devuelve SOLO el JSON con los campos que pudiste extraer con certeza

@@ -25,7 +25,6 @@ export interface Order {
   teethNumbers?: string;
   material?: string;
   materialBrand?: string;
-  color?: string;
   scanType?: string;
   status: OrderStatus;
   doctorId: string;
@@ -125,7 +124,6 @@ export interface OrderDetail {
   teethNumbers: string | null;
   material: string | null;
   materialBrand: string | null;
-  color: string | null;
   scanType: ScanType | null;
   status: OrderStatus;
   createdAt: string;
@@ -225,6 +223,19 @@ export const occlusionSchema = z.object({
     .optional(),
 });
 
+// Shade system constants
+export const SHADE_SYSTEMS = [
+  { value: 'VITAPAN_CLASSICAL', label: 'VITAPAN Classical' },
+  { value: 'VITAPAN_3D_MASTER', label: 'VITAPAN 3D-Master' },
+  { value: 'IVOCLAR_CHROMASCOP', label: 'Ivoclar Vivadent Chromascop' },
+  { value: 'IVOCLAR_AD_BLEACH', label: 'Ivoclar Vivadent A-D + Bleach' },
+  { value: 'KURARAY_NORITAKE', label: 'Kuraray Noritake' },
+  { value: 'TRUBYTE_BIOFORM', label: 'Trubyte Bioform/New Hue' },
+  { value: 'DURATONE', label: 'Duratone' },
+] as const;
+
+export type ShadeSystemValue = (typeof SHADE_SYSTEMS)[number]['value'];
+
 // Extended color info schema
 export const colorInfoSchema = z.object({
   shadeType: z.string().nullable(),
@@ -259,7 +270,6 @@ export const orderCreateSchema = z.object({
   teethNumbers: z.string().optional(),
   material: z.string().optional(),
   materialBrand: z.string().optional(),
-  color: z.string().optional(),
   scanType: z.nativeEnum(ScanType).nullable().optional(),
 
   // Case type
@@ -324,7 +334,6 @@ export const orderUpdateSchema = z.object({
   teethNumbers: z.string().optional(),
   material: z.string().optional(),
   materialBrand: z.string().optional(),
-  color: z.string().optional(),
   scanType: z.nativeEnum(ScanType).nullable().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
 

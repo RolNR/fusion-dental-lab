@@ -131,7 +131,6 @@ export function OrderReviewModal({
             <DetailRow label="Números de Dientes" value={formData.teethNumbers} />
             <DetailRow label="Material" value={formData.material} />
             <DetailRow label="Marca del Material" value={formData.materialBrand} />
-            <DetailRow label="Color" value={formData.color} />
             <DetailRow
               label="Tipo de Escaneo"
               value={formData.scanType ? getScanTypeLabel(formData.scanType) : undefined}

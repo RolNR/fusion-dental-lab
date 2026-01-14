@@ -18,7 +18,6 @@ import { WorkTypeSection } from './order-form/WorkTypeSection';
 import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
 import { OcclusionSection } from './order-form/OcclusionSection';
 import { MaterialSentSection } from './order-form/MaterialSentSection';
-import { ColorExtendedSection } from './order-form/ColorExtendedSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { ImplantSection } from './order-form/ImplantSection';
 import { OrderFormProps } from './order-form/OrderForm.types';
@@ -519,8 +518,9 @@ if (!(err instanceof Error)) {
         ref={(el) => registerSectionRef('material', el)}
         material={formData.material}
         materialBrand={formData.materialBrand}
-        color={formData.color}
-        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        colorInfo={formData.colorInfo}
+        onMaterialChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        onColorInfoChange={(value) => setFormData({ ...formData, colorInfo: value })}
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('material').hasErrors}
         errorCount={getSectionErrorInfo('material').errorCount}
@@ -539,12 +539,6 @@ if (!(err instanceof Error)) {
       <MaterialSentSection
         materialSent={formData.materialSent}
         onChange={(value) => setFormData({ ...formData, materialSent: value })}
-      />
-
-      {/* Color Extended Section */}
-      <ColorExtendedSection
-        colorInfo={formData.colorInfo}
-        onChange={(value) => setFormData({ ...formData, colorInfo: value })}
       />
 
       {/* Submission Type Section */}

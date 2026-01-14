@@ -155,7 +155,6 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
               <CopyableField label="Material" value={order.material} />
               <CopyableField label="Marca del Material" value={order.materialBrand} />
-              <CopyableField label="Color" value={order.color} />
               <CopyableField
                 label="Tipo de Escaneo"
                 value={order.scanType ? getScanTypeLabel(order.scanType) : null}

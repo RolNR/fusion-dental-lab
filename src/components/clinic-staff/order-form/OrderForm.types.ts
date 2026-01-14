@@ -27,7 +27,6 @@ export interface OrderFormData {
   teethNumbers?: string;
   material?: string;
   materialBrand?: string;
-  color?: string;
   scanType?: ScanType | null;
   doctorId?: string;
   status?: string;
@@ -60,7 +59,6 @@ export interface OrderFormState {
   teethNumbers: string;
   material: string;
   materialBrand: string;
-  color: string;
   scanType: ScanType | null;
   doctorId: string;
   tipoCaso: CaseType;

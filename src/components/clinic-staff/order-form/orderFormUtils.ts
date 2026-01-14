@@ -180,7 +180,6 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     teethNumbers: initialData?.teethNumbers || '',
     material: initialData?.material || '',
     materialBrand: initialData?.materialBrand || '',
-    color: initialData?.color || '',
     scanType: initialData?.scanType || null,
     doctorId: initialData?.doctorId || '',
     // New fields

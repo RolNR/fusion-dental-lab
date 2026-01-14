@@ -15,7 +15,6 @@ interface OrderFormData {
   teethNumbers: string;
   material: string;
   materialBrand: string;
-  color: string;
   scanType: any;
   doctorId: string;
 }

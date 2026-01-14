@@ -82,12 +82,6 @@ export function OrderDetails({
               <dd className="mt-1 text-sm text-foreground">{order.materialBrand}</dd>
             </div>
           )}
-          {order.color && (
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Color</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.color}</dd>
-            </div>
-          )}
           {order.scanType && (
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Tipo de Escaneo</dt>

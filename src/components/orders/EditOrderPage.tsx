@@ -70,10 +70,10 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
             teethNumbers: order.teethNumbers || '',
             material: order.material || '',
             materialBrand: order.materialBrand || '',
-            color: order.color || '',
             scanType: order.scanType as ScanType | null,
             doctorId: order.doctorId,
             status: order.status,
+            colorInfo: order.colorInfo,
           }}
           onSuccess={() => {
             router.push(`/${role}/orders/${orderId}`);
