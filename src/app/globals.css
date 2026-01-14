@@ -2,7 +2,7 @@
 
 @layer base {
   :root {
-    /* Primary brand colors - Soft sky blue */
+    /* Primary brand colors - Soft sky blue (default) */
     --color-primary: 56 189 248; /* Sky blue (sky-400) */
     --color-primary-hover: 14 165 233; /* Deeper sky blue (sky-500) */
     --color-primary-foreground: 255 255 255; /* white */

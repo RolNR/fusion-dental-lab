@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Suspense } from 'react';
 import { SessionProvider } from '@/components/providers/SessionProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { ColorSchemeProvider } from '@/components/providers/ColorSchemeProvider';
 import './globals.css';
 
 const inter = Inter({
@@ -23,6 +25,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} antialiased`}>
+        <Suspense fallback={null}>
+          <ColorSchemeProvider />
+        </Suspense>
         <SessionProvider>
           <ToastProvider>{children}</ToastProvider>
         </SessionProvider>

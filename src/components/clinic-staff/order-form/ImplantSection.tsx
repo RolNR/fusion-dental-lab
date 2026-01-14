@@ -216,7 +216,6 @@ export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
                 value={informacionImplante?.radiografiaPeriapical || ''}
                 onChange={(e) => handleImplantFieldChange('radiografiaPeriapical', e.target.value)}
                 placeholder="Descripción o ubicación de la radiografía"
-                required
               />
 
               <Input
@@ -225,7 +224,6 @@ export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
                 value={informacionImplante?.cbct || ''}
                 onChange={(e) => handleImplantFieldChange('cbct', e.target.value)}
                 placeholder="Descripción o ubicación del CBCT"
-                required
               />
             </div>
           </div>
