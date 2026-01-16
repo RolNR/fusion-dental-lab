@@ -60,7 +60,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const lastResultIndexRef = useRef<number>(0);
+  const processedResultsRef = useRef<Set<string>>(new Set());
 
   const [formData, setFormData] = useState(initializeFormState(initialData));
 
@@ -102,12 +102,17 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         recognition.onresult = (event) => {
           let finalTranscript = '';
 
-          // Only process results we haven't seen before to avoid duplication on Samsung devices
-          for (let i = lastResultIndexRef.current; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
+          // Process all results but use a Set to avoid duplicates (fixes Samsung devices)
+          for (let i = 0; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-              finalTranscript += transcript + ' ';
-              lastResultIndexRef.current = i + 1;
+              const transcript = event.results[i][0].transcript.trim();
+              // Create a unique key using index + transcript to detect duplicates
+              const resultKey = `${i}:${transcript}`;
+
+              if (transcript && !processedResultsRef.current.has(resultKey)) {
+                processedResultsRef.current.add(resultKey);
+                finalTranscript += transcript + ' ';
+              }
             }
           }
 
@@ -131,7 +136,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
         recognition.onend = () => {
           setIsListening(false);
-          lastResultIndexRef.current = 0; // Reset for next session
+          processedResultsRef.current.clear(); // Reset for next session
         };
 
         recognitionRef.current = recognition;
@@ -151,10 +156,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
-      lastResultIndexRef.current = 0; // Reset for next session
+      processedResultsRef.current.clear(); // Reset for next session
     } else {
       try {
-        lastResultIndexRef.current = 0; // Reset when starting
+        processedResultsRef.current.clear(); // Reset when starting
         recognitionRef.current.start();
         setIsListening(true);
         setAiError(null);
