@@ -59,6 +59,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const lastResultIndexRef = useRef<number>(0);
 
   const [formData, setFormData] = useState(initializeFormState(initialData));
 
@@ -100,10 +101,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         recognition.onresult = (event) => {
           let finalTranscript = '';
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
+          // Only process results we haven't seen before to avoid duplication on Samsung devices
+          for (let i = lastResultIndexRef.current; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
               finalTranscript += transcript + ' ';
+              lastResultIndexRef.current = i + 1;
             }
           }
 
@@ -127,6 +130,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
         recognition.onend = () => {
           setIsListening(false);
+          lastResultIndexRef.current = 0; // Reset for next session
         };
 
         recognitionRef.current = recognition;
@@ -146,8 +150,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     if (isListening) {
       recognitionRef.current.stop();
       setIsListening(false);
+      lastResultIndexRef.current = 0; // Reset for next session
     } else {
       try {
+        lastResultIndexRef.current = 0; // Reset when starting
         recognitionRef.current.start();
         setIsListening(true);
         setAiError(null);
