@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'LabWiseLink | Gestión de Órdenes Dentales',
+  title: 'Fusión Dental Lab | Gestión de Órdenes Dentales',
   description: 'Plataforma de gestión de órdenes entre dentistas y laboratorios dentales',
 };
 

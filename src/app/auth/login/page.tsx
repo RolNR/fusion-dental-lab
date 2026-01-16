@@ -6,8 +6,8 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { getRoleBasedRedirect } from '@/lib/redirect-helpers';
 
 export const metadata = {
-  title: 'Iniciar Sesión | LabWiseLink',
-  description: 'Inicia sesión en tu cuenta de LabWiseLink',
+  title: 'Iniciar Sesión | Fusión Dental Lab',
+  description: 'Inicia sesión en tu cuenta de Fusión Dental Lab',
 };
 
 export default async function LoginPage() {
