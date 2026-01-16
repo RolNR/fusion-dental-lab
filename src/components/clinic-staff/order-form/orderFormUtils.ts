@@ -101,16 +101,19 @@ export async function saveOrder(
   onSuccess: (() => void) | undefined,
   router: AppRouterInstance
 ) {
-  // Validate digital scan files
-  const validationError = validateDigitalScanFiles(
-    formData.scanType,
-    files.upperFile ?? null,
-    files.lowerFile ?? null,
-    files.biteFile ?? null
-  );
+  // Only validate digital scan files when submitting for review
+  // Allow saving as draft even with missing required files
+  if (submitForReview) {
+    const validationError = validateDigitalScanFiles(
+      formData.scanType,
+      files.upperFile ?? null,
+      files.lowerFile ?? null,
+      files.biteFile ?? null
+    );
 
-  if (validationError) {
-    throw new Error(validationError);
+    if (validationError) {
+      throw new Error(validationError);
+    }
   }
 
   // Create or update order

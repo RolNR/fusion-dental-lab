@@ -41,6 +41,7 @@ import {
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Map<string, ValidationErrorDetail[]>>(
     new Map()
@@ -181,11 +182,23 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     setShowReviewModal(false);
   };
 
+  const handleSaveAsDraft = async () => {
+    // Called when user clicks "Save as Draft" in the review modal
+    await handleSaveOrder(false);
+    setShowReviewModal(false);
+  };
+
   const handleSaveOrder = async (submitForReview: boolean) => {
     setError(null);
     setValidationErrors(new Map());
     setShowErrorSummary(false);
-    setIsLoading(true);
+
+    // Set appropriate loading state
+    if (submitForReview) {
+      setIsLoading(true);
+    } else {
+      setIsSavingDraft(true);
+    }
 
     try {
       const files = {
@@ -202,6 +215,20 @@ if (!(err instanceof Error)) {
         return;
       }
 
+      // When saving as draft, ignore validation errors for missing required fields
+      if (!submitForReview) {
+        const validationError = parseValidationError(err);
+        // If it's a validation error, suppress it when saving as draft
+        if (validationError || err.message.includes('archivos STL/PLY obligatorios')) {
+          // Silently ignore validation errors when saving as draft
+          return;
+        }
+        // Show non-validation errors (e.g., network errors)
+        setError(err.message);
+        return;
+      }
+
+      // When submitting for review, show all validation errors
       // Check if it's a file validation error (client-side)
       if (err.message.includes('archivos STL/PLY obligatorios')) {
         const grouped = new Map();
@@ -238,6 +265,7 @@ if (!(err instanceof Error)) {
       }
     } finally {
       setIsLoading(false);
+      setIsSavingDraft(false);
     }
   };
 
@@ -289,6 +317,9 @@ if (!(err instanceof Error)) {
         patientName: parsedData.patientName || prev.patientName,
         doctorId: prev.doctorId, // Don't override doctor selection
       }));
+
+      // Open review modal immediately after successful AI processing
+      setShowReviewModal(true);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : 'Error al procesar con IA');
     } finally {
@@ -605,7 +636,9 @@ if (!(err instanceof Error)) {
           formData={formData}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}
+          onSaveAsDraft={handleSaveAsDraft}
           isSubmitting={isLoading}
+          isSavingDraft={isSavingDraft}
         />
       )}
     </form>

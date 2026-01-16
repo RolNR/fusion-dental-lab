@@ -10,14 +10,18 @@ interface OrderReviewModalProps {
   formData: OrderFormState;
   onConfirm: () => void;
   onCancel: () => void;
+  onSaveAsDraft?: () => void;
   isSubmitting: boolean;
+  isSavingDraft?: boolean;
 }
 
 export function OrderReviewModal({
   formData,
   onConfirm,
   onCancel,
+  onSaveAsDraft,
   isSubmitting,
+  isSavingDraft = false,
 }: OrderReviewModalProps) {
   // Close on Escape key
   useEffect(() => {
@@ -317,18 +321,31 @@ export function OrderReviewModal({
             type="button"
             variant="secondary"
             onClick={onCancel}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSavingDraft}
             fullWidth
             className="sm:w-auto"
           >
             Volver a Editar
           </Button>
+          {onSaveAsDraft && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onSaveAsDraft}
+              isLoading={isSavingDraft}
+              disabled={isSubmitting || isSavingDraft}
+              fullWidth
+              className="sm:w-auto sm:flex-1"
+            >
+              {isSavingDraft ? 'Guardando...' : 'Guardar como Borrador'}
+            </Button>
+          )}
           <Button
             type="button"
             variant="primary"
             onClick={onConfirm}
             isLoading={isSubmitting}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSavingDraft}
             fullWidth
             className="sm:w-auto sm:flex-1"
           >

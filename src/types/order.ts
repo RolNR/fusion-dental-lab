@@ -196,15 +196,15 @@ export interface OrderDetail {
 
 // Implant information schema
 export const implantInfoSchema = z.object({
-  marcaImplante: z.string().min(1, 'La marca del implante es requerida'),
-  sistemaConexion: z.string().min(1, 'El sistema de conexión es requerido'),
-  numeroImplantes: z.number().min(1, 'El número de implantes es requerido'),
-  tipoRestauracion: z.enum(['individual', 'ferulizada', 'hibrida']),
-  tipoAditamento: z.enum(['estandar', 'personalizado', 'multi_unit']),
-  perfilEmergencia: z.enum(['recto', 'concavo', 'convexo']),
-  condicionTejidoBlando: z.enum(['sano', 'inflamado', 'retraido']),
-  radiografiaPeriapical: z.string().min(1, 'La radiografía es requerida'),
-  cbct: z.string().min(1, 'El CBCT es requerido'),
+  marcaImplante: z.string().optional(),
+  sistemaConexion: z.string().optional(),
+  numeroImplantes: z.number().optional(),
+  tipoRestauracion: z.enum(['individual', 'ferulizada', 'hibrida']).optional(),
+  tipoAditamento: z.enum(['estandar', 'personalizado', 'multi_unit']).optional(),
+  perfilEmergencia: z.enum(['recto', 'concavo', 'convexo']).optional(),
+  condicionTejidoBlando: z.enum(['sano', 'inflamado', 'retraido']).optional(),
+  radiografiaPeriapical: z.string().optional(),
+  cbct: z.string().optional(),
 });
 
 // Occlusion schema
@@ -216,8 +216,8 @@ export const occlusionSchema = z.object({
     'clase_iii',
     'borde_a_borde',
     'mordida_cruzada',
-  ]),
-  espacioInteroclusalSuficiente: z.boolean(),
+  ]).optional(),
+  espacioInteroclusalSuficiente: z.boolean().optional(),
   solucionEspacioInsuficiente: z
     .enum(['reduccion_oclusal', 'aumento_vertical', 'ambas'])
     .optional(),
@@ -238,16 +238,16 @@ export type ShadeSystemValue = (typeof SHADE_SYSTEMS)[number]['value'];
 
 // Extended color info schema
 export const colorInfoSchema = z.object({
-  shadeType: z.string().nullable(),
-  shadeCode: z.string().nullable(),
+  shadeType: z.string().nullable().optional(),
+  shadeCode: z.string().nullable().optional(),
   colorimeter: z.string().optional(),
-  texture: z.array(z.string()),
-  gloss: z.array(z.string()),
-  mamelones: z.enum(['si', 'no']),
+  texture: z.array(z.string()).optional(),
+  gloss: z.array(z.string()).optional(),
+  mamelones: z.enum(['si', 'no']).optional(),
   translucency: z.object({
     level: z.number().min(1).max(10),
     description: z.string(),
-  }),
+  }).optional(),
 });
 
 // TypeScript types for the schemas
@@ -256,9 +256,10 @@ export type OcclusionInfo = z.infer<typeof occlusionSchema>;
 export type ColorInfo = z.infer<typeof colorInfoSchema>;
 
 // Base schema for creating orders (shared between doctor and assistant)
-export const orderCreateSchema = z.object({
-  // Existing fields
-  patientName: z.string().min(1, 'El nombre del paciente es requerido'),
+// Schema for creating orders as drafts (all fields optional)
+export const orderDraftSchema = z.object({
+  // Existing fields - all optional for drafts
+  patientName: z.string().optional(),
   patientId: z.string().optional(),
   description: z.string().optional(),
   notes: z.string().optional(),
@@ -289,13 +290,14 @@ export const orderCreateSchema = z.object({
 
   // Implant
   trabajoSobreImplante: z.boolean().optional(),
-  informacionImplante: implantInfoSchema
+  informacionImplante: z
+    .union([implantInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Material sent
   materialSent: z
-    .record(z.string(), z.boolean())
+    .union([z.record(z.string(), z.boolean()), z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
@@ -303,17 +305,29 @@ export const orderCreateSchema = z.object({
   submissionType: z.nativeEnum(SubmissionType).nullable().optional(),
 
   // Occlusion
-  oclusionDiseno: occlusionSchema
+  oclusionDiseno: z
+    .union([occlusionSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Extended color
-  colorInfo: colorInfoSchema
+  colorInfo: z
+    .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Articulation
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
+});
+
+// Schema for creating orders with validation (patientName required)
+export const orderCreateSchema = orderDraftSchema.extend({
+  patientName: z.string().min(1, 'El nombre del paciente es requerido'),
+});
+
+// Schema for assistants creating draft orders (includes doctorId, patientName optional)
+export const assistantOrderDraftSchema = orderDraftSchema.extend({
+  doctorId: z.string().min(1, 'El doctor es requerido'),
 });
 
 // Schema for assistants creating orders (includes doctorId)
@@ -348,18 +362,21 @@ export const orderUpdateSchema = z.object({
   tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
   notaModeloFisico: z.string().optional(),
   trabajoSobreImplante: z.boolean().optional(),
-  informacionImplante: implantInfoSchema
+  informacionImplante: z
+    .union([implantInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   materialSent: z
-    .record(z.string(), z.boolean())
+    .union([z.record(z.string(), z.boolean()), z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   submissionType: z.nativeEnum(SubmissionType).nullable().optional(),
-  oclusionDiseno: occlusionSchema
+  oclusionDiseno: z
+    .union([occlusionSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
-  colorInfo: colorInfoSchema
+  colorInfo: z
+    .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),

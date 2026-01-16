@@ -164,50 +164,64 @@ export function OrderDetails({
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
           <h2 className="text-xl font-bold text-foreground mb-4">Información de Implante</h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Marca del Implante</dt>
-              <dd className="mt-1 text-sm text-foreground">
-                {order.informacionImplante.marcaImplante}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Sistema de Conexión</dt>
-              <dd className="mt-1 text-sm text-foreground">
-                {order.informacionImplante.sistemaConexion}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Número de Implantes</dt>
-              <dd className="mt-1 text-sm text-foreground">
-                {order.informacionImplante.numeroImplantes}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.informacionImplante.tipoRestauracion}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Aditamento</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.informacionImplante.tipoAditamento}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Perfil de Emergencia</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.informacionImplante.perfilEmergencia}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">
-                Condición de Tejido Blando
-              </dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.informacionImplante.condicionTejidoBlando}
-              </dd>
-            </div>
+            {order.informacionImplante.marcaImplante && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Marca del Implante</dt>
+                <dd className="mt-1 text-sm text-foreground">
+                  {order.informacionImplante.marcaImplante}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.sistemaConexion && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Sistema de Conexión</dt>
+                <dd className="mt-1 text-sm text-foreground">
+                  {order.informacionImplante.sistemaConexion}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.numeroImplantes && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Número de Implantes</dt>
+                <dd className="mt-1 text-sm text-foreground">
+                  {order.informacionImplante.numeroImplantes}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.tipoRestauracion && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
+                <dd className="mt-1 text-sm text-foreground capitalize">
+                  {order.informacionImplante.tipoRestauracion}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.tipoAditamento && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Tipo de Aditamento</dt>
+                <dd className="mt-1 text-sm text-foreground capitalize">
+                  {order.informacionImplante.tipoAditamento}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.perfilEmergencia && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Perfil de Emergencia</dt>
+                <dd className="mt-1 text-sm text-foreground capitalize">
+                  {order.informacionImplante.perfilEmergencia}
+                </dd>
+              </div>
+            )}
+            {order.informacionImplante.condicionTejidoBlando && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">
+                  Condición de Tejido Blando
+                </dt>
+                <dd className="mt-1 text-sm text-foreground capitalize">
+                  {order.informacionImplante.condicionTejidoBlando}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
@@ -220,7 +234,7 @@ export function OrderDetails({
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Tipo de Oclusión</dt>
               <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.oclusionDiseno.tipoOclusion.replace(/_/g, ' ')}
+                {order.oclusionDiseno.tipoOclusion?.replace(/_/g, ' ') || 'No especificado'}
               </dd>
             </div>
             <div>
@@ -228,7 +242,11 @@ export function OrderDetails({
                 Espacio Interoclusal Suficiente
               </dt>
               <dd className="mt-1 text-sm text-foreground">
-                {order.oclusionDiseno.espacioInteroclusalSuficiente ? 'Sí' : 'No'}
+                {order.oclusionDiseno.espacioInteroclusalSuficiente !== undefined
+                  ? order.oclusionDiseno.espacioInteroclusalSuficiente
+                    ? 'Sí'
+                    : 'No'
+                  : 'No especificado'}
               </dd>
             </div>
             {order.oclusionDiseno.solucionEspacioInsuficiente && (
@@ -268,12 +286,14 @@ export function OrderDetails({
                 <dd className="mt-1 text-sm text-foreground">{order.colorInfo.colorimeter}</dd>
               </div>
             )}
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Mamelones</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">
-                {order.colorInfo.mamelones}
-              </dd>
-            </div>
+            {order.colorInfo.mamelones && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Mamelones</dt>
+                <dd className="mt-1 text-sm text-foreground capitalize">
+                  {order.colorInfo.mamelones}
+                </dd>
+              </div>
+            )}
             {order.colorInfo.texture && order.colorInfo.texture.length > 0 && (
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Textura</dt>
@@ -288,12 +308,14 @@ export function OrderDetails({
                 <dd className="mt-1 text-sm text-foreground">{order.colorInfo.gloss.join(', ')}</dd>
               </div>
             )}
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Nivel de Translucidez</dt>
-              <dd className="mt-1 text-sm text-foreground">
-                {order.colorInfo.translucency.level}/10 - {order.colorInfo.translucency.description}
-              </dd>
-            </div>
+            {order.colorInfo.translucency && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Nivel de Translucidez</dt>
+                <dd className="mt-1 text-sm text-foreground">
+                  {order.colorInfo.translucency.level}/10 - {order.colorInfo.translucency.description}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       )}
