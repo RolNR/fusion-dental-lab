@@ -2,6 +2,7 @@
 
 import { signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 
@@ -17,7 +18,15 @@ export default function SignOutPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">LabWiseLink</h1>
+          <div className="flex justify-center mb-8">
+            <Image
+              src="/logo-fusion.png"
+              alt="Fusión Dental Lab"
+              width={250}
+              height={60}
+              priority
+            />
+          </div>
           <h2 className="mt-6 text-2xl font-semibold text-foreground">Cerrar Sesión</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             ¿Estás seguro que deseas cerrar tu sesión?

@@ -2,9 +2,9 @@
 
 @layer base {
   :root {
-    /* Primary brand colors - Soft sky blue (default) */
-    --color-primary: 56 189 248; /* Sky blue (sky-400) */
-    --color-primary-hover: 14 165 233; /* Deeper sky blue (sky-500) */
+    /* Primary brand colors - Rojo Fusión */
+    --color-primary: 239 43 36; /* Rojo Fusión #EF2B24 */
+    --color-primary-hover: 220 35 30; /* Darker Rojo Fusión */
     --color-primary-foreground: 255 255 255; /* white */
 
     /* Secondary colors - Softer grays */
@@ -47,8 +47,8 @@
     --color-input-foreground: 28 28 30; /* Apple dark gray */
     --color-input-placeholder: 174 174 178; /* Medium gray */
 
-    /* Focus ring - Sky blue */
-    --color-focus-ring: 56 189 248; /* Sky blue */
+    /* Focus ring - Rojo Fusión */
+    --color-focus-ring: 239 43 36; /* Rojo Fusión */
 
     /* Shadow colors for depth */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -59,8 +59,8 @@
 
   /* Dark mode (future) */
   .dark {
-    --color-primary: 96 165 250; /* blue-400 */
-    --color-primary-hover: 59 130 246; /* blue-500 */
+    --color-primary: 255 75 70; /* Lighter Rojo Fusión for dark mode */
+    --color-primary-hover: 239 43 36; /* Rojo Fusión */
 
     --color-background: 17 24 39; /* gray-900 */
     --color-foreground: 243 244 246; /* gray-100 */
