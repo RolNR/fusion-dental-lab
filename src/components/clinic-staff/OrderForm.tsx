@@ -52,6 +52,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [isParsingAI, setIsParsingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showFullForm, setShowFullForm] = useState(!!orderId); // Show full form only when editing existing order
 
   // Refs for scrolling to sections
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -323,10 +324,15 @@ if (!(err instanceof Error)) {
         doctorId: prev.doctorId, // Don't override doctor selection
       }));
 
+      // Show full form after successful AI processing
+      setShowFullForm(true);
+
       // Open review modal immediately after successful AI processing
       setShowReviewModal(true);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : 'Error al procesar con IA');
+      // Show full form even on error so user can manually fill it
+      setShowFullForm(true);
     } finally {
       setIsParsingAI(false);
     }
@@ -354,19 +360,19 @@ if (!(err instanceof Error)) {
         </div>
       )}
 
-      {role === 'doctor' && (
+      {showFullForm && role === 'doctor' && (
         <Select label="Doctor" id="doctorId" value="" onChange={() => {}} disabled={true}>
           <option value="">{currentDoctorName || 'Cargando...'}</option>
         </Select>
       )}
 
-      {role === 'assistant' && (
+      {showFullForm && role === 'assistant' && (
         <div>
           <Select
             label="Doctor"
             id="doctorId"
             value={formData.doctorId}
-            onChange={(e) => setFormData({ ...formData, doctorId: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, doctorId: e.target.value }))}
             required
             disabled={isLoading || !!orderId || doctors.length === 0}
           >
@@ -417,7 +423,7 @@ if (!(err instanceof Error)) {
             label=""
             id="aiPrompt"
             value={formData.aiPrompt}
-            onChange={(e) => setFormData({ ...formData, aiPrompt: e.target.value })}
+            onChange={(e) => setFormData((prev) => ({ ...prev, aiPrompt: e.target.value }))}
             disabled={isLoading || isParsingAI}
             rows={4}
             placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
@@ -461,15 +467,29 @@ if (!(err instanceof Error)) {
             )}
           </div>
           {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
+          {!showFullForm && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowFullForm(true)}
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
+              Llenar Formulario Manualmente
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* Order Info Section */}
-      <OrderInfoSection
-        ref={(el) => registerSectionRef('patient', el)}
-        patientName={formData.patientName}
-        fechaEntregaDeseada={formData.fechaEntregaDeseada}
-        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+      {/* Show full form only after AI processing or when editing */}
+      {showFullForm && (
+        <>
+          {/* Order Info Section */}
+          <OrderInfoSection
+            ref={(el) => registerSectionRef('patient', el)}
+            patientName={formData.patientName}
+            fechaEntregaDeseada={formData.fechaEntregaDeseada}
+            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('patient').hasErrors}
         errorCount={getSectionErrorInfo('patient').errorCount}
@@ -481,7 +501,7 @@ if (!(err instanceof Error)) {
         tipoCaso={formData.tipoCaso ?? undefined}
         motivoGarantia={formData.motivoGarantia}
         seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
-        onChange={(updates) => setFormData({ ...formData, ...updates })}
+        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
         hasErrors={getSectionErrorInfo('caseType').hasErrors}
         errorCount={getSectionErrorInfo('caseType').errorCount}
       />
@@ -491,7 +511,7 @@ if (!(err instanceof Error)) {
         ref={(el) => registerSectionRef('workType', el)}
         tipoTrabajo={formData.tipoTrabajo ?? undefined}
         tipoRestauracion={formData.tipoRestauracion ?? undefined}
-        onChange={(updates) => setFormData({ ...formData, ...updates })}
+        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
         hasErrors={getSectionErrorInfo('workType').hasErrors}
         errorCount={getSectionErrorInfo('workType').errorCount}
       />
@@ -500,7 +520,7 @@ if (!(err instanceof Error)) {
       <DescriptionSection
         ref={(el) => registerSectionRef('notes', el)}
         description={formData.description}
-        onChange={(value) => setFormData({ ...formData, description: value })}
+        onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('notes').hasErrors}
         errorCount={getSectionErrorInfo('notes').errorCount}
@@ -509,7 +529,7 @@ if (!(err instanceof Error)) {
       <TeethNumberSection
         ref={(el) => registerSectionRef('teeth', el)}
         teethNumbers={formData.teethNumbers}
-        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('teeth').hasErrors}
         errorCount={getSectionErrorInfo('teeth').errorCount}
@@ -523,7 +543,7 @@ if (!(err instanceof Error)) {
         otroEscaner={formData.otroEscaner}
         tipoSilicon={formData.tipoSilicon ?? undefined}
         notaModeloFisico={formData.notaModeloFisico}
-        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
         disabled={isLoading}
         upperFile={upperFile}
         lowerFile={lowerFile}
@@ -550,7 +570,7 @@ if (!(err instanceof Error)) {
         ref={(el) => registerSectionRef('implant', el)}
         trabajoSobreImplante={formData.trabajoSobreImplante}
         informacionImplante={formData.informacionImplante}
-        onChange={(updates) => setFormData({ ...formData, ...updates })}
+        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
         hasErrors={getSectionErrorInfo('implant').hasErrors}
         errorCount={getSectionErrorInfo('implant').errorCount}
       />
@@ -561,8 +581,8 @@ if (!(err instanceof Error)) {
         material={formData.material}
         materialBrand={formData.materialBrand}
         colorInfo={formData.colorInfo}
-        onMaterialChange={(field, value) => setFormData({ ...formData, [field]: value })}
-        onColorInfoChange={(value) => setFormData({ ...formData, colorInfo: value })}
+        onMaterialChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+        onColorInfoChange={(value) => setFormData((prev) => ({ ...prev, colorInfo: value }))}
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('material').hasErrors}
         errorCount={getSectionErrorInfo('material').errorCount}
@@ -572,7 +592,7 @@ if (!(err instanceof Error)) {
       <OcclusionSection
         ref={(el) => registerSectionRef('occlusion', el)}
         oclusionDiseno={formData.oclusionDiseno}
-        onChange={(value) => setFormData({ ...formData, oclusionDiseno: value })}
+        onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
         hasErrors={getSectionErrorInfo('occlusion').hasErrors}
         errorCount={getSectionErrorInfo('occlusion').errorCount}
       />
@@ -580,7 +600,7 @@ if (!(err instanceof Error)) {
       {/* Material Sent Section */}
       <MaterialSentSection
         materialSent={formData.materialSent}
-        onChange={(value) => setFormData({ ...formData, materialSent: value })}
+        onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
       />
 
       {/* Submission Type Section */}
@@ -588,7 +608,7 @@ if (!(err instanceof Error)) {
         ref={(el) => registerSectionRef('submission', el)}
         submissionType={formData.submissionType ?? undefined}
         articulatedBy={formData.articulatedBy ?? undefined}
-        onChange={(field, value) => setFormData({ ...formData, [field]: value })}
+        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
         hasErrors={getSectionErrorInfo('submission').hasErrors}
         errorCount={getSectionErrorInfo('submission').errorCount}
       />
@@ -596,7 +616,7 @@ if (!(err instanceof Error)) {
       <AdditionalNotesSection
         ref={(el) => registerSectionRef('notes', el)}
         additionalNotes={formData.notes}
-        onChange={(value) => setFormData({ ...formData, notes: value })}
+        onChange={(value) => setFormData((prev) => ({ ...prev, notes: value }))}
         hasErrors={getSectionErrorInfo('notes').hasErrors}
         errorCount={getSectionErrorInfo('notes').errorCount}
       />
@@ -633,7 +653,9 @@ if (!(err instanceof Error)) {
         >
           Cancelar
         </Button>
-      </div>
+          </div>
+        </>
+      )}
 
       {/* Order Review Modal */}
       {showReviewModal && (
