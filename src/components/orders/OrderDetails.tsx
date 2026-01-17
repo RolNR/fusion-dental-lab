@@ -56,32 +56,6 @@ export function OrderDetails({
               </dd>
             </div>
           )}
-          {order.tipoTrabajo && (
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
-              <dd className="mt-1 text-sm text-foreground">
-                {order.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'}
-              </dd>
-            </div>
-          )}
-          {order.tipoRestauracion && (
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
-              <dd className="mt-1 text-sm text-foreground capitalize">{order.tipoRestauracion}</dd>
-            </div>
-          )}
-          {order.material && (
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Material</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.material}</dd>
-            </div>
-          )}
-          {order.materialBrand && (
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Marca del Material</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.materialBrand}</dd>
-            </div>
-          )}
           {order.scanType && (
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Tipo de Escaneo</dt>
@@ -159,70 +133,73 @@ export function OrderDetails({
         </div>
       )}
 
-      {/* Implant Information */}
-      {order.trabajoSobreImplante && order.informacionImplante && (
+      {/* Teeth Configuration */}
+      {order.teeth && order.teeth.length > 0 && (
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-          <h2 className="text-xl font-bold text-foreground mb-4">Información de Implante</h2>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {order.informacionImplante.marcaImplante && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Marca del Implante</dt>
-                <dd className="mt-1 text-sm text-foreground">
-                  {order.informacionImplante.marcaImplante}
-                </dd>
+          <h2 className="text-xl font-bold text-foreground mb-4">Configuración de Dientes</h2>
+          <div className="space-y-6">
+            {order.teeth.map((tooth) => (
+              <div key={tooth.id} className="border-l-4 border-primary pl-4">
+                <h3 className="font-semibold text-lg text-foreground mb-3">
+                  Diente {tooth.toothNumber}
+                </h3>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {tooth.material && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Material</dt>
+                      <dd className="mt-1 text-sm text-foreground">{tooth.material}</dd>
+                    </div>
+                  )}
+                  {tooth.materialBrand && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Marca del Material</dt>
+                      <dd className="mt-1 text-sm text-foreground">{tooth.materialBrand}</dd>
+                    </div>
+                  )}
+                  {tooth.tipoTrabajo && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
+                      <dd className="mt-1 text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
+                    </div>
+                  )}
+                  {tooth.tipoRestauracion && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
+                      <dd className="mt-1 text-sm text-foreground capitalize">{tooth.tipoRestauracion}</dd>
+                    </div>
+                  )}
+                  {tooth.trabajoSobreImplante && (
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Trabajo sobre Implante</dt>
+                      <dd className="mt-1 text-sm text-foreground">Sí</dd>
+                    </div>
+                  )}
+                  {tooth.colorInfo && (
+                    <div className="col-span-2">
+                      <dt className="text-sm font-medium text-muted-foreground">Información de Color</dt>
+                      <dd className="mt-1 text-sm text-foreground">
+                        {(tooth.colorInfo as any).shadeType && <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>}
+                        {(tooth.colorInfo as any).shadeCode && <span className="ml-2">Código: {(tooth.colorInfo as any).shadeCode}</span>}
+                      </dd>
+                    </div>
+                  )}
+                  {tooth.informacionImplante && (
+                    <div className="col-span-2">
+                      <dt className="text-sm font-medium text-muted-foreground mb-2">Información de Implante</dt>
+                      <dd className="mt-1 text-sm text-foreground space-y-1">
+                        {(tooth.informacionImplante as any).marcaImplante && (
+                          <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
+                        )}
+                        {(tooth.informacionImplante as any).sistemaConexion && (
+                          <div>Sistema de Conexión: {(tooth.informacionImplante as any).sistemaConexion}</div>
+                        )}
+                      </dd>
+                    </div>
+                  )}
+                </dl>
               </div>
-            )}
-            {order.informacionImplante.sistemaConexion && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Sistema de Conexión</dt>
-                <dd className="mt-1 text-sm text-foreground">
-                  {order.informacionImplante.sistemaConexion}
-                </dd>
-              </div>
-            )}
-            {order.informacionImplante.numeroImplantes && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Número de Implantes</dt>
-                <dd className="mt-1 text-sm text-foreground">
-                  {order.informacionImplante.numeroImplantes}
-                </dd>
-              </div>
-            )}
-            {order.informacionImplante.tipoRestauracion && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">
-                  {order.informacionImplante.tipoRestauracion}
-                </dd>
-              </div>
-            )}
-            {order.informacionImplante.tipoAditamento && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Tipo de Aditamento</dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">
-                  {order.informacionImplante.tipoAditamento}
-                </dd>
-              </div>
-            )}
-            {order.informacionImplante.perfilEmergencia && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Perfil de Emergencia</dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">
-                  {order.informacionImplante.perfilEmergencia}
-                </dd>
-              </div>
-            )}
-            {order.informacionImplante.condicionTejidoBlando && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
-                  Condición de Tejido Blando
-                </dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">
-                  {order.informacionImplante.condicionTejidoBlando}
-                </dd>
-              </div>
-            )}
-          </dl>
+            ))}
+          </div>
         </div>
       )}
 
@@ -256,63 +233,6 @@ export function OrderDetails({
                 </dt>
                 <dd className="mt-1 text-sm text-foreground capitalize">
                   {order.oclusionDiseno.solucionEspacioInsuficiente.replace(/_/g, ' ')}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
-      {/* Extended Color Information */}
-      {order.colorInfo && (
-        <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-          <h2 className="text-xl font-bold text-foreground mb-4">Información de Color</h2>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {order.colorInfo.shadeType && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Tipo de Sombra</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.colorInfo.shadeType}</dd>
-              </div>
-            )}
-            {order.colorInfo.shadeCode && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Código de Sombra</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.colorInfo.shadeCode}</dd>
-              </div>
-            )}
-            {order.colorInfo.colorimeter && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Colorímetro</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.colorInfo.colorimeter}</dd>
-              </div>
-            )}
-            {order.colorInfo.mamelones && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Mamelones</dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">
-                  {order.colorInfo.mamelones}
-                </dd>
-              </div>
-            )}
-            {order.colorInfo.texture && order.colorInfo.texture.length > 0 && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Textura</dt>
-                <dd className="mt-1 text-sm text-foreground">
-                  {order.colorInfo.texture.join(', ')}
-                </dd>
-              </div>
-            )}
-            {order.colorInfo.gloss && order.colorInfo.gloss.length > 0 && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Brillo</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.colorInfo.gloss.join(', ')}</dd>
-              </div>
-            )}
-            {order.colorInfo.translucency && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Nivel de Translucidez</dt>
-                <dd className="mt-1 text-sm text-foreground">
-                  {order.colorInfo.translucency.level}/10 - {order.colorInfo.translucency.description}
                 </dd>
               </div>
             )}

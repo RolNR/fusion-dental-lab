@@ -153,8 +153,6 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
-              <CopyableField label="Material" value={order.material} />
-              <CopyableField label="Marca del Material" value={order.materialBrand} />
               <CopyableField
                 label="Tipo de Escaneo"
                 value={order.scanType ? getScanTypeLabel(order.scanType) : null}
@@ -177,71 +175,75 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             )}
           </div>
 
-          {/* Implant Information */}
-          {order.trabajoSobreImplante && order.informacionImplante && (
+          {/* Teeth Configuration */}
+          {order.teeth && order.teeth.length > 0 && (
             <div className="rounded-xl bg-background p-6 shadow-md border border-border">
               <h2 className="mb-4 text-xl font-semibold text-foreground">
-                Información de Implantes
+                Configuración de Dientes
               </h2>
-              <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <CopyableField
-                  label="Marca del Implante"
-                  value={order.informacionImplante.marcaImplante}
-                />
-                <CopyableField
-                  label="Sistema de Conexión"
-                  value={order.informacionImplante.sistemaConexion}
-                />
-                <CopyableField
-                  label="Número de Implantes"
-                  value={order.informacionImplante.numeroImplantes?.toString()}
-                />
-                <CopyableField
-                  label="Tipo de Restauración"
-                  value={
-                    order.informacionImplante.tipoRestauracion === 'individual'
-                      ? 'Individual'
-                      : order.informacionImplante.tipoRestauracion === 'ferulizada'
-                        ? 'Ferulizada'
-                        : 'Híbrida'
-                  }
-                />
-                <CopyableField
-                  label="Tipo de Aditamento"
-                  value={
-                    order.informacionImplante.tipoAditamento === 'estandar'
-                      ? 'Estándar'
-                      : order.informacionImplante.tipoAditamento === 'personalizado'
-                        ? 'Personalizado'
-                        : 'Multi-Unit'
-                  }
-                />
-                <CopyableField
-                  label="Perfil de Emergencia"
-                  value={
-                    order.informacionImplante.perfilEmergencia === 'recto'
-                      ? 'Recto'
-                      : order.informacionImplante.perfilEmergencia === 'concavo'
-                        ? 'Cóncavo'
-                        : 'Convexo'
-                  }
-                />
-                <CopyableField
-                  label="Condición del Tejido Blando"
-                  value={
-                    order.informacionImplante.condicionTejidoBlando === 'sano'
-                      ? 'Sano'
-                      : order.informacionImplante.condicionTejidoBlando === 'inflamado'
-                        ? 'Inflamado'
-                        : 'Retraído'
-                  }
-                />
-                <CopyableField
-                  label="Radiografía Periapical"
-                  value={order.informacionImplante.radiografiaPeriapical}
-                />
-                <CopyableField label="CBCT" value={order.informacionImplante.cbct} />
-              </dl>
+              <div className="space-y-6">
+                {order.teeth.map((tooth) => (
+                  <div key={tooth.id} className="border-l-4 border-primary pl-4">
+                    <h3 className="font-semibold text-lg text-foreground mb-3">
+                      Diente {tooth.toothNumber}
+                    </h3>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {tooth.material && (
+                        <div>
+                          <dt className="text-sm font-medium text-muted-foreground">Material</dt>
+                          <dd className="text-sm text-foreground">{tooth.material}</dd>
+                        </div>
+                      )}
+                      {tooth.materialBrand && (
+                        <div>
+                          <dt className="text-sm font-medium text-muted-foreground">Marca del Material</dt>
+                          <dd className="text-sm text-foreground">{tooth.materialBrand}</dd>
+                        </div>
+                      )}
+                      {tooth.tipoTrabajo && (
+                        <div>
+                          <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
+                          <dd className="text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
+                        </div>
+                      )}
+                      {tooth.tipoRestauracion && (
+                        <div>
+                          <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
+                          <dd className="text-sm text-foreground capitalize">{tooth.tipoRestauracion}</dd>
+                        </div>
+                      )}
+                      {tooth.trabajoSobreImplante && (
+                        <div>
+                          <dt className="text-sm font-medium text-muted-foreground">Trabajo sobre Implante</dt>
+                          <dd className="text-sm text-foreground">Sí</dd>
+                        </div>
+                      )}
+                      {tooth.colorInfo && (
+                        <div className="col-span-2">
+                          <dt className="text-sm font-medium text-muted-foreground">Información de Color</dt>
+                          <dd className="text-sm text-foreground">
+                            {(tooth.colorInfo as any).shadeType && <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>}
+                            {(tooth.colorInfo as any).shadeCode && <span className="ml-2">Código: {(tooth.colorInfo as any).shadeCode}</span>}
+                          </dd>
+                        </div>
+                      )}
+                      {tooth.informacionImplante && (
+                        <div className="col-span-2">
+                          <dt className="text-sm font-medium text-muted-foreground mb-2">Información de Implante</dt>
+                          <dd className="text-sm text-foreground space-y-1">
+                            {(tooth.informacionImplante as any).marcaImplante && (
+                              <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
+                            )}
+                            {(tooth.informacionImplante as any).sistemaConexion && (
+                              <div>Sistema de Conexión: {(tooth.informacionImplante as any).sistemaConexion}</div>
+                            )}
+                          </dd>
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

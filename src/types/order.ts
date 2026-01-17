@@ -11,6 +11,7 @@ import {
   Prisma,
 } from '@prisma/client';
 import { z } from 'zod';
+import { Tooth } from './tooth';
 
 // Order interface for detail pages (doctor/assistant views)
 export interface Order {
@@ -23,8 +24,6 @@ export interface Order {
   fechaEntregaDeseada?: string;
   aiPrompt?: string;
   teethNumbers?: string;
-  material?: string;
-  materialBrand?: string;
   scanType?: string;
   status: OrderStatus;
   doctorId: string;
@@ -35,19 +34,11 @@ export interface Order {
   motivoGarantia?: string;
   seDevuelveTrabajoOriginal?: boolean;
 
-  // POC fields - Work classification
-  tipoTrabajo?: WorkType;
-  tipoRestauracion?: RestorationType;
-
   // POC fields - Impression details
   escanerUtilizado?: ScannerType;
   otroEscaner?: string;
   tipoSilicon?: SiliconType;
   notaModeloFisico?: string;
-
-  // POC fields - Implant
-  trabajoSobreImplante?: boolean;
-  informacionImplante?: ImplantInfo;
 
   // POC fields - Material sent
   materialSent?: Record<string, boolean>;
@@ -58,11 +49,11 @@ export interface Order {
   // POC fields - Occlusion
   oclusionDiseno?: OcclusionInfo;
 
-  // POC fields - Extended color
-  colorInfo?: ColorInfo;
-
   // POC fields - Articulation
   articulatedBy?: ArticulatedBy;
+
+  // Per-tooth configuration
+  teeth?: Tooth[];
 
   clinic?: {
     name: string;
@@ -122,8 +113,6 @@ export interface OrderDetail {
   fechaEntregaDeseada: string | null;
   aiPrompt: string | null;
   teethNumbers: string | null;
-  material: string | null;
-  materialBrand: string | null;
   scanType: ScanType | null;
   status: OrderStatus;
   createdAt: string;
@@ -136,19 +125,11 @@ export interface OrderDetail {
   motivoGarantia: string | null;
   seDevuelveTrabajoOriginal: boolean | null;
 
-  // POC fields - Work classification
-  tipoTrabajo: WorkType | null;
-  tipoRestauracion: RestorationType | null;
-
   // POC fields - Impression details
   escanerUtilizado: ScannerType | null;
   otroEscaner: string | null;
   tipoSilicon: SiliconType | null;
   notaModeloFisico: string | null;
-
-  // POC fields - Implant
-  trabajoSobreImplante: boolean | null;
-  informacionImplante: ImplantInfo | null;
 
   // POC fields - Material sent
   materialSent: Record<string, boolean> | null;
@@ -159,11 +140,11 @@ export interface OrderDetail {
   // POC fields - Occlusion
   oclusionDiseno: OcclusionInfo | null;
 
-  // POC fields - Extended color
-  colorInfo: ColorInfo | null;
-
   // POC fields - Articulation
   articulatedBy: ArticulatedBy | null;
+
+  // Per-tooth configuration
+  teeth: Tooth[];
 
   clinic: {
     id: string;
@@ -269,8 +250,6 @@ export const orderDraftSchema = z.object({
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
-  material: z.string().optional(),
-  materialBrand: z.string().optional(),
   scanType: z.nativeEnum(ScanType).nullable().optional(),
 
   // Case type
@@ -278,22 +257,11 @@ export const orderDraftSchema = z.object({
   motivoGarantia: z.string().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
 
-  // Work classification
-  tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
-  tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
-
   // Impression details
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
   tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
   notaModeloFisico: z.string().optional(),
-
-  // Implant
-  trabajoSobreImplante: z.boolean().optional(),
-  informacionImplante: z
-    .union([implantInfoSchema, z.null()])
-    .optional()
-    .transform((val) => val as Prisma.InputJsonValue | undefined),
 
   // Material sent
   materialSent: z
@@ -307,12 +275,6 @@ export const orderDraftSchema = z.object({
   // Occlusion
   oclusionDiseno: z
     .union([occlusionSchema, z.null()])
-    .optional()
-    .transform((val) => val as Prisma.InputJsonValue | undefined),
-
-  // Extended color
-  colorInfo: z
-    .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
 
@@ -346,8 +308,6 @@ export const orderUpdateSchema = z.object({
     .optional()
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   teethNumbers: z.string().optional(),
-  material: z.string().optional(),
-  materialBrand: z.string().optional(),
   scanType: z.nativeEnum(ScanType).nullable().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
 
@@ -355,17 +315,10 @@ export const orderUpdateSchema = z.object({
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
-  tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
-  tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
   tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
   notaModeloFisico: z.string().optional(),
-  trabajoSobreImplante: z.boolean().optional(),
-  informacionImplante: z
-    .union([implantInfoSchema, z.null()])
-    .optional()
-    .transform((val) => val as Prisma.InputJsonValue | undefined),
   materialSent: z
     .union([z.record(z.string(), z.boolean()), z.null()])
     .optional()
@@ -373,10 +326,6 @@ export const orderUpdateSchema = z.object({
   submissionType: z.nativeEnum(SubmissionType).nullable().optional(),
   oclusionDiseno: z
     .union([occlusionSchema, z.null()])
-    .optional()
-    .transform((val) => val as Prisma.InputJsonValue | undefined),
-  colorInfo: z
-    .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),

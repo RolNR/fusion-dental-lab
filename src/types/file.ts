@@ -1,7 +1,6 @@
 export enum FileCategory {
   SCAN_UPPER = 'scanUpper',
   SCAN_LOWER = 'scanLower',
-  SCAN_BITE = 'scanBite',
   MOUTH_PHOTO = 'mouthPhoto',
   OTHER = 'other',
 }
@@ -9,7 +8,6 @@ export enum FileCategory {
 export const FILE_CATEGORY_LABELS: Record<FileCategory, string> = {
   [FileCategory.SCAN_UPPER]: 'Escaneo Superior',
   [FileCategory.SCAN_LOWER]: 'Escaneo Inferior',
-  [FileCategory.SCAN_BITE]: 'Escaneo de Mordida',
   [FileCategory.MOUTH_PHOTO]: 'Foto Intraoral',
   [FileCategory.OTHER]: 'Otro',
 };

@@ -159,25 +159,18 @@ model Order {
   fechaEntregaDeseada          DateTime?
   aiPrompt                     String?
   teethNumbers                 String?
-  material                     String?
-  materialBrand                String?
   color                        String?
   scanType                     ScanType?
   tipoCaso                     CaseType?        @default(nuevo)
   motivoGarantia               String?
   seDevuelveTrabajoOriginal    Boolean?
-  tipoTrabajo                  WorkType?        @default(restauracion)
-  tipoRestauracion             RestorationType?
   escanerUtilizado             ScannerType?
   otroEscaner                  String?
   tipoSilicon                  SiliconType?
   notaModeloFisico             String?
-  trabajoSobreImplante         Boolean?         @default(false)
-  informacionImplante          Json?
   materialSent                 Json?
   submissionType               SubmissionType?  @default(terminado)
   oclusionDiseno               Json?
-  colorInfo                    Json?
   articulatedBy                ArticulatedBy?   @default(doctor)
   status                       OrderStatus      @default(DRAFT)
   clinicId                     String
@@ -191,6 +184,7 @@ model Order {
   alerts                       Alert[]
   auditLogs                    AuditLog[]
   files                        File[]
+  teeth                        Tooth[]
   clinic                       Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   createdBy                    User             @relation("CreatorOrders", fields: [createdById], references: [id], onDelete: Cascade)
   doctor                       User             @relation("DoctorOrders", fields: [doctorId], references: [id], onDelete: Cascade)
@@ -202,6 +196,26 @@ model Order {
   @@index([doctorId])
   @@index([orderNumber])
   @@index([status])
+}
+
+model Tooth {
+  id                      String              @id @default(cuid())
+  orderId                 String
+  toothNumber             String
+  material                String?
+  materialBrand           String?
+  colorInfo               Json?
+  tipoTrabajo             WorkType?
+  tipoRestauracion        RestorationType?
+  trabajoSobreImplante    Boolean?            @default(false)
+  informacionImplante     Json?
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  order                   Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, toothNumber])
+  @@index([orderId])
+  @@index([toothNumber])
 }
 
 model OrderComment {

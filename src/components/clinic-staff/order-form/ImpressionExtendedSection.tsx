@@ -185,16 +185,6 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
                 required
                 category={FileCategory.SCAN_LOWER}
               />
-
-              <FileUpload
-                label="Escaneo de Mordida (Bite)"
-                accept=".stl,.ply"
-                maxSize={50}
-                value={biteFile || null}
-                onChange={onBiteFileChange || (() => {})}
-                required
-                category={FileCategory.SCAN_BITE}
-              />
             </div>
           </div>
         )}
