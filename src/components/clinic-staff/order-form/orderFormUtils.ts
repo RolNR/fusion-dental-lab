@@ -8,6 +8,7 @@ import {
   OrderFiles,
 } from '@/lib/api/orderFormHelpers';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { ToothData } from '@/types/tooth';
 
 /**
  * Fetches the current doctor's information from the session
@@ -199,4 +200,93 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     oclusionDiseno: initialData?.oclusionDiseno,
     articulatedBy: initialData?.articulatedBy || null,
   };
+}
+
+/**
+ * Parse teeth numbers string into array
+ */
+export function parseTeethNumbers(teethNumbersStr: string | undefined): string[] {
+  if (!teethNumbersStr?.trim()) {
+    return [];
+  }
+
+  // Parse comma-separated teeth numbers
+  return teethNumbersStr
+    .split(',')
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0)
+    // Remove duplicates
+    .filter((t, idx, arr) => arr.indexOf(t) === idx)
+    // Sort numerically
+    .sort((a, b) => parseInt(a) - parseInt(b));
+}
+
+/**
+ * Initialize teeth data Map from parsed teeth numbers
+ */
+export function initializeTeethData(
+  parsedTeeth: string[],
+  existingData: Map<string, ToothData>
+): Map<string, ToothData> {
+  const updated = new Map(existingData);
+
+  // Add new teeth with empty configuration
+  parsedTeeth.forEach((toothNumber) => {
+    if (!updated.has(toothNumber)) {
+      updated.set(toothNumber, { toothNumber });
+    }
+  });
+
+  // Remove teeth that are no longer in the list
+  Array.from(updated.keys()).forEach((toothNumber) => {
+    if (!parsedTeeth.includes(toothNumber)) {
+      updated.delete(toothNumber);
+    }
+  });
+
+  return updated;
+}
+
+/**
+ * Get the correct selected tooth (first available if current selection is invalid)
+ */
+export function getValidSelectedTooth(
+  currentSelection: string | null,
+  availableTeeth: string[]
+): string | null {
+  if (availableTeeth.length === 0) {
+    return null;
+  }
+
+  // If current selection is valid, keep it
+  if (currentSelection && availableTeeth.includes(currentSelection)) {
+    return currentSelection;
+  }
+
+  // Otherwise, select the first tooth
+  return availableTeeth[0];
+}
+
+/**
+ * Copy tooth data from source to target teeth
+ */
+export function copyToothData(
+  sourceToothNumber: string,
+  targetToothNumbers: string[],
+  teethData: Map<string, ToothData>
+): Map<string, ToothData> {
+  const sourceData = teethData.get(sourceToothNumber);
+  if (!sourceData) {
+    return teethData;
+  }
+
+  const updated = new Map(teethData);
+  targetToothNumbers.forEach((toothNumber) => {
+    updated.set(toothNumber, {
+      ...sourceData,
+      toothNumber, // Keep the tooth number unique
+    });
+  });
+
+  return updated;
 }

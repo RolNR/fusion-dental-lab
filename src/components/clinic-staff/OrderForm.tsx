@@ -28,6 +28,9 @@ import {
   saveOrder as saveOrderUtil,
   initializeFormState,
   parseAIPrompt,
+  parseTeethNumbers,
+  initializeTeethData,
+  getValidSelectedTooth,
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
 import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
@@ -37,6 +40,9 @@ import {
   groupErrorsBySection,
   ValidationErrorDetail,
 } from '@/types/validation';
+import { ToothSelector } from './order-form/ToothSelector';
+import { ToothActions } from './order-form/ToothActions';
+import { ToothData } from '@/types/tooth';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -72,6 +78,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // File upload state for mouth photos
   const [mouthPhotoFile, setMouthPhotoFile] = useState<File | null>(null);
 
+  // Per-tooth configuration state
+  const [selectedToothNumber, setSelectedToothNumber] = useState<string | null>(null);
+  const [teethData, setTeethData] = useState<Map<string, ToothData>>(new Map());
+  const [teethNumbers, setTeethNumbers] = useState<string[]>([]);
+
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
     if (role === 'doctor') {
@@ -86,6 +97,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       });
     }
   }, [role, orderId]);
+
+  // Parse teethNumbers and manage tooth selection
+  useEffect(() => {
+    const parsed = parseTeethNumbers(formData.teethNumbers);
+    setTeethNumbers(parsed);
+    setTeethData((prev) => initializeTeethData(parsed, prev));
+    setSelectedToothNumber((prev) => getValidSelectedTooth(prev, parsed));
+  }, [formData.teethNumbers]);
 
   // Initialize speech recognition
   useEffect(() => {
