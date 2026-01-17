@@ -1,14 +1,13 @@
 import {
   ScanType,
   CaseType,
-  WorkType,
-  RestorationType,
   ScannerType,
   SiliconType,
   SubmissionType,
   ArticulatedBy,
 } from '@prisma/client';
-import { OcclusionInfo, ColorInfo, ImplantInfo } from '@/types/order';
+import { OcclusionInfo } from '@/types/order';
+import { ToothData } from '@/types/tooth';
 
 export interface OrderFormProps {
   initialData?: OrderFormData;
@@ -25,28 +24,29 @@ export interface OrderFormData {
   fechaEntregaDeseada?: string; // ISO date string
   aiPrompt?: string;
   teethNumbers?: string;
-  material?: string;
-  materialBrand?: string;
   scanType?: ScanType | null;
   doctorId?: string;
   status?: string;
-  // New fields
+
+  // Case type fields
   tipoCaso?: CaseType | null;
   motivoGarantia?: string;
   seDevuelveTrabajoOriginal?: boolean;
-  tipoTrabajo?: WorkType | null;
-  tipoRestauracion?: RestorationType | null;
+
+  // Impression fields
   escanerUtilizado?: ScannerType | null;
   otroEscaner?: string;
   tipoSilicon?: SiliconType | null;
   notaModeloFisico?: string;
-  trabajoSobreImplante?: boolean;
-  informacionImplante?: ImplantInfo;
+
+  // Order-level fields (shared)
   materialSent?: Record<string, boolean>;
   submissionType?: SubmissionType | null;
   oclusionDiseno?: OcclusionInfo;
-  colorInfo?: ColorInfo;
   articulatedBy?: ArticulatedBy | null;
+
+  // Per-tooth configuration
+  teeth?: ToothData[];
 }
 
 export interface OrderFormState {
@@ -57,24 +57,23 @@ export interface OrderFormState {
   fechaEntregaDeseada: string;
   aiPrompt: string;
   teethNumbers: string;
-  material: string;
-  materialBrand: string;
   scanType: ScanType | null;
   doctorId: string;
+
+  // Case type fields
   tipoCaso: CaseType;
   motivoGarantia: string;
   seDevuelveTrabajoOriginal: boolean;
-  tipoTrabajo: WorkType;
-  tipoRestauracion: RestorationType | null;
+
+  // Impression fields
   escanerUtilizado: ScannerType | null;
   otroEscaner: string;
   tipoSilicon: SiliconType | null;
   notaModeloFisico: string;
-  trabajoSobreImplante: boolean;
-  informacionImplante?: ImplantInfo;
+
+  // Order-level fields (shared)
   materialSent?: Record<string, boolean>;
   submissionType: SubmissionType | null;
   oclusionDiseno?: OcclusionInfo;
-  colorInfo?: ColorInfo;
   articulatedBy: ArticulatedBy | null;
 }

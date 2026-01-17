@@ -43,12 +43,11 @@ export async function fetchDoctors() {
 export function validateDigitalScanFiles(
   scanType: ScanType | null,
   upperFile: File | null,
-  lowerFile: File | null,
-  biteFile: File | null
+  lowerFile: File | null
 ): string | null {
   if (scanType === ScanType.DIGITAL_SCAN) {
-    if (!upperFile || !lowerFile || !biteFile) {
-      return 'Debes subir los archivos STL/PLY obligatorios: Superior, Inferior y Mordida';
+    if (!upperFile || !lowerFile) {
+      return 'Debes subir los archivos STL/PLY obligatorios: Superior e Inferior';
     }
   }
   return null;
@@ -107,8 +106,7 @@ export async function saveOrder(
     const validationError = validateDigitalScanFiles(
       formData.scanType,
       files.upperFile ?? null,
-      files.lowerFile ?? null,
-      files.biteFile ?? null
+      files.lowerFile ?? null
     );
 
     if (validationError) {
@@ -181,26 +179,24 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     fechaEntregaDeseada: initialData?.fechaEntregaDeseada || '',
     aiPrompt: initialData?.aiPrompt || '',
     teethNumbers: initialData?.teethNumbers || '',
-    material: initialData?.material || '',
-    materialBrand: initialData?.materialBrand || '',
     scanType: initialData?.scanType || null,
     doctorId: initialData?.doctorId || '',
-    // New fields
+
+    // Case type fields
     tipoCaso: initialData?.tipoCaso || 'nuevo',
     motivoGarantia: initialData?.motivoGarantia || '',
     seDevuelveTrabajoOriginal: initialData?.seDevuelveTrabajoOriginal || false,
-    tipoTrabajo: initialData?.tipoTrabajo || 'restauracion',
-    tipoRestauracion: initialData?.tipoRestauracion || null,
+
+    // Impression fields
     escanerUtilizado: initialData?.escanerUtilizado || null,
     otroEscaner: initialData?.otroEscaner || '',
     tipoSilicon: initialData?.tipoSilicon || null,
     notaModeloFisico: initialData?.notaModeloFisico || '',
-    trabajoSobreImplante: initialData?.trabajoSobreImplante || false,
-    informacionImplante: initialData?.informacionImplante,
+
+    // Order-level fields (shared)
     materialSent: initialData?.materialSent,
     submissionType: initialData?.submissionType || null,
     oclusionDiseno: initialData?.oclusionDiseno,
-    colorInfo: initialData?.colorInfo,
     articulatedBy: initialData?.articulatedBy || null,
   };
 }
