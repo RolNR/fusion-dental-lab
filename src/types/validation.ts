@@ -4,6 +4,7 @@
 export interface ValidationErrorDetail {
   field: string; // Path to the field (e.g., "informacionImplante.sistemaConexion")
   message: string; // Error message
+  toothNumber?: string; // Tooth number if error is tooth-specific (e.g., "11", "12")
 }
 
 export interface ValidationError {
@@ -25,10 +26,43 @@ interface APIErrorResponse {
 }
 
 /**
+ * Extracts tooth array index from field path (e.g., "teeth.0.material" → 0)
+ * Returns null if not a tooth-specific field
+ */
+export function extractToothIndex(fieldPath: string): number | null {
+  const match = fieldPath.match(/^teeth\.(\d+)\./);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+/**
  * Maps field paths to section names for error grouping
  */
 export function getFieldSection(fieldPath: string): string {
   const path = fieldPath.toLowerCase();
+
+  // Check if this is a tooth-specific field (e.g., "teeth.0.material")
+  if (path.startsWith('teeth.') && /^teeth\.\d+\./.test(path)) {
+    // Extract the sub-field to determine the section
+    const subField = path.replace(/^teeth\.\d+\./, '');
+    if (subField.includes('tipotrabajo') || subField.includes('tiporestauracion')) {
+      return 'workType';
+    }
+    if (
+      subField.includes('material') ||
+      subField.includes('materialbrand') ||
+      subField.includes('color') ||
+      subField.includes('colorinfo')
+    ) {
+      return 'material';
+    }
+    if (subField.includes('informacionimplante') || subField.includes('trabajosobreimplante')) {
+      return 'implant';
+    }
+    if (subField.includes('toothnumber')) {
+      return 'teeth';
+    }
+    return 'teeth'; // Default for tooth-specific fields
+  }
 
   if (path.includes('patientname') || path.includes('patientid') || path.includes('fechaentrega')) {
     return 'patient';
@@ -133,4 +167,24 @@ export function parseValidationError(error: Error): ValidationError | null {
       message: detail.message || 'Error de validación',
     })),
   };
+}
+
+/**
+ * Enriches validation errors with tooth numbers from teeth array
+ * Maps teeth array indices (e.g., "teeth.0.material") to actual tooth numbers
+ */
+export function enrichErrorsWithToothNumbers(
+  errors: ValidationErrorDetail[],
+  teethArray: Array<{ toothNumber: string }>
+): ValidationErrorDetail[] {
+  return errors.map((error) => {
+    const toothIndex = extractToothIndex(error.field);
+    if (toothIndex !== null && teethArray[toothIndex]) {
+      return {
+        ...error,
+        toothNumber: teethArray[toothIndex].toothNumber,
+      };
+    }
+    return error;
+  });
 }

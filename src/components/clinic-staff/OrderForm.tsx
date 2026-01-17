@@ -39,6 +39,7 @@ import {
   parseValidationError,
   groupErrorsBySection,
   ValidationErrorDetail,
+  enrichErrorsWithToothNumbers,
 } from '@/types/validation';
 import { ToothData } from '@/types/tooth';
 import { ToothConfigurationSection } from './order-form/ToothConfigurationSection';
@@ -52,6 +53,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     new Map()
   );
   const [showErrorSummary, setShowErrorSummary] = useState(false);
+  const [teethWithErrors, setTeethWithErrors] = useState<Set<string>>(new Set());
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
   const [isParsingAI, setIsParsingAI] = useState(false);
@@ -292,7 +294,20 @@ if (!(err instanceof Error)) {
       const validationError = parseValidationError(err);
 
       if (validationError) {
-        const grouped = groupErrorsBySection(validationError.details);
+        // Enrich errors with tooth numbers from teethData
+        const teethArray = Array.from(teethData.values());
+        const enrichedDetails = enrichErrorsWithToothNumbers(validationError.details, teethArray);
+
+        // Extract teeth with errors
+        const errorsSet = new Set<string>();
+        enrichedDetails.forEach((detail) => {
+          if (detail.toothNumber) {
+            errorsSet.add(detail.toothNumber);
+          }
+        });
+        setTeethWithErrors(errorsSet);
+
+        const grouped = groupErrorsBySection(enrichedDetails);
         setValidationErrors(grouped);
         setShowErrorSummary(true);
         setError(validationError.message);
@@ -608,6 +623,8 @@ if (!(err instanceof Error)) {
         onToothSelect={setSelectedToothNumber}
         teethData={teethData}
         onTeethDataChange={setTeethData}
+        teethWithErrors={teethWithErrors}
+        validationErrors={validationErrors}
       />
 
       {/* Implant Section - Per-tooth configuration */}
