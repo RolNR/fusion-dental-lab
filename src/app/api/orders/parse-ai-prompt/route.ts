@@ -177,7 +177,18 @@ Reglas para las sugerencias:
 1. SOLO sugiere cuando hay contexto suficiente pero información incompleta
 2. Alta confianza solamente (>80%)
 3. Máximo 5 sugerencias más valiosas
-4. Prioriza sugerencias que eviten errores comunes o completen información faltante
+4. PRIORIDAD MÁXIMA: Sugerencias para campos REQUERIDOS faltantes
+5. Prioriza sugerencias que eviten errores comunes o completen información faltante
+
+CAMPOS REQUERIDOS que DEBES sugerir si faltan:
+- patientName: Si no se proporciona nombre del paciente, sugiere recordatorio
+- teethNumbers: Si no se especifican dientes, sugiere que los indique
+- scanType: Si no se especifica tipo de impresión, sugiere "DIGITAL_SCAN" (más común en órdenes modernas)
+- Para scanType="DIGITAL_SCAN": SIEMPRE sugiere un recordatorio sobre subir archivos STL (Superior e Inferior) - usa field="_fileUploadReminder"
+
+RECORDATORIOS ESPECIALES (no son campos aplicables, solo informativos):
+- Para recordar subir archivos STL: usa field="_fileUploadReminder", value con mensaje descriptivo, confidence=100
+- Estos recordatorios NO se pueden aplicar con "Aplicar", solo informan al usuario
 
 Formato de cada sugerencia:
 {
@@ -190,14 +201,24 @@ Formato de cada sugerencia:
   "toothNumber": "11"  // solo si category es "tooth"
 }
 
-Ejemplos de cuándo SUGERIR:
-- Usuario menciona "color A2" pero no especifica guía → sugiere field: "colorInfo.shadeType", value: "VITAPAN_CLASSICAL" (A2 pertenece a esta guía)
-- Usuario menciona "escáner intraoral" sin especificar marca → sugiere field: "escanerUtilizado", value: "iTero" (más común)
-- Usuario especifica dientes sin tipo de trabajo → sugiere field: "tipoTrabajo", value: "restauracion", category: "tooth", toothNumber: "11" (por cada diente)
-- Usuario no especifica fecha de entrega para coronas → sugiere field: "fechaEntregaDeseada", value: "[fecha +7 días]" (estándar para coronas)
-- Usuario menciona "zirconia" pero no especifica marca → sugiere field: "materialBrand", value: "Katana", category: "tooth" (marca común de zirconia)
-- Usuario especifica "corona" sin material → sugiere field: "material", value: "Zirconia", category: "tooth" (más común para coronas)
-- Usuario menciona "porcelana" → sugiere field: "materialBrand", value: "IPS e.max", category: "tooth" (marca común de porcelana)
+Ejemplos de cuándo SUGERIR (PRIORIDAD DE ARRIBA HACIA ABAJO):
+
+PRIORIDAD 1 - Campos requeridos faltantes:
+- No hay nombre de paciente → sugiere field: "patientName", value: null, label: "Nombre del Paciente", reason: "Campo requerido: especifica el nombre del paciente", confidence: 100
+- No hay dientes especificados → sugiere field: "teethNumbers", value: null, label: "Dientes a Trabajar", reason: "Campo requerido: indica qué dientes se trabajarán", confidence: 100
+- No hay scanType pero menciona escaneo → sugiere field: "scanType", value: "DIGITAL_SCAN", label: "Tipo de Impresión", reason: "Mencionaste escaneo digital", confidence: 95
+- scanType es DIGITAL_SCAN → sugiere field: "_fileUploadReminder", value: "Recuerda subir los archivos STL (Arcada Superior e Inferior) en la sección de Archivos", label: "Archivos STL Requeridos", reason: "Los archivos STL son obligatorios para escaneo digital", confidence: 100
+
+PRIORIDAD 2 - Campos contextuales importantes:
+- Usuario menciona "color A2" pero no especifica guía → sugiere field: "colorInfo.shadeType", value: "VITAPAN_CLASSICAL", label: "Guía de Color", reason: "El color A2 pertenece a la guía VITAPAN Classical", confidence: 90
+- Usuario menciona "escáner intraoral" sin especificar marca → sugiere field: "escanerUtilizado", value: "iTero", label: "Escáner Utilizado", reason: "iTero es el escáner más común", confidence: 85
+- Usuario especifica dientes sin tipo de trabajo → sugiere field: "tipoTrabajo", value: "restauracion", category: "tooth", toothNumber: "11", label: "Tipo de Trabajo", reason: "Restauración es el tipo más común", confidence: 85
+- Usuario no especifica fecha de entrega → sugiere field: "fechaEntregaDeseada", value: "[fecha +7 días]", label: "Fecha de Entrega", reason: "Tiempo estándar para este tipo de trabajo", confidence: 80
+
+PRIORIDAD 3 - Campos opcionales útiles:
+- Usuario menciona "zirconia" pero no especifica marca → sugiere field: "materialBrand", value: "Katana", category: "tooth", label: "Marca de Material", reason: "Katana es una marca común de zirconia", confidence: 80
+- Usuario especifica "corona" sin material → sugiere field: "material", value: "Zirconia", category: "tooth", label: "Material", reason: "Zirconia es el material más común para coronas", confidence: 85
+- Usuario menciona "porcelana" → sugiere field: "materialBrand", value: "IPS e.max", category: "tooth", label: "Marca de Porcelana", reason: "IPS e.max es la marca líder en porcelana", confidence: 85
 
 IMPORTANTE - Rutas de campos:
 - Para campos a nivel orden: usa nombres simples como "escanerUtilizado", "fechaEntregaDeseada", "scanType"

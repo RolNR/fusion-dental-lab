@@ -70,7 +70,7 @@ function Model({ url, fileExtension, shouldRevokeUrl }: { url: string; fileExten
   return (
     <Center>
       <mesh geometry={geometry} rotation={[-Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color="#6366f1" flatShading={false} />
+        <meshStandardMaterial color="#9ca3af" flatShading={false} />
       </mesh>
     </Center>
   );

@@ -886,6 +886,13 @@ if (!(err instanceof Error)) {
           }}
           suggestions={aiSuggestions}
           onApplySuggestion={handleApplySuggestion}
+          upperFile={upperFile}
+          lowerFile={lowerFile}
+          mouthPhotoFile={mouthPhotoFile}
+          onUpperFileChange={setUpperFile}
+          onLowerFileChange={setLowerFile}
+          onMouthPhotoFileChange={setMouthPhotoFile}
+          orderId={orderId}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}
           onSaveAsDraft={handleSaveAsDraft}

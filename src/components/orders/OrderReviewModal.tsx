@@ -16,12 +16,22 @@ import {
   CaseTypeSection,
   SubmissionTypeSection,
   OcclusionDesignSection,
+  FileUploadsSection,
 } from './review-sections';
 
 interface OrderReviewModalProps {
   formData: OrderFormState & { teeth?: ToothData[] };
   suggestions?: AISuggestion[];
   onApplySuggestion?: (suggestion: AISuggestion) => void;
+  // File upload props
+  upperFile?: File | null;
+  lowerFile?: File | null;
+  mouthPhotoFile?: File | null;
+  onUpperFileChange?: (file: File | null) => void;
+  onLowerFileChange?: (file: File | null) => void;
+  onMouthPhotoFileChange?: (file: File | null) => void;
+  orderId?: string;
+  // Actions
   onConfirm: () => void;
   onCancel: () => void;
   onSaveAsDraft?: () => void;
@@ -33,6 +43,13 @@ export function OrderReviewModal({
   formData,
   suggestions = [],
   onApplySuggestion,
+  upperFile,
+  lowerFile,
+  mouthPhotoFile,
+  onUpperFileChange,
+  onLowerFileChange,
+  onMouthPhotoFileChange,
+  orderId,
   onConfirm,
   onCancel,
   onSaveAsDraft,
@@ -109,6 +126,17 @@ export function OrderReviewModal({
           <DentalDetailsSection teethNumbers={formData.teethNumbers} scanType={formData.scanType} />
 
           <ToothConfigSection teeth={formData.teeth} />
+
+          <FileUploadsSection
+            scanType={formData.scanType}
+            upperFile={upperFile}
+            lowerFile={lowerFile}
+            mouthPhotoFile={mouthPhotoFile}
+            onUpperFileChange={onUpperFileChange}
+            onLowerFileChange={onLowerFileChange}
+            onMouthPhotoFileChange={onMouthPhotoFileChange}
+            orderId={orderId}
+          />
 
           <CaseTypeSection
             tipoCaso={formData.tipoCaso}
