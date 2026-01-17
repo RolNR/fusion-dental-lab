@@ -522,15 +522,24 @@ if (!(err instanceof Error)) {
         errorCount={getSectionErrorInfo('caseType').errorCount}
       />
 
-      {/* Work Type Section - TODO: Update for per-tooth configuration */}
-      {/* <WorkTypeSection
-        ref={(el) => registerSectionRef('workType', el)}
-        tipoTrabajo={formData.tipoTrabajo ?? undefined}
-        tipoRestauracion={formData.tipoRestauracion ?? undefined}
-        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-        hasErrors={getSectionErrorInfo('workType').hasErrors}
-        errorCount={getSectionErrorInfo('workType').errorCount}
-      /> */}
+      {/* Work Type Section - Per-tooth configuration */}
+      {selectedToothNumber && (
+        <WorkTypeSection
+          ref={(el) => registerSectionRef('workType', el)}
+          tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
+          tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
+          onChange={(updates) => {
+            setTeethData((prev) => {
+              const updated = new Map(prev);
+              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
+              updated.set(selectedToothNumber, { ...currentData, ...updates });
+              return updated;
+            });
+          }}
+          hasErrors={getSectionErrorInfo('workType').hasErrors}
+          errorCount={getSectionErrorInfo('workType').errorCount}
+        />
+      )}
 
       {/* Description Section */}
       <DescriptionSection
@@ -588,29 +597,53 @@ if (!(err instanceof Error)) {
         }}
       />
 
-      {/* Implant Section */}
-      {/* Implant Section - TODO: Update for per-tooth configuration */}
-      {/* <ImplantSection
-        ref={(el) => registerSectionRef('implant', el)}
-        trabajoSobreImplante={formData.trabajoSobreImplante}
-        informacionImplante={formData.informacionImplante}
-        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-        hasErrors={getSectionErrorInfo('implant').hasErrors}
-        errorCount={getSectionErrorInfo('implant').errorCount}
-      /> */}
+      {/* Implant Section - Per-tooth configuration */}
+      {selectedToothNumber && (
+        <ImplantSection
+          ref={(el) => registerSectionRef('implant', el)}
+          trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
+          informacionImplante={teethData.get(selectedToothNumber)?.informacionImplante ?? undefined}
+          onChange={(updates) => {
+            setTeethData((prev) => {
+              const updated = new Map(prev);
+              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
+              updated.set(selectedToothNumber, { ...currentData, ...updates });
+              return updated;
+            });
+          }}
+          hasErrors={getSectionErrorInfo('implant').hasErrors}
+          errorCount={getSectionErrorInfo('implant').errorCount}
+        />
+      )}
 
-      {/* Material and Color Section - TODO: Update for per-tooth configuration */}
-      {/* <MaterialAndColorSection
-        ref={(el) => registerSectionRef('material', el)}
-        material={formData.material}
-        materialBrand={formData.materialBrand}
-        colorInfo={formData.colorInfo}
-        onMaterialChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        onColorInfoChange={(value) => setFormData((prev) => ({ ...prev, colorInfo: value }))}
-        disabled={isLoading}
-        hasErrors={getSectionErrorInfo('material').hasErrors}
-        errorCount={getSectionErrorInfo('material').errorCount}
-      /> */}
+      {/* Material and Color Section - Per-tooth configuration */}
+      {selectedToothNumber && (
+        <MaterialAndColorSection
+          ref={(el) => registerSectionRef('material', el)}
+          material={teethData.get(selectedToothNumber)?.material ?? ''}
+          materialBrand={teethData.get(selectedToothNumber)?.materialBrand ?? ''}
+          colorInfo={teethData.get(selectedToothNumber)?.colorInfo ?? undefined}
+          onMaterialChange={(field, value) => {
+            setTeethData((prev) => {
+              const updated = new Map(prev);
+              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
+              updated.set(selectedToothNumber, { ...currentData, [field]: value });
+              return updated;
+            });
+          }}
+          onColorInfoChange={(value) => {
+            setTeethData((prev) => {
+              const updated = new Map(prev);
+              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
+              updated.set(selectedToothNumber, { ...currentData, colorInfo: value });
+              return updated;
+            });
+          }}
+          disabled={isLoading}
+          hasErrors={getSectionErrorInfo('material').hasErrors}
+          errorCount={getSectionErrorInfo('material').errorCount}
+        />
+      )}
 
       {/* Occlusion Section */}
       <OcclusionSection
