@@ -1,6 +1,6 @@
 'use client';
 
-import { ToothSelector } from './ToothSelector';
+import { Odontogram } from './Odontogram';
 import { ToothActions } from './ToothActions';
 import { ToothData } from '@/types/tooth';
 import { copyToothData } from './orderFormUtils';
@@ -11,6 +11,7 @@ interface ToothConfigurationSectionProps {
   teethNumbers: string[];
   selectedTooth: string | null;
   onToothSelect: (toothNumber: string) => void;
+  onToothToggle: (toothNumber: string) => void;
   teethData: Map<string, ToothData>;
   onTeethDataChange: (updater: (prev: Map<string, ToothData>) => Map<string, ToothData>) => void;
   teethWithErrors?: Set<string>;
@@ -21,16 +22,12 @@ export function ToothConfigurationSection({
   teethNumbers,
   selectedTooth,
   onToothSelect,
+  onToothToggle,
   teethData,
   onTeethDataChange,
   teethWithErrors = new Set(),
   validationErrors = new Map(),
 }: ToothConfigurationSectionProps) {
-  // Don't render if no teeth entered
-  if (teethNumbers.length === 0) {
-    return null;
-  }
-
   // Determine which teeth have data configured
   const teethWithData = new Set(
     Array.from(teethData.entries())
@@ -56,7 +53,7 @@ export function ToothConfigurationSection({
   return (
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-foreground">Configuración por Diente</h2>
+        <h2 className="text-xl font-bold text-foreground">Odontograma</h2>
         {selectedTooth && (
           <ToothActions
             sourceTooth={selectedTooth}
@@ -72,12 +69,13 @@ export function ToothConfigurationSection({
           />
         )}
       </div>
-      <ToothSelector
-        teethNumbers={teethNumbers}
-        selectedTooth={selectedTooth}
-        onToothSelect={onToothSelect}
+      <Odontogram
+        selectedTeeth={teethNumbers}
+        currentTooth={selectedTooth}
         teethWithData={teethWithData}
         teethWithErrors={teethWithErrors}
+        onToothToggle={onToothToggle}
+        onToothSelect={onToothSelect}
       />
 
       {/* Display errors for selected tooth */}

@@ -21,7 +21,6 @@ import { MaterialSentSection } from './order-form/MaterialSentSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { ImplantSection } from './order-form/ImplantSection';
 import { OrderFormProps } from './order-form/OrderForm.types';
-import { TeethNumberSection } from './order-form/TeethNumberSection';
 import {
   fetchCurrentDoctor,
   fetchDoctors,
@@ -199,6 +198,61 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         setAiError('Error al iniciar el reconocimiento de voz');
       }
     }
+  };
+
+  // Handle adding/removing teeth from the odontogram
+  const handleToothToggle = (toothNumber: string) => {
+    setTeethNumbers((prev) => {
+      if (prev.includes(toothNumber)) {
+        // Remove tooth
+        const updated = prev.filter((t) => t !== toothNumber);
+
+        // Also remove from teethData
+        setTeethData((prevData) => {
+          const newData = new Map(prevData);
+          newData.delete(toothNumber);
+          return newData;
+        });
+
+        // Clear selection if removing current tooth
+        if (selectedToothNumber === toothNumber) {
+          setSelectedToothNumber(null);
+        }
+
+        return updated;
+      } else {
+        // Add tooth
+        const updated = [...prev, toothNumber].sort((a, b) => {
+          // Sort numerically by FDI notation
+          return parseInt(a, 10) - parseInt(b, 10);
+        });
+
+        // Initialize empty ToothData
+        setTeethData((prevData) => {
+          const newData = new Map(prevData);
+          newData.set(toothNumber, { toothNumber });
+          return newData;
+        });
+
+        // Auto-select if no tooth selected
+        if (!selectedToothNumber) {
+          setSelectedToothNumber(toothNumber);
+        }
+
+        return updated;
+      }
+    });
+
+    // Update the formData.teethNumbers string (comma-separated)
+    setFormData((prev) => {
+      const currentTeeth = teethNumbers.includes(toothNumber)
+        ? teethNumbers.filter((t) => t !== toothNumber)
+        : [...teethNumbers, toothNumber].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+      return {
+        ...prev,
+        teethNumbers: currentTeeth.join(', '),
+      };
+    });
   };
 
   const handleSaveDraft = async (e: React.FormEvent) => {
@@ -606,26 +660,20 @@ if (!(err instanceof Error)) {
         hasErrors={getSectionErrorInfo('notes').hasErrors}
         errorCount={getSectionErrorInfo('notes').errorCount}
       />
-      {/* Teeth Number Section */}
-      <TeethNumberSection
-        ref={(el) => registerSectionRef('teeth', el)}
-        teethNumbers={formData.teethNumbers}
-        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        disabled={isLoading}
-        hasErrors={getSectionErrorInfo('teeth').hasErrors}
-        errorCount={getSectionErrorInfo('teeth').errorCount}
-      />
 
-      {/* Tooth Configuration Section */}
-      <ToothConfigurationSection
-        teethNumbers={teethNumbers}
-        selectedTooth={selectedToothNumber}
-        onToothSelect={setSelectedToothNumber}
-        teethData={teethData}
-        onTeethDataChange={setTeethData}
-        teethWithErrors={teethWithErrors}
-        validationErrors={validationErrors}
-      />
+      {/* Tooth Configuration Section (Odontogram) */}
+      <div ref={(el) => registerSectionRef('teeth', el)}>
+        <ToothConfigurationSection
+          teethNumbers={teethNumbers}
+          selectedTooth={selectedToothNumber}
+          onToothSelect={setSelectedToothNumber}
+          onToothToggle={handleToothToggle}
+          teethData={teethData}
+          onTeethDataChange={setTeethData}
+          teethWithErrors={teethWithErrors}
+          validationErrors={validationErrors}
+        />
+      </div>
 
       {/* Implant Section - Per-tooth configuration */}
       {selectedToothNumber && (
