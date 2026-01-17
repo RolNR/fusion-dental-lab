@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { ToothData } from '@/types/tooth';
 import type { AISuggestion } from '@/types/ai-suggestions';
+import { hasNonWarrantyMaterials } from '@/lib/materialWarrantyUtils';
 import {
   PatientInfoSection,
   AIPromptSection,
@@ -17,6 +18,7 @@ import {
   SubmissionTypeSection,
   OcclusionDesignSection,
   FileUploadsSection,
+  WarrantyDisclaimerSection,
 } from './review-sections';
 
 interface OrderReviewModalProps {
@@ -56,6 +58,10 @@ export function OrderReviewModal({
   isSubmitting,
   isSavingDraft = false,
 }: OrderReviewModalProps) {
+  // Warranty disclaimer state
+  const requiresWarrantyAcceptance = hasNonWarrantyMaterials(formData.materialSent);
+  const [warrantyAccepted, setWarrantyAccepted] = useState(false);
+
   // Close on Escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -150,6 +156,12 @@ export function OrderReviewModal({
           />
 
           <OcclusionDesignSection oclusionDiseno={formData.oclusionDiseno} />
+
+          <WarrantyDisclaimerSection
+            materialSent={formData.materialSent}
+            accepted={warrantyAccepted}
+            onAcceptChange={setWarrantyAccepted}
+          />
         </div>
 
         {/* Footer Actions */}
@@ -182,7 +194,7 @@ export function OrderReviewModal({
             variant="primary"
             onClick={onConfirm}
             isLoading={isSubmitting}
-            disabled={isSubmitting || isSavingDraft}
+            disabled={isSubmitting || isSavingDraft || (requiresWarrantyAcceptance && !warrantyAccepted)}
             fullWidth
             className="sm:w-auto sm:flex-1"
           >

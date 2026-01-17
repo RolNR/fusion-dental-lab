@@ -9,3 +9,4 @@ export { CaseTypeSection } from './CaseTypeSection';
 export { SubmissionTypeSection } from './SubmissionTypeSection';
 export { OcclusionDesignSection } from './OcclusionDesignSection';
 export { FileUploadsSection } from './FileUploadsSection';
+export { WarrantyDisclaimerSection } from './WarrantyDisclaimerSection';
