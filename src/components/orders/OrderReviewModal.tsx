@@ -3,10 +3,18 @@
 import { useEffect } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
-import { getScanTypeLabel } from '@/lib/scanTypeUtils';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { ToothData } from '@/types/tooth';
-import { Odontogram } from '@/components/clinic-staff/order-form/Odontogram';
+import {
+  PatientInfoSection,
+  AIPromptSection,
+  DescriptionNotesSection,
+  DentalDetailsSection,
+  ToothConfigSection,
+  CaseTypeSection,
+  SubmissionTypeSection,
+  OcclusionDesignSection,
+} from './review-sections';
 
 interface OrderReviewModalProps {
   formData: OrderFormState & { teeth?: ToothData[] };
@@ -45,22 +53,6 @@ export function OrderReviewModal({
     };
   }, []);
 
-  const DetailRow = ({ label, value }: { label: string; value?: string | number | null }) => {
-    if (!value) return null;
-    return (
-      <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2 border-b border-border last:border-0">
-        <dt className="font-semibold text-foreground sm:w-1/3">{label}:</dt>
-        <dd className="text-muted-foreground sm:w-2/3 break-words">{value}</dd>
-      </div>
-    );
-  };
-
-  const SectionTitle = ({ children }: { children: React.ReactNode }) => (
-    <h3 className="text-lg font-bold text-foreground mb-3 mt-6 first:mt-0 pb-2 border-b-2 border-primary">
-      {children}
-    </h3>
-  );
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -91,255 +83,32 @@ export function OrderReviewModal({
 
         {/* Content */}
         <div className="p-6">
-          {/* Patient Info */}
-          <SectionTitle>Información del Paciente</SectionTitle>
-          <dl className="space-y-1">
-            <DetailRow label="Nombre del Paciente" value={formData.patientName} />
-            <DetailRow label="ID del Paciente" value={formData.patientId} />
-            <DetailRow
-              label="Fecha de Entrega Deseada"
-              value={
-                formData.fechaEntregaDeseada
-                  ? new Date(formData.fechaEntregaDeseada).toLocaleDateString('es-ES', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })
-                  : undefined
-              }
-            />
-          </dl>
+          <PatientInfoSection
+            patientName={formData.patientName}
+            patientId={formData.patientId}
+            fechaEntregaDeseada={formData.fechaEntregaDeseada}
+          />
 
-          {/* AI Prompt */}
-          {formData.aiPrompt && (
-            <>
-              <SectionTitle>Prompt de IA</SectionTitle>
-              <div className="rounded-lg bg-muted/30 p-4">
-                <p className="text-sm text-foreground whitespace-pre-wrap">{formData.aiPrompt}</p>
-              </div>
-            </>
-          )}
+          <AIPromptSection aiPrompt={formData.aiPrompt} />
 
-          {/* Description & Notes */}
-          {(formData.description || formData.notes) && (
-            <>
-              <SectionTitle>Descripción y Notas</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow label="Descripción" value={formData.description} />
-                <DetailRow label="Notas Adicionales" value={formData.notes} />
-              </dl>
-            </>
-          )}
+          <DescriptionNotesSection description={formData.description} notes={formData.notes} />
 
-          {/* Dental Details */}
-          <SectionTitle>Detalles Dentales</SectionTitle>
-          <dl className="space-y-1">
-            <DetailRow label="Números de Dientes" value={formData.teethNumbers} />
-            <DetailRow
-              label="Tipo de Escaneo"
-              value={formData.scanType ? getScanTypeLabel(formData.scanType) : undefined}
-            />
-          </dl>
+          <DentalDetailsSection teethNumbers={formData.teethNumbers} scanType={formData.scanType} />
 
-          {/* Per-Tooth Configuration */}
-          {formData.teeth && formData.teeth.length > 0 && (
-            <>
-              <SectionTitle>Configuración por Diente</SectionTitle>
+          <ToothConfigSection teeth={formData.teeth} />
 
-              {/* Visual Odontogram (read-only) */}
-              <div className="mb-6">
-                <Odontogram
-                  selectedTeeth={formData.teeth.map((t) => t.toothNumber)}
-                  currentTooth={null}
-                  teethWithData={
-                    new Set(
-                      formData.teeth
-                        .filter((t) => t.material || t.tipoTrabajo || t.trabajoSobreImplante)
-                        .map((t) => t.toothNumber)
-                    )
-                  }
-                  teethWithErrors={new Set()}
-                  readOnly={true}
-                />
-              </div>
+          <CaseTypeSection
+            tipoCaso={formData.tipoCaso}
+            motivoGarantia={formData.motivoGarantia}
+            seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
+          />
 
-              {/* Detailed configuration for each tooth */}
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                Detalles por Diente
-              </h3>
-              <div className="space-y-4">
-                {formData.teeth.map((tooth) => (
-                  <div
-                    key={tooth.toothNumber}
-                    className="rounded-lg border-l-4 border-primary bg-muted/20 pl-4 pr-4 py-3"
-                  >
-                    <h4 className="font-semibold text-lg text-foreground mb-2">
-                      Diente {tooth.toothNumber}
-                    </h4>
-                    <dl className="space-y-1">
-                      {tooth.tipoTrabajo && (
-                        <DetailRow
-                          label="Tipo de Trabajo"
-                          value={
-                            tooth.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'
-                          }
-                        />
-                      )}
-                      {tooth.tipoRestauracion && (
-                        <DetailRow
-                          label="Tipo de Restauración"
-                          value={
-                            tooth.tipoRestauracion === 'corona'
-                              ? 'Corona'
-                              : tooth.tipoRestauracion === 'puente'
-                                ? 'Puente'
-                                : tooth.tipoRestauracion === 'inlay'
-                                  ? 'Inlay'
-                                  : tooth.tipoRestauracion === 'onlay'
-                                    ? 'Onlay'
-                                    : tooth.tipoRestauracion === 'carilla'
-                                      ? 'Carilla'
-                                      : 'Provisional'
-                          }
-                        />
-                      )}
-                      {tooth.material && <DetailRow label="Material" value={tooth.material} />}
-                      {tooth.materialBrand && (
-                        <DetailRow label="Marca del Material" value={tooth.materialBrand} />
-                      )}
-                      {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
-                        <>
-                          {(tooth.colorInfo as any).shadeCode && (
-                            <DetailRow
-                              label="Código de Color"
-                              value={(tooth.colorInfo as any).shadeCode}
-                            />
-                          )}
-                          {(tooth.colorInfo as any).shadeType && (
-                            <DetailRow
-                              label="Tipo de Guía de Color"
-                              value={(tooth.colorInfo as any).shadeType}
-                            />
-                          )}
-                        </>
-                      )}
-                      {tooth.trabajoSobreImplante && (
-                        <div className="mt-2 pt-2 border-t border-border">
-                          <p className="text-sm font-medium text-foreground mb-1">
-                            Trabajo sobre Implante
-                          </p>
-                          {tooth.informacionImplante &&
-                            typeof tooth.informacionImplante === 'object' && (
-                              <dl className="ml-4 space-y-1">
-                                {(tooth.informacionImplante as any).marcaImplante && (
-                                  <DetailRow
-                                    label="Marca del Implante"
-                                    value={(tooth.informacionImplante as any).marcaImplante}
-                                  />
-                                )}
-                                {(tooth.informacionImplante as any).sistemaConexion && (
-                                  <DetailRow
-                                    label="Sistema de Conexión"
-                                    value={(tooth.informacionImplante as any).sistemaConexion}
-                                  />
-                                )}
-                                {(tooth.informacionImplante as any).numeroImplantes && (
-                                  <DetailRow
-                                    label="Número de Implantes"
-                                    value={(tooth.informacionImplante as any).numeroImplantes}
-                                  />
-                                )}
-                              </dl>
-                            )}
-                        </div>
-                      )}
-                    </dl>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+          <SubmissionTypeSection
+            submissionType={formData.submissionType}
+            articulatedBy={formData.articulatedBy}
+          />
 
-          {/* Case Type */}
-          {formData.tipoCaso && (
-            <>
-              <SectionTitle>Tipo de Caso</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow
-                  label="Tipo de Caso"
-                  value={formData.tipoCaso === 'nuevo' ? 'Nuevo' : 'Garantía'}
-                />
-                {formData.tipoCaso === 'garantia' && (
-                  <>
-                    <DetailRow label="Motivo de Garantía" value={formData.motivoGarantia} />
-                    <DetailRow
-                      label="Se Devuelve Trabajo Original"
-                      value={formData.seDevuelveTrabajoOriginal ? 'Sí' : 'No'}
-                    />
-                  </>
-                )}
-              </dl>
-            </>
-          )}
-
-
-          {/* Submission Type */}
-          {formData.submissionType && (
-            <>
-              <SectionTitle>Tipo de Envío</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow label="Tipo de Envío" value={formData.submissionType} />
-                {formData.articulatedBy && (
-                  <DetailRow
-                    label="Articulado Por"
-                    value={formData.articulatedBy === 'doctor' ? 'Doctor' : 'Laboratorio'}
-                  />
-                )}
-              </dl>
-            </>
-          )}
-
-          {/* Occlusion Design */}
-          {formData.oclusionDiseno && (
-            <>
-              <SectionTitle>Diseño de Oclusión</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow
-                  label="Tipo de Oclusión"
-                  value={
-                    formData.oclusionDiseno.tipoOclusion === 'normal'
-                      ? 'Normal'
-                      : formData.oclusionDiseno.tipoOclusion === 'clase_i'
-                        ? 'Clase I'
-                        : formData.oclusionDiseno.tipoOclusion === 'clase_ii'
-                          ? 'Clase II'
-                          : formData.oclusionDiseno.tipoOclusion === 'clase_iii'
-                            ? 'Clase III'
-                            : formData.oclusionDiseno.tipoOclusion === 'borde_a_borde'
-                              ? 'Borde a Borde'
-                              : 'Mordida Cruzada'
-                  }
-                />
-                <DetailRow
-                  label="Espacio Interoclusal Suficiente"
-                  value={formData.oclusionDiseno.espacioInteroclusalSuficiente ? 'Sí' : 'No'}
-                />
-                {formData.oclusionDiseno.solucionEspacioInsuficiente && (
-                  <DetailRow
-                    label="Solución para Espacio Insuficiente"
-                    value={
-                      formData.oclusionDiseno.solucionEspacioInsuficiente === 'reduccion_oclusal'
-                        ? 'Reducción Oclusal'
-                        : formData.oclusionDiseno.solucionEspacioInsuficiente === 'aumento_vertical'
-                          ? 'Aumento Vertical'
-                          : 'Ambas'
-                    }
-                  />
-                )}
-              </dl>
-            </>
-          )}
-
+          <OcclusionDesignSection oclusionDiseno={formData.oclusionDiseno} />
         </div>
 
         {/* Footer Actions */}
