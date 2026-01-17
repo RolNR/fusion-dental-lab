@@ -4,25 +4,13 @@
 
 import { buildOrdersPath, buildOrderPath, buildOrderSubmitPath } from './paths';
 import { getFileMimeType } from '@/lib/fileUtils';
+import { OrderFormData } from '@/components/clinic-staff/order-form/OrderForm.types';
 
 type RoleType = 'doctor' | 'assistant';
-
-interface OrderFormData {
-  patientName: string;
-  patientId: string;
-  description: string;
-  notes: string;
-  teethNumbers: string;
-  material: string;
-  materialBrand: string;
-  scanType: any;
-  doctorId: string;
-}
 
 export interface OrderFiles {
   upperFile?: File | null;
   lowerFile?: File | null;
-  biteFile?: File | null;
   mouthPhotoFile?: File | null;
 }
 
@@ -95,9 +83,6 @@ async function uploadFilesToR2(orderId: string, files: OrderFiles): Promise<void
   if (files.lowerFile) {
     uploads.push(uploadFileToR2(orderId, files.lowerFile, 'scanLower'));
   }
-  if (files.biteFile) {
-    uploads.push(uploadFileToR2(orderId, files.biteFile, 'scanBite'));
-  }
   if (files.mouthPhotoFile) {
     uploads.push(uploadFileToR2(orderId, files.mouthPhotoFile, 'mouthPhoto'));
   }
@@ -139,7 +124,7 @@ export async function createOrder(
   const order = data.order;
 
   // Step 2: Upload files to R2 if provided
-  if (files && (files.upperFile || files.lowerFile || files.biteFile || files.mouthPhotoFile)) {
+  if (files && (files.upperFile || files.lowerFile || files.mouthPhotoFile)) {
     try {
       await uploadFilesToR2(order.id, files);
     } catch (err) {
@@ -186,7 +171,7 @@ export async function updateOrder(
   }
 
   // Step 2: Upload files to R2 if provided
-  if (files && (files.upperFile || files.lowerFile || files.biteFile || files.mouthPhotoFile)) {
+  if (files && (files.upperFile || files.lowerFile || files.mouthPhotoFile)) {
     try {
       await uploadFilesToR2(orderId, files);
     } catch (err) {

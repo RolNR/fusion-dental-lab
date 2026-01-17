@@ -133,8 +133,9 @@ export function OrderReviewModal({
           <SectionTitle>Detalles Dentales</SectionTitle>
           <dl className="space-y-1">
             <DetailRow label="Números de Dientes" value={formData.teethNumbers} />
-            <DetailRow label="Material" value={formData.material} />
-            <DetailRow label="Marca del Material" value={formData.materialBrand} />
+            {/* TODO: Update for per-tooth configuration */}
+            {/* <DetailRow label="Material" value={formData.material} />
+            <DetailRow label="Marca del Material" value={formData.materialBrand} /> */}
             <DetailRow
               label="Tipo de Escaneo"
               value={formData.scanType ? getScanTypeLabel(formData.scanType) : undefined}
@@ -163,8 +164,8 @@ export function OrderReviewModal({
             </>
           )}
 
-          {/* Work Type */}
-          {formData.tipoTrabajo && (
+          {/* Work Type - TODO: Update for per-tooth configuration */}
+          {/* {formData.tipoTrabajo && (
             <>
               <SectionTitle>Tipo de Trabajo</SectionTitle>
               <dl className="space-y-1">
@@ -177,10 +178,10 @@ export function OrderReviewModal({
                 )}
               </dl>
             </>
-          )}
+          )} */}
 
-          {/* Implant Info */}
-          {formData.trabajoSobreImplante && formData.informacionImplante && (
+          {/* Implant Info - TODO: Update for per-tooth configuration */}
+          {/* {formData.trabajoSobreImplante && formData.informacionImplante && (
             <>
               <SectionTitle>Información de Implantes</SectionTitle>
               <dl className="space-y-1">
@@ -219,7 +220,7 @@ export function OrderReviewModal({
                 <DetailRow label="CBCT" value={formData.informacionImplante.cbct} />
               </dl>
             </>
-          )}
+          )} */}
 
           {/* Submission Type */}
           {formData.submissionType && (
@@ -278,8 +279,8 @@ export function OrderReviewModal({
             </>
           )}
 
-          {/* Extended Color Info */}
-          {formData.colorInfo && (
+          {/* Extended Color Info - TODO: Update for per-tooth configuration */}
+          {/* {formData.colorInfo && (
             <>
               <SectionTitle>Información Extendida de Color</SectionTitle>
               <dl className="space-y-1">
@@ -312,7 +313,7 @@ export function OrderReviewModal({
                 )}
               </dl>
             </>
-          )}
+          )} */}
         </div>
 
         {/* Footer Actions */}

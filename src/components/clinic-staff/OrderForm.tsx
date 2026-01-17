@@ -68,7 +68,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // File upload state for digital scans
   const [upperFile, setUpperFile] = useState<File | null>(null);
   const [lowerFile, setLowerFile] = useState<File | null>(null);
-  const [biteFile, setBiteFile] = useState<File | null>(null);
 
   // File upload state for mouth photos
   const [mouthPhotoFile, setMouthPhotoFile] = useState<File | null>(null);
@@ -210,7 +209,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       const files = {
         upperFile,
         lowerFile,
-        biteFile,
         mouthPhotoFile,
       };
 
@@ -506,15 +504,15 @@ if (!(err instanceof Error)) {
         errorCount={getSectionErrorInfo('caseType').errorCount}
       />
 
-      {/* Work Type Section */}
-      <WorkTypeSection
+      {/* Work Type Section - TODO: Update for per-tooth configuration */}
+      {/* <WorkTypeSection
         ref={(el) => registerSectionRef('workType', el)}
         tipoTrabajo={formData.tipoTrabajo ?? undefined}
         tipoRestauracion={formData.tipoRestauracion ?? undefined}
         onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
         hasErrors={getSectionErrorInfo('workType').hasErrors}
         errorCount={getSectionErrorInfo('workType').errorCount}
-      />
+      /> */}
 
       {/* Description Section */}
       <DescriptionSection
@@ -547,10 +545,8 @@ if (!(err instanceof Error)) {
         disabled={isLoading}
         upperFile={upperFile}
         lowerFile={lowerFile}
-        biteFile={biteFile}
         onUpperFileChange={setUpperFile}
         onLowerFileChange={setLowerFile}
-        onBiteFileChange={setBiteFile}
         hasErrors={getSectionErrorInfo('impression').hasErrors}
         errorCount={getSectionErrorInfo('impression').errorCount}
       />
@@ -566,17 +562,18 @@ if (!(err instanceof Error)) {
       />
 
       {/* Implant Section */}
-      <ImplantSection
+      {/* Implant Section - TODO: Update for per-tooth configuration */}
+      {/* <ImplantSection
         ref={(el) => registerSectionRef('implant', el)}
         trabajoSobreImplante={formData.trabajoSobreImplante}
         informacionImplante={formData.informacionImplante}
         onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
         hasErrors={getSectionErrorInfo('implant').hasErrors}
         errorCount={getSectionErrorInfo('implant').errorCount}
-      />
+      /> */}
 
-      {/* Material and Color Section */}
-      <MaterialAndColorSection
+      {/* Material and Color Section - TODO: Update for per-tooth configuration */}
+      {/* <MaterialAndColorSection
         ref={(el) => registerSectionRef('material', el)}
         material={formData.material}
         materialBrand={formData.materialBrand}
@@ -586,7 +583,7 @@ if (!(err instanceof Error)) {
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('material').hasErrors}
         errorCount={getSectionErrorInfo('material').errorCount}
-      />
+      /> */}
 
       {/* Occlusion Section */}
       <OcclusionSection
