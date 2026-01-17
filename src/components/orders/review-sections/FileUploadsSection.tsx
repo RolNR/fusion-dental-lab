@@ -1,5 +1,6 @@
 import { SectionTitle } from './ReviewSectionComponents';
 import { FileUpload } from '@/components/ui/FileUpload';
+import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
 import { FileCategory } from '@/types/file';
 import { ScanType } from '@prisma/client';
 
@@ -76,6 +77,19 @@ export function FileUploadsSection({
                 />
               )}
             </div>
+
+            {/* Occlusion Preview - Show when any file is uploaded */}
+            {(upperFile || lowerFile) && (
+              <div className="mt-4">
+                <p className="text-sm font-semibold text-foreground mb-3">
+                  {upperFile && lowerFile ? 'Vista de Oclusión' : upperFile ? 'Vista Previa - Arcada Superior' : 'Vista Previa - Arcada Inferior'}
+                </p>
+                <OcclusionPreview
+                  upperFile={upperFile}
+                  lowerFile={lowerFile}
+                />
+              </div>
+            )}
           </div>
         )}
 
