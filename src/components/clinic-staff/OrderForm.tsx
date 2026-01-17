@@ -351,14 +351,35 @@ if (!(err instanceof Error)) {
     try {
       const parsedData = await parseAIPrompt(formData.aiPrompt);
 
-      // Auto-fill form fields with parsed data
+      // Extract teeth array if present
+      const { teeth, ...otherData } = parsedData as any;
+
+      // Auto-fill form fields with parsed data (excluding teeth)
       setFormData((prev) => ({
         ...prev,
-        ...parsedData,
+        ...otherData,
         // Keep existing values if AI didn't provide them
-        patientName: parsedData.patientName || prev.patientName,
+        patientName: (otherData as any).patientName || prev.patientName,
         doctorId: prev.doctorId, // Don't override doctor selection
       }));
+
+      // If teeth array exists, convert it to Map and update teethData
+      if (teeth && Array.isArray(teeth) && teeth.length > 0) {
+        const teethMap = new Map<string, ToothData>();
+        teeth.forEach((tooth: ToothData) => {
+          if (tooth.toothNumber) {
+            teethMap.set(tooth.toothNumber, tooth);
+          }
+        });
+        setTeethData(teethMap);
+
+        // Also extract tooth numbers to teethNumbers field
+        const toothNumbers = teeth.map((t: ToothData) => t.toothNumber).join(', ');
+        setFormData((prev) => ({
+          ...prev,
+          teethNumbers: toothNumbers,
+        }));
+      }
 
       // Show full form after successful AI processing
       setShowFullForm(true);

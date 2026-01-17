@@ -17,6 +17,15 @@ function getDentalOrderExtractionPrompt(): string {
   return `Eres un asistente especializado en extraer información de órdenes dentales.
 Tu tarea es analizar el texto en lenguaje natural y extraer la información estructurada de una orden dental.
 
+IMPORTANTE - Configuración por Diente:
+- Cada diente puede tener diferente material, color, tipo de trabajo, y configuración de implante
+- Si el prompt menciona configuraciones DIFERENTES para cada diente, crea un array "teeth" con objetos separados
+- Si el prompt menciona la MISMA configuración para todos los dientes, crea un array "teeth" con un objeto por cada diente pero con los mismos valores
+- Ejemplos:
+  * "Corona de zirconia A2 para 11 y puente de e-max A3 para 21-22" → teeth con 3 objetos (11 con zirconia A2, 21 y 22 con e-max A3)
+  * "Coronas de zirconia A2 para 11, 12, 21" → teeth con 3 objetos (todos con zirconia A2)
+  * "Implante con corona para 11 y corona regular para 12" → teeth con 2 objetos (11 con trabajoSobreImplante true, 12 con false)
+
 Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (todos opcionales):
 {
   "patientName": "Nombre completo del paciente",
@@ -30,30 +39,45 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "motivoGarantia": "Razón de la garantía (solo si tipoCaso es 'garantia')",
   "seDevuelveTrabajoOriginal": true o false (si devuelven el trabajo original en garantía),
 
-  "tipoTrabajo": "restauracion" u "otro",
-  "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
-
   "scanType": "DIGITAL_SCAN" o "ANALOG_MOLD",
   "escanerUtilizado": "iTero", "Medit", "ThreeShape", "Carestream", u "Otro",
   "otroEscaner": "Nombre del escáner si es 'Otro'",
   "tipoSilicon": "adicion" o "condensacion" (solo para moldes análogos),
   "notaModeloFisico": "Observaciones sobre el modelo físico (solo para moldes análogos)",
 
-  "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
-  "materialBrand": "Marca del material como IPS e.max, Katana, Prettau",
-
-  "trabajoSobreImplante": true o false,
-  "informacionImplante": {
-    "marcaImplante": "Marca del implante (ej: Straumann, Nobel Biocare)",
-    "sistemaConexion": "Sistema de conexión (ej: Internal hex, External hex)",
-    "numeroImplantes": número de implantes (1, 2, 3, etc),
-    "tipoRestauracion": "individual", "ferulizada", o "hibrida",
-    "tipoAditamento": "estandar", "personalizado", o "multi_unit",
-    "perfilEmergencia": "recto", "concavo", o "convexo",
-    "condicionTejidoBlando": "sano", "inflamado", o "retraido",
-    "radiografiaPeriapical": "Descripción o ubicación de la radiografía",
-    "cbct": "Descripción o ubicación del CBCT"
-  },
+  "teeth": [
+    {
+      "toothNumber": "Número de diente (ej: 11, 12, 21)",
+      "tipoTrabajo": "restauracion" u "otro",
+      "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
+      "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
+      "materialBrand": "Marca del material como IPS e.max, Katana, Prettau",
+      "trabajoSobreImplante": true o false,
+      "informacionImplante": {
+        "marcaImplante": "Marca del implante (ej: Straumann, Nobel Biocare)",
+        "sistemaConexion": "Sistema de conexión (ej: Internal hex, External hex)",
+        "numeroImplantes": número de implantes (1, 2, 3, etc),
+        "tipoRestauracion": "individual", "ferulizada", o "hibrida",
+        "tipoAditamento": "estandar", "personalizado", o "multi_unit",
+        "perfilEmergencia": "recto", "concavo", o "convexo",
+        "condicionTejidoBlando": "sano", "inflamado", o "retraido",
+        "radiografiaPeriapical": "Descripción o ubicación de la radiografía",
+        "cbct": "Descripción o ubicación del CBCT"
+      },
+      "colorInfo": {
+        "shadeType": SOLO uno de: "VITAPAN_CLASSICAL", "VITAPAN_3D_MASTER", "IVOCLAR_CHROMASCOP", "IVOCLAR_AD_BLEACH", "KURARAY_NORITAKE", "TRUBYTE_BIOFORM", "DURATONE" - o null si no se especifica. Por defecto usar "VITAPAN_CLASSICAL" si mencionan códigos tipo A2, B1, etc.,
+        "shadeCode": "Código de color como A2, A3, B1, 1M2, etc.",
+        "colorimeter": "Nombre del colorímetro (opcional)",
+        "texture": ["lisa"] o ["rugosa"] o ["natural"] o cualquier combinación - DEBE SER UN ARRAY,
+        "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY,
+        "mamelones": EXACTAMENTE "si" o "no",
+        "translucency": {
+          "level": número del 1 al 10,
+          "description": "descripción de translucidez"
+        }
+      }
+    }
+  ],
 
   "submissionType": "prueba_estructura", "prueba_estetica", o "terminado",
   "articulatedBy": "doctor" o "laboratorio",
@@ -115,10 +139,18 @@ Reglas CRÍTICAS:
 - Para fechas relativas (ej: "en 5 días"), calcula la fecha desde hoy (${today})
 - Los números de dientes deben estar en notación FDI (11-48) o Universal (1-32)
 
+IMPORTANTE - Array "teeth" (Configuración por Diente):
+- SIEMPRE crea un objeto separado en el array "teeth" por cada número de diente mencionado
+- Si el prompt dice "coronas de zirconia para 11, 12, 21", crea 3 objetos en el array teeth (uno para 11, uno para 12, uno para 21)
+- Cada objeto en "teeth" DEBE tener "toothNumber" como campo requerido
+- Si todos los dientes tienen la misma configuración, repite los mismos valores en cada objeto del array
+- Si algunos dientes tienen configuraciones diferentes, asigna los valores correctos a cada objeto según lo que se mencione en el prompt
+- SOLO incluye campos dentro de cada objeto tooth si hay información explícita para ese diente
+
 IMPORTANTE - Formato de valores:
 - Para "tipoOclusion": USA SOLO los valores EXACTOS permitidos. Si mencionan "mordida profunda", mapea a "mordida_cruzada" o "clase_ii" según el contexto.
-- Para "texture" y "gloss": SIEMPRE devuelve un ARRAY, aunque sea de un solo elemento: ["lisa"] NO "lisa"
-- Para "translucency": SIEMPRE incluye "description" aunque sea genérica como "translucidez media"
+- Para "texture" y "gloss" (dentro de colorInfo): SIEMPRE devuelve un ARRAY, aunque sea de un solo elemento: ["lisa"] NO "lisa"
+- Para "translucency" (dentro de colorInfo): SIEMPRE incluye "description" aunque sea genérica como "translucidez media"
 - Para enums de implantes: usa EXACTAMENTE los valores especificados en minúsculas con guiones bajos
 
 IMPORTANTE - materialSent (Materiales Enviados):
