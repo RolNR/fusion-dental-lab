@@ -40,9 +40,8 @@ import {
   groupErrorsBySection,
   ValidationErrorDetail,
 } from '@/types/validation';
-import { ToothSelector } from './order-form/ToothSelector';
-import { ToothActions } from './order-form/ToothActions';
 import { ToothData } from '@/types/tooth';
+import { ToothConfigurationSection } from './order-form/ToothConfigurationSection';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -550,6 +549,15 @@ if (!(err instanceof Error)) {
         disabled={isLoading}
         hasErrors={getSectionErrorInfo('teeth').hasErrors}
         errorCount={getSectionErrorInfo('teeth').errorCount}
+      />
+
+      {/* Tooth Configuration Section */}
+      <ToothConfigurationSection
+        teethNumbers={teethNumbers}
+        selectedTooth={selectedToothNumber}
+        onToothSelect={setSelectedToothNumber}
+        teethData={teethData}
+        onTeethDataChange={setTeethData}
       />
 
       {/* Impression Extended Section */}
