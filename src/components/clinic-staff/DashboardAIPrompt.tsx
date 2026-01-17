@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AIPromptInput } from './order-form/AIPromptInput';
 import type { SpeechRecognition } from '@/types/speech-recognition';
@@ -19,50 +19,69 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const processedResultsRef = useRef<Set<string>>(new Set());
+  const shouldRestartRef = useRef(false);
+  const pendingTranscriptRef = useRef('');
+
+  // Restart recognition after a result (for non-continuous mode)
+  const restartRecognition = useCallback(() => {
+    if (shouldRestartRef.current && recognitionRef.current) {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        // Recognition might already be running, ignore
+        console.debug('Recognition restart skipped:', error);
+      }
+    }
+  }, []);
 
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognitionAPI =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (SpeechRecognitionAPI) {
         setSpeechSupported(true);
         const recognition = new SpeechRecognitionAPI();
-        recognition.continuous = true;
+        // Use non-continuous mode to avoid Samsung duplicate issues
+        // Recognition will auto-restart after each result
+        recognition.continuous = false;
         recognition.interimResults = true;
         recognition.lang = 'es-ES';
 
         recognition.onresult = (event) => {
-          let finalTranscript = '';
+          // Get the latest result
+          const result = event.results[event.results.length - 1];
+          const transcript = result[0].transcript.trim();
 
-          // Process only new results starting from resultIndex
-          // Use content-based deduplication (without index) for Samsung devices
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              const transcript = event.results[i][0].transcript.trim();
-
-              // Use only transcript content (no index) to detect duplicates on Samsung
-              if (transcript && !processedResultsRef.current.has(transcript)) {
-                processedResultsRef.current.add(transcript);
-                finalTranscript += transcript + ' ';
-              }
-            }
-          }
-
-          if (finalTranscript) {
-            setAiPrompt((prev) => (prev + ' ' + finalTranscript).trim());
+          if (result.isFinal && transcript) {
+            // Final result - append to the prompt
+            setAiPrompt((prev) => (prev ? prev + ' ' + transcript : transcript));
+            pendingTranscriptRef.current = '';
+          } else {
+            // Interim result - store for display purposes
+            pendingTranscriptRef.current = transcript;
           }
         };
 
         recognition.onerror = (event) => {
+          // Ignore no-speech errors when in listening mode (will auto-restart)
+          if (event.error === 'no-speech') {
+            return;
+          }
           console.error('Speech recognition error:', event.error);
+          shouldRestartRef.current = false;
           setIsListening(false);
         };
 
         recognition.onend = () => {
-          setIsListening(false);
-          processedResultsRef.current.clear(); // Reset for next session
+          // Auto-restart if user hasn't stopped listening
+          if (shouldRestartRef.current) {
+            // Small delay before restart to prevent rapid cycling
+            setTimeout(restartRecognition, 100);
+          } else {
+            setIsListening(false);
+          }
         };
 
         recognitionRef.current = recognition;
@@ -70,25 +89,28 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
     }
 
     return () => {
+      shouldRestartRef.current = false;
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
     };
-  }, []);
+  }, [restartRecognition]);
 
   const handleToggleSpeechRecognition = () => {
     if (!recognitionRef.current) return;
 
     if (isListening) {
+      shouldRestartRef.current = false;
       recognitionRef.current.stop();
       setIsListening(false);
-      processedResultsRef.current.clear();
     } else {
       try {
+        shouldRestartRef.current = true;
         recognitionRef.current.start();
         setIsListening(true);
       } catch (error) {
         console.error('Error starting speech recognition:', error);
+        shouldRestartRef.current = false;
       }
     }
   };
