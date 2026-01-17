@@ -2,6 +2,7 @@ import type { ToothData } from '@/types/tooth';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { OcclusionInfo } from '@/types/order';
 import type { ScanType, CaseType, SubmissionType } from '@prisma/client';
+import type { AISuggestion } from '@/types/ai-suggestions';
 
 interface ParsedAIData {
   teeth?: ToothData[];
@@ -24,6 +25,7 @@ interface ParsedAIData {
 interface DashboardAIData {
   aiPrompt: string;
   parsedData: ParsedAIData;
+  suggestions: AISuggestion[];
   openReviewModal: boolean;
 }
 
@@ -34,6 +36,7 @@ interface LoadedAIData {
   selectedToothNumber: string | null;
   shouldShowFullForm: boolean;
   shouldShowReviewModal: boolean;
+  suggestions: AISuggestion[];
 }
 
 /**
@@ -47,7 +50,7 @@ export function loadDashboardAIData(): LoadedAIData | null {
   if (!dashboardData) return null;
 
   try {
-    const { aiPrompt, parsedData, openReviewModal }: DashboardAIData = JSON.parse(dashboardData);
+    const { aiPrompt, parsedData, suggestions, openReviewModal }: DashboardAIData = JSON.parse(dashboardData);
 
     // Clear session storage immediately
     sessionStorage.removeItem('dashboardAIData');
@@ -87,6 +90,7 @@ export function loadDashboardAIData(): LoadedAIData | null {
       selectedToothNumber: selectedTooth,
       shouldShowFullForm: true,
       shouldShowReviewModal: openReviewModal,
+      suggestions: suggestions || [],
     };
   } catch (error) {
     console.error('Error loading dashboard AI data:', error);

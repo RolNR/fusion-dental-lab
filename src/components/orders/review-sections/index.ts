@@ -1,6 +1,7 @@
 export { DetailRow, SectionTitle } from './ReviewSectionComponents';
 export { PatientInfoSection } from './PatientInfoSection';
 export { AIPromptSection } from './AIPromptSection';
+export { AISuggestionsSection } from './AISuggestionsSection';
 export { DescriptionNotesSection } from './DescriptionNotesSection';
 export { DentalDetailsSection } from './DentalDetailsSection';
 export { ToothConfigSection } from './ToothConfigSection';

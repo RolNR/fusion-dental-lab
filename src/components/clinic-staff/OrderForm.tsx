@@ -21,7 +21,7 @@ import { OcclusionSection } from './order-form/OcclusionSection';
 import { MaterialSentSection } from './order-form/MaterialSentSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { ImplantSection } from './order-form/ImplantSection';
-import { OrderFormProps } from './order-form/OrderForm.types';
+import { OrderFormProps, OrderFormState } from './order-form/OrderForm.types';
 import {
   fetchCurrentDoctor,
   fetchDoctors,
@@ -44,6 +44,7 @@ import {
 import { ToothData } from '@/types/tooth';
 import { ToothConfigurationSection } from './order-form/ToothConfigurationSection';
 import { AIPromptInput } from './order-form/AIPromptInput';
+import type { AISuggestion } from '@/types/ai-suggestions';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -84,6 +85,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [selectedToothNumber, setSelectedToothNumber] = useState<string | null>(null);
   const [teethData, setTeethData] = useState<Map<string, ToothData>>(new Map());
   const [teethNumbers, setTeethNumbers] = useState<string[]>([]);
+
+  // AI suggestions state
+  const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
 
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
@@ -200,6 +204,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         if (dashboardData.selectedToothNumber) {
           setSelectedToothNumber(dashboardData.selectedToothNumber);
         }
+      }
+
+      // Load AI suggestions
+      if (dashboardData.suggestions && dashboardData.suggestions.length > 0) {
+        setAiSuggestions(dashboardData.suggestions);
       }
 
       // Show full form and review modal
@@ -454,17 +463,18 @@ if (!(err instanceof Error)) {
     setIsParsingAI(true);
 
     try {
-      const parsedData = await parseAIPrompt(formData.aiPrompt);
+      const { confirmedValues, suggestions } = await parseAIPrompt(formData.aiPrompt);
 
-      // Extract teeth array if present
-      const { teeth, ...otherData } = parsedData as any;
+      // Extract teeth array if present (AI response may include teeth)
+      const parsedData = confirmedValues as Partial<OrderFormState> & { teeth?: ToothData[] };
+      const { teeth, ...otherData } = parsedData;
 
       // Auto-fill form fields with parsed data (excluding teeth)
       setFormData((prev) => ({
         ...prev,
         ...otherData,
         // Keep existing values if AI didn't provide them
-        patientName: (otherData as any).patientName || prev.patientName,
+        patientName: otherData.patientName || prev.patientName,
         doctorId: prev.doctorId, // Don't override doctor selection
       }));
 
@@ -486,6 +496,9 @@ if (!(err instanceof Error)) {
         }));
       }
 
+      // Store AI suggestions
+      setAiSuggestions(suggestions);
+
       // Show full form after successful AI processing
       setShowFullForm(true);
 
@@ -498,6 +511,88 @@ if (!(err instanceof Error)) {
     } finally {
       setIsParsingAI(false);
     }
+  };
+
+  const handleApplySuggestion = (suggestion: AISuggestion) => {
+    if (suggestion.category === 'order') {
+      // Apply suggestion to order-level field (handles nested paths like "colorInfo.shadeType")
+      setFormData((prev) => {
+        const fieldPath = suggestion.field.split('.');
+
+        if (fieldPath.length === 1) {
+          // Simple field (e.g., "scanType")
+          return {
+            ...prev,
+            [suggestion.field]: suggestion.value,
+          };
+        } else {
+          // Nested field (e.g., "colorInfo.shadeType")
+          const result = { ...prev };
+          let current: Record<string, unknown> = result;
+
+          // Navigate to the nested object, creating it if needed
+          for (let i = 0; i < fieldPath.length - 1; i++) {
+            const key = fieldPath[i];
+            if (!current[key] || typeof current[key] !== 'object') {
+              current[key] = {};
+            }
+            current[key] = { ...(current[key] as Record<string, unknown>) };
+            current = current[key] as Record<string, unknown>;
+          }
+
+          // Set the final value
+          current[fieldPath[fieldPath.length - 1]] = suggestion.value;
+          return result as OrderFormState;
+        }
+      });
+    } else if (suggestion.category === 'tooth' && suggestion.toothNumber) {
+      // Check if the tooth exists in teethNumbers
+      if (!teethNumbers.includes(suggestion.toothNumber)) {
+        // TODO: Add toast notification warning
+        console.warn(`Primero selecciona el diente ${suggestion.toothNumber}`);
+        return;
+      }
+
+      // Apply suggestion to tooth-specific field (handles nested paths)
+      setTeethData((prev) => {
+        const newData = new Map(prev);
+        const toothData = newData.get(suggestion.toothNumber!) || { toothNumber: suggestion.toothNumber! };
+
+        const fieldPath = suggestion.field.split('.');
+
+        if (fieldPath.length === 1) {
+          // Simple field
+          newData.set(suggestion.toothNumber!, {
+            ...toothData,
+            [suggestion.field]: suggestion.value,
+          });
+        } else {
+          // Nested field (e.g., "colorInfo.shadeType")
+          const updatedTooth = { ...toothData };
+          let current: Record<string, unknown> = updatedTooth;
+
+          for (let i = 0; i < fieldPath.length - 1; i++) {
+            const key = fieldPath[i];
+            if (!current[key] || typeof current[key] !== 'object') {
+              current[key] = {};
+            }
+            current[key] = { ...(current[key] as Record<string, unknown>) };
+            current = current[key] as Record<string, unknown>;
+          }
+
+          current[fieldPath[fieldPath.length - 1]] = suggestion.value;
+          newData.set(suggestion.toothNumber!, updatedTooth as ToothData);
+        }
+
+        return newData;
+      });
+    }
+
+    // Remove applied suggestion from the list
+    setAiSuggestions((prev) => prev.filter((s) => s !== suggestion));
+
+    // Log success (TODO: Add toast notification)
+    console.log(`Campo "${suggestion.label}" actualizado con valor:`, suggestion.value);
   };
 
   const isEditingDraft = orderId && initialData?.status === 'DRAFT';
@@ -789,6 +884,8 @@ if (!(err instanceof Error)) {
             ...formData,
             teeth: Array.from(teethData.values()),
           }}
+          suggestions={aiSuggestions}
+          onApplySuggestion={handleApplySuggestion}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}
           onSaveAsDraft={handleSaveAsDraft}

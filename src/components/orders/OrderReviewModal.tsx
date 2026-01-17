@@ -5,9 +5,11 @@ import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { ToothData } from '@/types/tooth';
+import type { AISuggestion } from '@/types/ai-suggestions';
 import {
   PatientInfoSection,
   AIPromptSection,
+  AISuggestionsSection,
   DescriptionNotesSection,
   DentalDetailsSection,
   ToothConfigSection,
@@ -18,6 +20,8 @@ import {
 
 interface OrderReviewModalProps {
   formData: OrderFormState & { teeth?: ToothData[] };
+  suggestions?: AISuggestion[];
+  onApplySuggestion?: (suggestion: AISuggestion) => void;
   onConfirm: () => void;
   onCancel: () => void;
   onSaveAsDraft?: () => void;
@@ -27,6 +31,8 @@ interface OrderReviewModalProps {
 
 export function OrderReviewModal({
   formData,
+  suggestions = [],
+  onApplySuggestion,
   onConfirm,
   onCancel,
   onSaveAsDraft,
@@ -90,6 +96,13 @@ export function OrderReviewModal({
           />
 
           <AIPromptSection aiPrompt={formData.aiPrompt} />
+
+          {suggestions.length > 0 && onApplySuggestion && (
+            <AISuggestionsSection
+              suggestions={suggestions}
+              onApplySuggestion={onApplySuggestion}
+            />
+          )}
 
           <DescriptionNotesSection description={formData.description} notes={formData.notes} />
 

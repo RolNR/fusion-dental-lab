@@ -9,6 +9,7 @@ import {
 } from '@/lib/api/orderFormHelpers';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { ToothData } from '@/types/tooth';
+import type { AISuggestion } from '@/types/ai-suggestions';
 
 /**
  * Fetches the current doctor's information from the session
@@ -143,9 +144,12 @@ function filterEmptyValues<T extends Record<string, any>>(obj: T): Partial<T> {
 }
 
 /**
- * Parses AI prompt and returns structured order data
+ * Parses AI prompt and returns structured order data with suggestions
  */
-export async function parseAIPrompt(prompt: string): Promise<Partial<OrderFormState>> {
+export async function parseAIPrompt(prompt: string): Promise<{
+  confirmedValues: Partial<OrderFormState>;
+  suggestions: AISuggestion[];
+}> {
   const response = await fetch('/api/orders/parse-ai-prompt', {
     method: 'POST',
     headers: {
@@ -161,8 +165,13 @@ export async function parseAIPrompt(prompt: string): Promise<Partial<OrderFormSt
   }
 
   if (result.success && result.data) {
-    // Filter out any null/undefined/empty values before returning
-    return filterEmptyValues(result.data);
+    const { confirmedValues, suggestions } = result.data;
+
+    // Filter out any null/undefined/empty values from confirmed values
+    return {
+      confirmedValues: filterEmptyValues(confirmedValues),
+      suggestions: suggestions || [],
+    };
   }
 
   throw new Error('No se pudo procesar el prompt');

@@ -580,4 +580,23 @@ export const Icons = {
       <polyline points="9 18 15 12 9 6" />
     </svg>
   ),
+
+  lightbulb: ({ size = 24, ...props }: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <line x1="9" y1="18" x2="15" y2="18" />
+      <line x1="10" y1="22" x2="14" y2="22" />
+      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.33.47 2.55 1.5 3.5.76.76 1.23 1.52 1.41 2.5" />
+    </svg>
+  ),
 };

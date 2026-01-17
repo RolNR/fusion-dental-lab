@@ -125,14 +125,15 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
         throw new Error('No se pudo procesar el prompt');
       }
 
-      const parsedData = result.data;
+      const { confirmedValues, suggestions } = result.data;
 
-      // Store parsed data and AI prompt in sessionStorage
+      // Store confirmed values, suggestions, and AI prompt in sessionStorage
       sessionStorage.setItem(
         'dashboardAIData',
         JSON.stringify({
           aiPrompt,
-          parsedData,
+          parsedData: confirmedValues,
+          suggestions: suggestions || [],
           openReviewModal: true,
         })
       );

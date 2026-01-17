@@ -15,7 +15,7 @@ function getDentalOrderExtractionPrompt(): string {
   const today = new Date().toISOString().split('T')[0];
 
   return `Eres un asistente especializado en extraer información de órdenes dentales.
-Tu tarea es analizar el texto en lenguaje natural y extraer la información estructurada de una orden dental.
+Tu tarea es analizar el texto en lenguaje natural y extraer la información estructurada de una orden dental, además de generar sugerencias inteligentes basadas en el contexto.
 
 IMPORTANTE - Configuración por Diente:
 - Cada diente puede tener diferente material, color, tipo de trabajo, y configuración de implante
@@ -168,7 +168,69 @@ IMPORTANTE - materialSent (Materiales Enviados):
 
 - Sé preciso y conservador - si no estás 100% seguro de un valor enum, omite ese campo
 - Devuelve SOLO el JSON con los campos que pudiste extraer con certeza
-- NO inventes información - solo extrae lo que está explícitamente mencionado`;
+- NO inventes información - solo extrae lo que está explícitamente mencionado
+
+SUGERENCIAS INTELIGENTES:
+Además del JSON principal con los valores confirmados, genera un array "suggestions" con sugerencias inteligentes basadas en el contexto.
+
+Reglas para las sugerencias:
+1. SOLO sugiere cuando hay contexto suficiente pero información incompleta
+2. Alta confianza solamente (>80%)
+3. Máximo 5 sugerencias más valiosas
+4. Prioriza sugerencias que eviten errores comunes o completen información faltante
+
+Formato de cada sugerencia:
+{
+  "field": "ruta.del.campo",
+  "value": valor_sugerido,
+  "label": "Etiqueta legible para mostrar en UI",
+  "reason": "Explicación clara de por qué se sugiere esto",
+  "confidence": 85,
+  "category": "order" | "tooth",
+  "toothNumber": "11"  // solo si category es "tooth"
+}
+
+Ejemplos de cuándo SUGERIR:
+- Usuario menciona "color A2" pero no especifica guía → sugiere field: "colorInfo.shadeType", value: "VITAPAN_CLASSICAL" (A2 pertenece a esta guía)
+- Usuario menciona "escáner intraoral" sin especificar marca → sugiere field: "escanerUtilizado", value: "iTero" (más común)
+- Usuario especifica dientes sin tipo de trabajo → sugiere field: "tipoTrabajo", value: "restauracion", category: "tooth", toothNumber: "11" (por cada diente)
+- Usuario no especifica fecha de entrega para coronas → sugiere field: "fechaEntregaDeseada", value: "[fecha +7 días]" (estándar para coronas)
+- Usuario menciona "zirconia" pero no especifica marca → sugiere field: "materialBrand", value: "Katana", category: "tooth" (marca común de zirconia)
+- Usuario especifica "corona" sin material → sugiere field: "material", value: "Zirconia", category: "tooth" (más común para coronas)
+- Usuario menciona "porcelana" → sugiere field: "materialBrand", value: "IPS e.max", category: "tooth" (marca común de porcelana)
+
+IMPORTANTE - Rutas de campos:
+- Para campos a nivel orden: usa nombres simples como "escanerUtilizado", "fechaEntregaDeseada", "scanType"
+- Para campos anidados en orden: usa rutas con puntos como "colorInfo.shadeType", "colorInfo.shadeCode", "oclusionDiseno.tipoOclusion"
+- Para campos de diente: usa nombres simples o rutas como "material", "tipoTrabajo", "colorInfo.shadeType" con category: "tooth"
+- Ejemplos de rutas válidas:
+  * Order-level: "scanType", "escanerUtilizado", "colorInfo.shadeType", "oclusionDiseno.tipoOclusion"
+  * Tooth-level: "material", "materialBrand", "tipoTrabajo", "colorInfo.shadeType", "trabajoSobreImplante"
+
+Ejemplos de cuándo NO sugerir:
+- Usuario ya especificó el campo explícitamente
+- No hay contexto suficiente para hacer una sugerencia informada
+- Baja confianza (<80%)
+- Sugerencia trivial o redundante
+- El campo ya tiene valor en confirmedValues
+
+FORMATO DE RESPUESTA FINAL:
+Debes devolver un objeto JSON con DOS campos:
+{
+  "confirmedValues": {
+    // Aquí va el JSON con los campos extraídos explícitamente del prompt (igual que antes)
+  },
+  "suggestions": [
+    // Array de sugerencias (puede estar vacío si no hay sugerencias de alta confianza)
+  ]
+}
+
+IMPORTANTE:
+- Solo incluye sugerencias con confianza >= 80%
+- Si no hay sugerencias de alta confianza, devuelve un array vacío en "suggestions"
+- Los campos en "confirmedValues" NO deben repetirse en "suggestions"
+- Para sugerencias de diente específico (category: "tooth"), SIEMPRE incluye "toothNumber"
+- Para sugerencias a nivel orden (category: "order"), NO incluyas "toothNumber"`;
 }
 
 export async function POST(request: NextRequest) {
@@ -213,14 +275,14 @@ export async function POST(request: NextRequest) {
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
 
     // Parse the JSON response
-    let parsedData;
+    let parsedResponse;
     try {
       // Try to extract JSON from the response (in case Claude adds extra text)
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        parsedData = JSON.parse(jsonMatch[0]);
+        parsedResponse = JSON.parse(jsonMatch[0]);
       } else {
-        parsedData = JSON.parse(responseText);
+        parsedResponse = JSON.parse(responseText);
       }
     } catch (parseError) {
       console.error('Error parsing Claude response:', responseText);
@@ -233,9 +295,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract confirmedValues and suggestions from the response
+    const confirmedValues = parsedResponse.confirmedValues || parsedResponse;
+    const suggestions = parsedResponse.suggestions || [];
+
     return NextResponse.json({
       success: true,
-      data: parsedData,
+      data: {
+        confirmedValues,
+        suggestions,
+      },
     });
   } catch (error) {
     console.error('Error in parse-ai-prompt:', error);
