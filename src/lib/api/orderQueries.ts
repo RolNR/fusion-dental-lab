@@ -27,6 +27,11 @@ export const orderDetailInclude = {
     },
   },
   files: true,
+  teeth: {
+    orderBy: {
+      toothNumber: 'asc' as const,
+    },
+  },
   comments: {
     include: {
       author: {

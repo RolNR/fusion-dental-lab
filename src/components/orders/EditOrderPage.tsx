@@ -71,6 +71,7 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
             scanType: order.scanType as ScanType | null,
             doctorId: order.doctorId,
             status: order.status,
+            teeth: order.teeth || [],
           }}
           onSuccess={() => {
             router.push(`/${role}/orders/${orderId}`);

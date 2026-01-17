@@ -5,9 +5,10 @@ import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
 import { getScanTypeLabel } from '@/lib/scanTypeUtils';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
+import type { ToothData } from '@/types/tooth';
 
 interface OrderReviewModalProps {
-  formData: OrderFormState;
+  formData: OrderFormState & { teeth?: ToothData[] };
   onConfirm: () => void;
   onCancel: () => void;
   onSaveAsDraft?: () => void;
@@ -133,14 +134,108 @@ export function OrderReviewModal({
           <SectionTitle>Detalles Dentales</SectionTitle>
           <dl className="space-y-1">
             <DetailRow label="Números de Dientes" value={formData.teethNumbers} />
-            {/* TODO: Update for per-tooth configuration */}
-            {/* <DetailRow label="Material" value={formData.material} />
-            <DetailRow label="Marca del Material" value={formData.materialBrand} /> */}
             <DetailRow
               label="Tipo de Escaneo"
               value={formData.scanType ? getScanTypeLabel(formData.scanType) : undefined}
             />
           </dl>
+
+          {/* Per-Tooth Configuration */}
+          {formData.teeth && formData.teeth.length > 0 && (
+            <>
+              <SectionTitle>Configuración por Diente</SectionTitle>
+              <div className="space-y-4">
+                {formData.teeth.map((tooth) => (
+                  <div
+                    key={tooth.toothNumber}
+                    className="rounded-lg border-l-4 border-primary bg-muted/20 pl-4 pr-4 py-3"
+                  >
+                    <h4 className="font-semibold text-lg text-foreground mb-2">
+                      Diente {tooth.toothNumber}
+                    </h4>
+                    <dl className="space-y-1">
+                      {tooth.tipoTrabajo && (
+                        <DetailRow
+                          label="Tipo de Trabajo"
+                          value={
+                            tooth.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'
+                          }
+                        />
+                      )}
+                      {tooth.tipoRestauracion && (
+                        <DetailRow
+                          label="Tipo de Restauración"
+                          value={
+                            tooth.tipoRestauracion === 'corona'
+                              ? 'Corona'
+                              : tooth.tipoRestauracion === 'puente'
+                                ? 'Puente'
+                                : tooth.tipoRestauracion === 'inlay'
+                                  ? 'Inlay'
+                                  : tooth.tipoRestauracion === 'onlay'
+                                    ? 'Onlay'
+                                    : tooth.tipoRestauracion === 'carilla'
+                                      ? 'Carilla'
+                                      : 'Provisional'
+                          }
+                        />
+                      )}
+                      {tooth.material && <DetailRow label="Material" value={tooth.material} />}
+                      {tooth.materialBrand && (
+                        <DetailRow label="Marca del Material" value={tooth.materialBrand} />
+                      )}
+                      {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
+                        <>
+                          {(tooth.colorInfo as any).shadeCode && (
+                            <DetailRow
+                              label="Código de Color"
+                              value={(tooth.colorInfo as any).shadeCode}
+                            />
+                          )}
+                          {(tooth.colorInfo as any).shadeType && (
+                            <DetailRow
+                              label="Tipo de Guía de Color"
+                              value={(tooth.colorInfo as any).shadeType}
+                            />
+                          )}
+                        </>
+                      )}
+                      {tooth.trabajoSobreImplante && (
+                        <div className="mt-2 pt-2 border-t border-border">
+                          <p className="text-sm font-medium text-foreground mb-1">
+                            Trabajo sobre Implante
+                          </p>
+                          {tooth.informacionImplante &&
+                            typeof tooth.informacionImplante === 'object' && (
+                              <dl className="ml-4 space-y-1">
+                                {(tooth.informacionImplante as any).marcaImplante && (
+                                  <DetailRow
+                                    label="Marca del Implante"
+                                    value={(tooth.informacionImplante as any).marcaImplante}
+                                  />
+                                )}
+                                {(tooth.informacionImplante as any).sistemaConexion && (
+                                  <DetailRow
+                                    label="Sistema de Conexión"
+                                    value={(tooth.informacionImplante as any).sistemaConexion}
+                                  />
+                                )}
+                                {(tooth.informacionImplante as any).numeroImplantes && (
+                                  <DetailRow
+                                    label="Número de Implantes"
+                                    value={(tooth.informacionImplante as any).numeroImplantes}
+                                  />
+                                )}
+                              </dl>
+                            )}
+                        </div>
+                      )}
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* Case Type */}
           {formData.tipoCaso && (
@@ -164,63 +259,6 @@ export function OrderReviewModal({
             </>
           )}
 
-          {/* Work Type - TODO: Update for per-tooth configuration */}
-          {/* {formData.tipoTrabajo && (
-            <>
-              <SectionTitle>Tipo de Trabajo</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow
-                  label="Tipo de Trabajo"
-                  value={formData.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'}
-                />
-                {formData.tipoRestauracion && (
-                  <DetailRow label="Tipo de Restauración" value={formData.tipoRestauracion} />
-                )}
-              </dl>
-            </>
-          )} */}
-
-          {/* Implant Info - TODO: Update for per-tooth configuration */}
-          {/* {formData.trabajoSobreImplante && formData.informacionImplante && (
-            <>
-              <SectionTitle>Información de Implantes</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow
-                  label="Marca del Implante"
-                  value={formData.informacionImplante.marcaImplante}
-                />
-                <DetailRow
-                  label="Sistema de Conexión"
-                  value={formData.informacionImplante.sistemaConexion}
-                />
-                <DetailRow
-                  label="Número de Implantes"
-                  value={formData.informacionImplante.numeroImplantes}
-                />
-                <DetailRow
-                  label="Tipo de Restauración"
-                  value={formData.informacionImplante.tipoRestauracion}
-                />
-                <DetailRow
-                  label="Tipo de Aditamento"
-                  value={formData.informacionImplante.tipoAditamento}
-                />
-                <DetailRow
-                  label="Perfil de Emergencia"
-                  value={formData.informacionImplante.perfilEmergencia}
-                />
-                <DetailRow
-                  label="Condición del Tejido Blando"
-                  value={formData.informacionImplante.condicionTejidoBlando}
-                />
-                <DetailRow
-                  label="Radiografía Periapical"
-                  value={formData.informacionImplante.radiografiaPeriapical}
-                />
-                <DetailRow label="CBCT" value={formData.informacionImplante.cbct} />
-              </dl>
-            </>
-          )} */}
 
           {/* Submission Type */}
           {formData.submissionType && (
@@ -279,41 +317,6 @@ export function OrderReviewModal({
             </>
           )}
 
-          {/* Extended Color Info - TODO: Update for per-tooth configuration */}
-          {/* {formData.colorInfo && (
-            <>
-              <SectionTitle>Información Extendida de Color</SectionTitle>
-              <dl className="space-y-1">
-                <DetailRow label="Tipo de Guía de Color" value={formData.colorInfo.shadeType} />
-                <DetailRow label="Código de Color" value={formData.colorInfo.shadeCode} />
-                <DetailRow label="Colorímetro" value={formData.colorInfo.colorimeter} />
-                {formData.colorInfo.texture && formData.colorInfo.texture.length > 0 && (
-                  <DetailRow label="Textura" value={formData.colorInfo.texture.join(', ')} />
-                )}
-                {formData.colorInfo.gloss && formData.colorInfo.gloss.length > 0 && (
-                  <DetailRow label="Brillo" value={formData.colorInfo.gloss.join(', ')} />
-                )}
-                <DetailRow
-                  label="Mamelones"
-                  value={formData.colorInfo.mamelones === 'si' ? 'Sí' : 'No'}
-                />
-                {formData.colorInfo.translucency && (
-                  <>
-                    <DetailRow
-                      label="Nivel de Translucidez"
-                      value={`${formData.colorInfo.translucency.level}/10`}
-                    />
-                    {formData.colorInfo.translucency.description && (
-                      <DetailRow
-                        label="Descripción de Translucidez"
-                        value={formData.colorInfo.translucency.description}
-                      />
-                    )}
-                  </>
-                )}
-              </dl>
-            </>
-          )} */}
         </div>
 
         {/* Footer Actions */}

@@ -589,34 +589,6 @@ if (!(err instanceof Error)) {
         onTeethDataChange={setTeethData}
       />
 
-      {/* Impression Extended Section */}
-      <ImpressionExtendedSection
-        ref={(el) => registerSectionRef('impression', el)}
-        scanType={formData.scanType ?? undefined}
-        escanerUtilizado={formData.escanerUtilizado ?? undefined}
-        otroEscaner={formData.otroEscaner}
-        tipoSilicon={formData.tipoSilicon ?? undefined}
-        notaModeloFisico={formData.notaModeloFisico}
-        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        disabled={isLoading}
-        upperFile={upperFile}
-        lowerFile={lowerFile}
-        onUpperFileChange={setUpperFile}
-        onLowerFileChange={setLowerFile}
-        hasErrors={getSectionErrorInfo('impression').hasErrors}
-        errorCount={getSectionErrorInfo('impression').errorCount}
-      />
-
-      {/* Mouth Photos Section - Optional */}
-      <MouthPhotosSection
-        value={mouthPhotoFile}
-        onChange={setMouthPhotoFile}
-        orderId={orderId}
-        onUploadComplete={(fileId) => {
-          // No action needed after upload for now
-        }}
-      />
-
       {/* Implant Section - Per-tooth configuration */}
       {selectedToothNumber && (
         <ImplantSection
@@ -680,6 +652,34 @@ if (!(err instanceof Error)) {
         onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
       />
 
+     {/* Impression Extended Section */}
+      <ImpressionExtendedSection
+        ref={(el) => registerSectionRef('impression', el)}
+        scanType={formData.scanType ?? undefined}
+        escanerUtilizado={formData.escanerUtilizado ?? undefined}
+        otroEscaner={formData.otroEscaner}
+        tipoSilicon={formData.tipoSilicon ?? undefined}
+        notaModeloFisico={formData.notaModeloFisico}
+        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+        disabled={isLoading}
+        upperFile={upperFile}
+        lowerFile={lowerFile}
+        onUpperFileChange={setUpperFile}
+        onLowerFileChange={setLowerFile}
+        hasErrors={getSectionErrorInfo('impression').hasErrors}
+        errorCount={getSectionErrorInfo('impression').errorCount}
+      />
+
+      {/* Mouth Photos Section - Optional */}
+      <MouthPhotosSection
+        value={mouthPhotoFile}
+        onChange={setMouthPhotoFile}
+        orderId={orderId}
+        onUploadComplete={(fileId) => {
+          // No action needed after upload for now
+        }}
+      />
+      
       {/* Submission Type Section */}
       <SubmissionTypeSection
         ref={(el) => registerSectionRef('submission', el)}
@@ -737,7 +737,10 @@ if (!(err instanceof Error)) {
       {/* Order Review Modal */}
       {showReviewModal && (
         <OrderReviewModal
-          formData={formData}
+          formData={{
+            ...formData,
+            teeth: Array.from(teethData.values()),
+          }}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}
           onSaveAsDraft={handleSaveAsDraft}
