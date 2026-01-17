@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { Doctor } from '@/types/user';
 import type { SpeechRecognition } from '@/types/speech-recognition';
+import { loadDashboardAIData } from '@/lib/dashboardAIDataLoader';
 import { OrderInfoSection } from './order-form/OrderInfoSection';
 import { DescriptionSection } from './order-form/DescriptionSection';
 import { MouthPhotosSection } from './order-form/MouthPhotosSection';
@@ -179,6 +180,40 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         recognitionRef.current.stop();
       }
     };
+  }, []);
+
+  // Load dashboard AI data on mount
+  useEffect(() => {
+    const dashboardData = loadDashboardAIData();
+    if (dashboardData) {
+      // Update form data
+      setFormData((prev) => ({
+        ...prev,
+        ...dashboardData.formData,
+      }));
+
+      // Update teeth data
+      if (dashboardData.teethData.size > 0) {
+        setTeethData(dashboardData.teethData);
+        setTeethNumbers(dashboardData.teethNumbers);
+
+        if (dashboardData.selectedToothNumber) {
+          setSelectedToothNumber(dashboardData.selectedToothNumber);
+        }
+      }
+
+      // Show full form and review modal
+      if (dashboardData.shouldShowFullForm) {
+        setShowFullForm(true);
+      }
+
+      if (dashboardData.shouldShowReviewModal) {
+        // Delay to ensure state is updated
+        setTimeout(() => {
+          setShowReviewModal(true);
+        }, 100);
+      }
+    }
   }, []);
 
   const handleToggleSpeechRecognition = () => {

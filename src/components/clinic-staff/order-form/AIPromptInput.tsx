@@ -16,6 +16,9 @@ interface AIPromptInputProps {
   onToggleSpeechRecognition: () => void;
   showFullForm: boolean;
   onShowFullForm: () => void;
+  heading?: string;
+  description?: string;
+  showManualButton?: boolean;
 }
 
 export function AIPromptInput({
@@ -30,6 +33,9 @@ export function AIPromptInput({
   onToggleSpeechRecognition,
   showFullForm,
   onShowFullForm,
+  heading = 'Crear Orden con IA',
+  description = 'Describe la orden en lenguaje natural y la IA completará automáticamente los campos',
+  showManualButton = true,
 }: AIPromptInputProps) {
   return (
     <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 sm:p-6">
@@ -51,10 +57,9 @@ export function AIPromptInput({
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground">Llenar formulario con IA</h3>
+          <h3 className="text-lg font-semibold text-foreground">{heading}</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Describe la orden en lenguaje natural y la IA completará automáticamente los campos
-            del formulario
+            {description}
           </p>
         </div>
       </div>
@@ -117,7 +122,7 @@ export function AIPromptInput({
         {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
 
         {/* Manual Fill Button */}
-        {!showFullForm && (
+        {!showFullForm && showManualButton && (
           <Button
             type="button"
             variant="secondary"
@@ -125,7 +130,7 @@ export function AIPromptInput({
             disabled={isLoading}
             className="w-full sm:w-auto"
           >
-            Llenar Formulario Manualmente
+            Completar Manualmente
           </Button>
         )}
       </div>

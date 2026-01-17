@@ -11,6 +11,7 @@ import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { AlertsList } from '@/components/ui/AlertsList';
 import { Button } from '@/components/ui/Button';
 import { OrderWithRelations } from '@/types/order';
+import { DashboardAIPrompt } from '@/components/clinic-staff/DashboardAIPrompt';
 import Link from 'next/link';
 
 interface OrderStats {
@@ -122,6 +123,8 @@ export default function DoctorDashboard() {
               : 'Panel de control de órdenes dentales'}
           </p>
         </div>
+
+        <DashboardAIPrompt role="doctor" />
 
         <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
           <StatsCard title="Total Órdenes" value={stats.total} description="Todas tus órdenes" />
