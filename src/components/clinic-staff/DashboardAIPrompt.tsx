@@ -35,24 +35,23 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
 
         recognition.onresult = (event) => {
           let finalTranscript = '';
-          let interimTranscript = '';
 
+          // Process only new results starting from resultIndex
+          // Use content-based deduplication (without index) for Samsung devices
           for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            const resultKey = `${i}-${transcript}`;
-
             if (event.results[i].isFinal) {
-              if (!processedResultsRef.current.has(resultKey)) {
+              const transcript = event.results[i][0].transcript.trim();
+
+              // Use only transcript content (no index) to detect duplicates on Samsung
+              if (transcript && !processedResultsRef.current.has(transcript)) {
+                processedResultsRef.current.add(transcript);
                 finalTranscript += transcript + ' ';
-                processedResultsRef.current.add(resultKey);
               }
-            } else {
-              interimTranscript += transcript;
             }
           }
 
           if (finalTranscript) {
-            setAiPrompt((prev) => prev + finalTranscript);
+            setAiPrompt((prev) => (prev + ' ' + finalTranscript).trim());
           }
         };
 
@@ -63,6 +62,7 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
 
         recognition.onend = () => {
           setIsListening(false);
+          processedResultsRef.current.clear(); // Reset for next session
         };
 
         recognitionRef.current = recognition;

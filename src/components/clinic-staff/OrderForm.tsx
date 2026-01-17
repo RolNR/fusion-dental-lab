@@ -138,15 +138,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         recognition.onresult = (event) => {
           let finalTranscript = '';
 
-          // Process all results but use a Set to avoid duplicates (fixes Samsung devices)
-          for (let i = 0; i < event.results.length; i++) {
+          // Process only new results starting from resultIndex
+          // Use content-based deduplication (without index) for Samsung devices
+          for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
               const transcript = event.results[i][0].transcript.trim();
-              // Create a unique key using index + transcript to detect duplicates
-              const resultKey = `${i}:${transcript}`;
 
-              if (transcript && !processedResultsRef.current.has(resultKey)) {
-                processedResultsRef.current.add(resultKey);
+              // Use only transcript content (no index) to detect duplicates on Samsung
+              if (transcript && !processedResultsRef.current.has(transcript)) {
+                processedResultsRef.current.add(transcript);
                 finalTranscript += transcript + ' ';
               }
             }
@@ -155,7 +155,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           if (finalTranscript) {
             setFormData((prev) => ({
               ...prev,
-              aiPrompt: prev.aiPrompt + finalTranscript,
+              aiPrompt: (prev.aiPrompt + ' ' + finalTranscript).trim(),
             }));
           }
         };
