@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack --hostname 0.0.0.0",
     "build": "prisma migrate deploy && prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"src/**/*.{js,ts,tsx,json,css,md}\"",
@@ -51,5 +52,8 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

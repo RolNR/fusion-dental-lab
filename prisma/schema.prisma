@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Schema updated for per-tooth configuration - v2.0
+
 model Alert {
   id                          String      @id @default(cuid())
   message                     String
