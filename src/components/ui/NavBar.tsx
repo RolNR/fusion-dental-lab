@@ -36,13 +36,13 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href={basePath} className="flex items-center gap-2">
+            <Link href={basePath} className="flex items-center gap-1.5 sm:gap-2">
               <Image
                 src="/logo-fusion.png"
                 alt="Fusión Dental Lab"
                 width={100}
                 height={24}
-                className="h-6 w-auto"
+                className="h-4 sm:h-6 w-auto"
                 priority
               />
               <span
