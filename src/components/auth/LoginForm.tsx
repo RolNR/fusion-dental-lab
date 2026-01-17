@@ -52,6 +52,16 @@ export function LoginForm() {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      e.preventDefault();
+      const form = e.currentTarget.closest('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-md">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -59,10 +69,12 @@ export function LoginForm() {
           id="email"
           name="email"
           type="email"
+          autoComplete="email"
           label="Correo electrónico"
           required
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onKeyDown={handleKeyDown}
           placeholder="tu@ejemplo.com"
           disabled={isLoading}
         />
@@ -70,10 +82,12 @@ export function LoginForm() {
         <PasswordInput
           id="password"
           name="password"
+          autoComplete="current-password"
           label="Contraseña"
           required
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onKeyDown={handleKeyDown}
           placeholder="••••••••"
           disabled={isLoading}
         />
