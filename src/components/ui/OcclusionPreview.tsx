@@ -24,9 +24,10 @@ interface ArchModelProps {
   position: [number, number, number];
   color: string;
   label: string;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
-function ArchModel({ url, fileExtension, shouldRevokeUrl, position, color, label }: ArchModelProps) {
+function ArchModel({ url, fileExtension, shouldRevokeUrl, position, color, label, onLoadingChange }: ArchModelProps) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,17 +35,20 @@ function ArchModel({ url, fileExtension, shouldRevokeUrl, position, color, label
   useEffect(() => {
     setIsLoading(true);
     setError(null);
+    onLoadingChange?.(true);
 
     const loadGeometry = (loadedGeometry: THREE.BufferGeometry) => {
       loadedGeometry.computeVertexNormals();
       setGeometry(loadedGeometry);
       setIsLoading(false);
+      onLoadingChange?.(false);
     };
 
     const handleError = (err: unknown) => {
       console.error(`Error loading ${label}:`, err);
       setError(`Error al cargar ${label}`);
       setIsLoading(false);
+      onLoadingChange?.(false);
     };
 
     if (fileExtension === '.stl') {
@@ -84,7 +88,9 @@ function Scene({
   lowerExtension,
   shouldRevokeUpperUrl,
   shouldRevokeLowerUrl,
-  biteOpen
+  biteOpen,
+  onUpperLoadingChange,
+  onLowerLoadingChange,
 }: {
   upperUrl: string | null;
   upperExtension: string | null;
@@ -93,6 +99,8 @@ function Scene({
   shouldRevokeUpperUrl: boolean;
   shouldRevokeLowerUrl: boolean;
   biteOpen: boolean;
+  onUpperLoadingChange?: (isLoading: boolean) => void;
+  onLowerLoadingChange?: (isLoading: boolean) => void;
 }) {
   // Calculate positions based on bite open/close
   // When bite is open, separate the arches vertically
@@ -110,6 +118,7 @@ function Scene({
             position={upperPosition}
             color="#9ca3af"
             label="arcada superior"
+            onLoadingChange={onUpperLoadingChange}
           />
         )}
         {lowerUrl && lowerExtension && (
@@ -120,6 +129,7 @@ function Scene({
             position={lowerPosition}
             color="#6b7280"
             label="arcada inferior"
+            onLoadingChange={onLowerLoadingChange}
           />
         )}
       </group>
@@ -133,6 +143,8 @@ export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onC
   const [upperExtension, setUpperExtension] = useState<string | null>(null);
   const [lowerExtension, setLowerExtension] = useState<string | null>(null);
   const [biteOpen, setBiteOpen] = useState(false);
+  const [isUpperLoading, setIsUpperLoading] = useState(false);
+  const [isLowerLoading, setIsLowerLoading] = useState(false);
 
   useEffect(() => {
     if (upperFile) {
@@ -177,6 +189,9 @@ export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onC
   const hasLowerScan = lowerObjectUrl && lowerExtension;
   const hasBothScans = hasUpperScan && hasLowerScan;
 
+  // Determine if we're loading based on which scans exist
+  const isLoading = (hasUpperScan && isUpperLoading) || (hasLowerScan && isLowerLoading);
+
   if (!hasUpperScan && !hasLowerScan) {
     return (
       <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
@@ -212,6 +227,8 @@ export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onC
           shouldRevokeUpperUrl={shouldRevokeUpperUrl}
           shouldRevokeLowerUrl={shouldRevokeLowerUrl}
           biteOpen={biteOpen}
+          onUpperLoadingChange={setIsUpperLoading}
+          onLowerLoadingChange={setIsLowerLoading}
         />
         <OrbitControls
           enableZoom={true}
@@ -222,6 +239,16 @@ export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onC
           rotateSpeed={0.4}
         />
       </Canvas>
+
+      {/* Loading spinner overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="flex flex-col items-center gap-3">
+            <Icons.spinner className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-foreground">Cargando modelo 3D...</p>
+          </div>
+        </div>
+      )}
 
       {/* Title and instructions */}
       <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border">
