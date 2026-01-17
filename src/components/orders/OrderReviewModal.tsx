@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { getScanTypeLabel } from '@/lib/scanTypeUtils';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { ToothData } from '@/types/tooth';
+import { Odontogram } from '@/components/clinic-staff/order-form/Odontogram';
 
 interface OrderReviewModalProps {
   formData: OrderFormState & { teeth?: ToothData[] };
@@ -144,6 +145,28 @@ export function OrderReviewModal({
           {formData.teeth && formData.teeth.length > 0 && (
             <>
               <SectionTitle>Configuración por Diente</SectionTitle>
+
+              {/* Visual Odontogram (read-only) */}
+              <div className="mb-6">
+                <Odontogram
+                  selectedTeeth={formData.teeth.map((t) => t.toothNumber)}
+                  currentTooth={null}
+                  teethWithData={
+                    new Set(
+                      formData.teeth
+                        .filter((t) => t.material || t.tipoTrabajo || t.trabajoSobreImplante)
+                        .map((t) => t.toothNumber)
+                    )
+                  }
+                  teethWithErrors={new Set()}
+                  readOnly={true}
+                />
+              </div>
+
+              {/* Detailed configuration for each tooth */}
+              <h3 className="text-sm font-semibold text-foreground mb-3">
+                Detalles por Diente
+              </h3>
               <div className="space-y-4">
                 {formData.teeth.map((tooth) => (
                   <div

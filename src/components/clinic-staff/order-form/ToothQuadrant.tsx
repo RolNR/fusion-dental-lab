@@ -13,6 +13,7 @@ interface ToothQuadrantProps {
   teethWithErrors: Set<string>; // Teeth with validation errors
   onToothToggle: (toothNumber: string) => void; // Add/remove tooth
   onToothSelect: (toothNumber: string) => void; // Select for configuration
+  readOnly?: boolean; // If true, disables all interactions
 }
 
 export function ToothQuadrant({
@@ -24,6 +25,7 @@ export function ToothQuadrant({
   teethWithErrors,
   onToothToggle,
   onToothSelect,
+  readOnly = false,
 }: ToothQuadrantProps) {
   // Determine if teeth should be reversed for anatomical accuracy
   // Upper quadrants: left-to-right (11→18, 21→28)
@@ -50,6 +52,7 @@ export function ToothQuadrant({
           hasError={teethWithErrors.has(toothNumber)}
           onToggle={() => onToothToggle(toothNumber)}
           onSelect={() => onToothSelect(toothNumber)}
+          readOnly={readOnly}
         />
       ))}
     </div>

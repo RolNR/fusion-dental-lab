@@ -11,6 +11,7 @@ interface ToothProps {
   hasError: boolean; // Validation error
   onToggle: () => void; // Add/remove from order
   onSelect: () => void; // Select for configuration
+  readOnly?: boolean; // If true, disables all interactions
 }
 
 export function Tooth({
@@ -21,12 +22,15 @@ export function Tooth({
   hasError,
   onToggle,
   onSelect,
+  readOnly = false,
 }: ToothProps) {
   const toothType = getToothTypeFromNumber(toothNumber);
   const toothName = getToothName(toothNumber);
   const shape = TOOTH_SHAPES[toothType];
 
   const handleClick = () => {
+    if (readOnly) return; // Disable clicks in readOnly mode
+
     if (isSelected) {
       // If selected but no data configured, remove from order
       if (!hasData) {
@@ -42,6 +46,7 @@ export function Tooth({
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
+    if (readOnly) return; // Disable clicks in readOnly mode
     e.stopPropagation();
     onToggle();
   };
@@ -55,7 +60,8 @@ export function Tooth({
 
   // Dynamic classes based on state
   const containerClasses = [
-    'relative flex flex-col items-center gap-1 cursor-pointer transition-transform hover:scale-105',
+    'relative flex flex-col items-center gap-1 transition-transform',
+    !readOnly && 'cursor-pointer hover:scale-105',
     isCurrent && 'ring-2 ring-primary-hover rounded-lg p-1',
   ]
     .filter(Boolean)
@@ -63,7 +69,11 @@ export function Tooth({
 
   const svgClasses = [
     'transition-colors',
-    isSelected ? 'fill-primary stroke-primary' : 'fill-none stroke-border hover:fill-muted/20',
+    isSelected
+      ? 'fill-primary stroke-primary'
+      : readOnly
+        ? 'fill-none stroke-border'
+        : 'fill-none stroke-border hover:fill-muted/20',
   ]
     .filter(Boolean)
     .join(' ');
@@ -118,8 +128,8 @@ export function Tooth({
               </div>
             ) : null}
 
-            {/* Remove button for configured teeth */}
-            {hasData && (
+            {/* Remove button for configured teeth (hidden in readOnly mode) */}
+            {hasData && !readOnly && (
               <button
                 onClick={handleRemoveClick}
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"

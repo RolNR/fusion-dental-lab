@@ -7,8 +7,9 @@ interface OdontogramProps {
   currentTooth: string | null; // Tooth being configured
   teethWithData: Set<string>; // Configured teeth
   teethWithErrors: Set<string>; // Teeth with errors
-  onToothToggle: (toothNumber: string) => void; // Add/remove tooth
-  onToothSelect: (toothNumber: string) => void; // Select for configuration
+  onToothToggle?: (toothNumber: string) => void; // Add/remove tooth (optional for readOnly)
+  onToothSelect?: (toothNumber: string) => void; // Select for configuration (optional for readOnly)
+  readOnly?: boolean; // If true, disables all interactions
 }
 
 /**
@@ -26,6 +27,7 @@ export function Odontogram({
   teethWithErrors,
   onToothToggle,
   onToothSelect,
+  readOnly = false,
 }: OdontogramProps) {
   // Generate teeth for each quadrant
   const upperRight = generateQuadrantTeeth(1); // 11-18
@@ -38,8 +40,9 @@ export function Odontogram({
     currentTooth,
     teethWithData,
     teethWithErrors,
-    onToothToggle,
-    onToothSelect,
+    onToothToggle: onToothToggle || (() => {}),
+    onToothSelect: onToothSelect || (() => {}),
+    readOnly,
   };
 
   return (
@@ -127,11 +130,13 @@ export function Odontogram({
       </div>
 
       {/* Instructions */}
-      <p className="text-xs text-muted-foreground text-center">
-        <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene configuración,
-        vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para editarlo o usa el
-        botón X para quitarlo.
-      </p>
+      {!readOnly && (
+        <p className="text-xs text-muted-foreground text-center">
+          <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene configuración,
+          vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para editarlo o usa el
+          botón X para quitarlo.
+        </p>
+      )}
     </div>
   );
 }
