@@ -481,15 +481,25 @@ if (!(err instanceof Error)) {
       // If teeth array exists, convert it to Map and update teethData
       if (teeth && Array.isArray(teeth) && teeth.length > 0) {
         const teethMap = new Map<string, ToothData>();
+        const toothNumbersArray: string[] = [];
+
         teeth.forEach((tooth: ToothData) => {
           if (tooth.toothNumber) {
             teethMap.set(tooth.toothNumber, tooth);
+            toothNumbersArray.push(tooth.toothNumber);
           }
         });
-        setTeethData(teethMap);
 
-        // Also extract tooth numbers to teethNumbers field
-        const toothNumbers = teeth.map((t: ToothData) => t.toothNumber).join(', ');
+        setTeethData(teethMap);
+        setTeethNumbers(toothNumbersArray); // Update the array state for odontogram
+
+        // Auto-select the first tooth if none selected
+        if (!selectedToothNumber && toothNumbersArray.length > 0) {
+          setSelectedToothNumber(toothNumbersArray[0]);
+        }
+
+        // Also extract tooth numbers to teethNumbers field (comma-separated string)
+        const toothNumbers = toothNumbersArray.join(', ');
         setFormData((prev) => ({
           ...prev,
           teethNumbers: toothNumbers,
