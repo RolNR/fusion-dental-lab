@@ -280,6 +280,18 @@ export const orderDraftSchema = z.object({
 
   // Articulation
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
+
+  // Per-tooth configuration
+  teeth: z.array(z.object({
+    toothNumber: z.string().min(1),
+    material: z.string().optional(),
+    materialBrand: z.string().optional(),
+    colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+    tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+    tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
+    trabajoSobreImplante: z.boolean().optional(),
+    informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+  })).optional(),
 });
 
 // Schema for creating orders with validation (patientName required)
@@ -314,6 +326,18 @@ export const orderUpdateSchema = z.object({
   // New fields
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
+
+  // Per-tooth configuration
+  teeth: z.array(z.object({
+    toothNumber: z.string().min(1),
+    material: z.string().optional(),
+    materialBrand: z.string().optional(),
+    colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+    tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+    tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
+    trabajoSobreImplante: z.boolean().optional(),
+    informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+  })).optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),

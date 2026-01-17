@@ -110,10 +110,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No tienes acceso a la clínica activa' }, { status: 403 });
     }
 
+    // Extract teeth data
+    const { teeth, ...orderFields } = validatedData;
+
     // Create order with retry logic for race conditions
     const order = await createOrderWithRetry({
       orderData: {
-        ...validatedData,
+        ...orderFields,
         clinic: {
           connect: { id: doctor.activeClinicId },
         },
@@ -124,6 +127,21 @@ export async function POST(request: NextRequest) {
           connect: { id: session.user.id },
         },
         status: 'DRAFT',
+        // Create teeth if provided
+        ...(teeth && teeth.length > 0 && {
+          teeth: {
+            create: teeth.map((tooth) => ({
+              toothNumber: tooth.toothNumber,
+              material: tooth.material,
+              materialBrand: tooth.materialBrand,
+              colorInfo: tooth.colorInfo,
+              tipoTrabajo: tooth.tipoTrabajo,
+              tipoRestauracion: tooth.tipoRestauracion,
+              trabajoSobreImplante: tooth.trabajoSobreImplante,
+              informacionImplante: tooth.informacionImplante,
+            })),
+          },
+        }),
       },
       clinicId: doctor.activeClinicId,
       patientName: validatedData.patientName,

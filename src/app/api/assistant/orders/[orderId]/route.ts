@@ -3,9 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { orderUpdateSchema, type OrderUpdateData } from '@/types/order';
+import { orderUpdateSchema } from '@/types/order';
 import { canEditOrder, canDeleteOrder } from '@/lib/api/orderEditValidation';
 import { orderDetailInclude } from '@/lib/api/orderQueries';
+import { updateOrderWithTeeth } from '@/lib/api/orderUpdate';
 
 // GET /api/assistant/orders/[orderId] - Get a specific order
 export async function GET(
@@ -99,11 +100,14 @@ export async function PATCH(
     const body = await request.json();
     const validatedData = orderUpdateSchema.parse(body);
 
-    const updateData: OrderUpdateData = validatedData;
+    // Extract teeth data
+    const { teeth, ...orderFields } = validatedData;
 
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: updateData,
+    // Update order and teeth using shared helper
+    const order = await updateOrderWithTeeth({
+      orderId,
+      orderFields,
+      teeth,
       include: {
         clinic: {
           select: {

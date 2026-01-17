@@ -97,6 +97,17 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
   }, [role, orderId]);
 
+  // Initialize teeth data from initialData when editing
+  useEffect(() => {
+    if (initialData?.teeth && initialData.teeth.length > 0) {
+      const initialTeethMap = new Map<string, ToothData>();
+      initialData.teeth.forEach((tooth) => {
+        initialTeethMap.set(tooth.toothNumber, tooth);
+      });
+      setTeethData(initialTeethMap);
+    }
+  }, [initialData]);
+
   // Parse teethNumbers and manage tooth selection
   useEffect(() => {
     const parsed = parseTeethNumbers(formData.teethNumbers);
@@ -230,7 +241,16 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         mouthPhotoFile,
       };
 
-      await saveOrderUtil(orderId, role, formData, files, submitForReview, onSuccess, router);
+      // Convert teethData Map to array
+      const teethArray = Array.from(teethData.values());
+
+      // Merge teeth array into formData
+      const dataToSave = {
+        ...formData,
+        teeth: teethArray.length > 0 ? teethArray : undefined,
+      };
+
+      await saveOrderUtil(orderId, role, dataToSave, files, submitForReview, onSuccess, router);
     } catch (err) {
 if (!(err instanceof Error)) {
         setError('Error desconocido');
