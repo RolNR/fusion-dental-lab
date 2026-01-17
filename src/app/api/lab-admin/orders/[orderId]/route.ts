@@ -77,6 +77,7 @@ export async function GET(
             fileType: true,
             fileSize: true,
             storageUrl: true,
+            category: true,
             createdAt: true,
           },
           orderBy: {

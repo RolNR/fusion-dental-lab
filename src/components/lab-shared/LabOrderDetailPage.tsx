@@ -13,6 +13,8 @@ import { CopyableField } from '@/components/ui/CopyableField';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
 import { FileList } from '@/components/orders/FileList';
+import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
+import { FileCategory } from '@/types/file';
 import { useSession } from 'next-auth/react';
 
 interface CopyButtonProps {
@@ -58,9 +60,19 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showOcclusionPreview, setShowOcclusionPreview] = useState(false);
 
   const apiEndpoint = `/api/${role}/orders/${orderId}`;
   const backUrl = `/${role}/orders`;
+
+  // Check if order has both upper and lower STL files
+  const hasOcclusionFiles = order?.files
+    ? order.files.some((f) => f.category === FileCategory.SCAN_UPPER) &&
+      order.files.some((f) => f.category === FileCategory.SCAN_LOWER)
+    : false;
+
+  const upperFile = order?.files.find((f) => f.category === FileCategory.SCAN_UPPER);
+  const lowerFile = order?.files.find((f) => f.category === FileCategory.SCAN_LOWER);
 
   const fetchOrder = useCallback(async () => {
     try {
@@ -249,7 +261,19 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
 
           {/* Files */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">Archivos</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-foreground">Archivos</h2>
+              {hasOcclusionFiles && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowOcclusionPreview(true)}
+                >
+                  <Icons.eye className="h-4 w-4 mr-2" />
+                  Ver Vista de Oclusión
+                </Button>
+              )}
+            </div>
             <FileList orderId={order.id} canDelete={false} />
           </div>
         </div>
@@ -296,6 +320,40 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Occlusion Preview Modal */}
+      {showOcclusionPreview && hasOcclusionFiles && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowOcclusionPreview(false);
+            }
+          }}
+        >
+          <div className="relative w-full max-w-5xl">
+            <div className="rounded-lg bg-background p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-foreground">Vista de Oclusión 3D</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowOcclusionPreview(false)}
+                  aria-label="Cerrar"
+                  className="h-8 w-8 p-0"
+                >
+                  <Icons.x className="h-5 w-5" />
+                </Button>
+              </div>
+              <OcclusionPreview
+                upperUrl={upperFile?.storageUrl}
+                lowerUrl={lowerFile?.storageUrl}
+                onClose={() => setShowOcclusionPreview(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

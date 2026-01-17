@@ -171,6 +171,7 @@ export interface OrderDetail {
     fileType: string;
     fileSize: number;
     storageUrl: string;
+    category: string | null;
     createdAt: string;
   }>;
 }
