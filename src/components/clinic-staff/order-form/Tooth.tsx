@@ -32,13 +32,8 @@ export function Tooth({
     if (readOnly) return; // Disable clicks in readOnly mode
 
     if (isSelected) {
-      // If selected but no data configured, remove from order
-      if (!hasData) {
-        onToggle();
-      } else {
-        // If has data, open configuration
-        onSelect();
-      }
+      // If selected, always open configuration (don't remove)
+      onSelect();
     } else {
       // If not selected, add to order
       onToggle();
@@ -128,8 +123,8 @@ export function Tooth({
               </div>
             ) : null}
 
-            {/* Remove button for configured teeth (hidden in readOnly mode) */}
-            {hasData && !readOnly && (
+            {/* Remove button for ALL selected teeth (hidden in readOnly mode) */}
+            {!readOnly && (
               <button
                 onClick={handleRemoveClick}
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
@@ -139,6 +134,18 @@ export function Tooth({
                 <Icons.x className="h-3 w-3 text-foreground hover:text-danger-foreground" />
               </button>
             )}
+          </div>
+        )}
+
+        {/* Edit icon when tooth is being configured */}
+        {isCurrent && !readOnly && (
+          <div className="absolute -top-1 -left-1">
+            <div
+              className="flex h-4 w-4 items-center justify-center rounded-full bg-primary"
+              title="Configurando"
+            >
+              <Icons.settings className="h-3 w-3 text-primary-foreground" />
+            </div>
           </div>
         )}
 
