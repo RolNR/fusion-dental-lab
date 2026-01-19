@@ -30,10 +30,10 @@ export function Odontogram({
   readOnly = false,
 }: OdontogramProps) {
   // Generate teeth for each quadrant
-  const upperRight = generateQuadrantTeeth(1); // 11-18
-  const upperLeft = generateQuadrantTeeth(2); // 21-28
-  const lowerLeft = generateQuadrantTeeth(3); // 31-38
-  const lowerRight = generateQuadrantTeeth(4); // 41-48
+  const upperRight = generateQuadrantTeeth(1).reverse(); // 18-11 (right to left from patient view)
+  const upperLeft = generateQuadrantTeeth(2); // 21-28 (left to right from patient view)
+  const lowerLeft = generateQuadrantTeeth(3); // 31-38 (left to right from patient view)
+  const lowerRight = generateQuadrantTeeth(4).reverse(); // 48-41 (right to left from patient view)
 
   const quadrantProps = {
     selectedTeeth,
@@ -84,7 +84,7 @@ export function Odontogram({
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             {/* Upper Right (Patient's right) */}
             <div className="flex flex-col items-center gap-2">
-              <span className="text-xs text-muted-foreground">Derecha →</span>
+              <span className="text-xs text-muted-foreground">← Derecha</span>
               <ToothQuadrant quadrant="upper-right" teeth={upperRight} {...quadrantProps} />
             </div>
 
@@ -93,7 +93,7 @@ export function Odontogram({
 
             {/* Upper Left (Patient's left) */}
             <div className="flex flex-col items-center gap-2">
-              <span className="text-xs text-muted-foreground">← Izquierda</span>
+              <span className="text-xs text-muted-foreground">Izquierda →</span>
               <ToothQuadrant quadrant="upper-left" teeth={upperLeft} {...quadrantProps} />
             </div>
           </div>
@@ -114,7 +114,7 @@ export function Odontogram({
             {/* Lower Right (Patient's right) */}
             <div className="flex flex-col items-center gap-2">
               <ToothQuadrant quadrant="lower-right" teeth={lowerRight} {...quadrantProps} />
-              <span className="text-xs text-muted-foreground">Derecha →</span>
+              <span className="text-xs text-muted-foreground">← Derecha</span>
             </div>
 
             {/* Vertical divider on desktop */}
@@ -123,7 +123,7 @@ export function Odontogram({
             {/* Lower Left (Patient's left) */}
             <div className="flex flex-col items-center gap-2">
               <ToothQuadrant quadrant="lower-left" teeth={lowerLeft} {...quadrantProps} />
-              <span className="text-xs text-muted-foreground">← Izquierda</span>
+              <span className="text-xs text-muted-foreground">Izquierda →</span>
             </div>
           </div>
         </div>
