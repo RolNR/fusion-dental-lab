@@ -27,6 +27,20 @@ export type AlertEventPayload = {
   };
 };
 
+/**
+ * The payload for a new order event (for lab users)
+ * Sent when an order is submitted and changes to PENDING_REVIEW status
+ */
+export type NewOrderEventPayload = {
+  orderId: string;
+  orderNumber: string;
+  patientName: string;
+  clinicName: string;
+  doctorName: string;
+  createdAt: string;
+  laboratoryId: string;
+};
+
 // Create and export a singleton instance of our event bus
 const eventBus = new EventEmitter();
 

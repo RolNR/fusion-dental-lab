@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
 import { StatsCard } from '@/components/lab-admin/StatsCard';
+import { LabOrderNotifications } from '@/components/lab-shared/LabOrderNotifications';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -72,6 +73,9 @@ export default async function LabAdminDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
+      {/* Real-time order notifications */}
+      <LabOrderNotifications />
+
       {/* Header */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">

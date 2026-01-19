@@ -222,6 +222,38 @@ export async function updateOrderStatus({
     }
   }
 
+  // Emit new-order event for lab users when order is submitted (PENDING_REVIEW)
+  if (newStatus === OrderStatus.PENDING_REVIEW && order.status !== OrderStatus.PENDING_REVIEW) {
+    try {
+      // Get the laboratory ID for this order
+      const orderWithLab = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: {
+          clinic: {
+            select: {
+              laboratoryId: true,
+            },
+          },
+        },
+      });
+
+      if (orderWithLab?.clinic?.laboratoryId) {
+        eventBus.emit('new-order', {
+          orderId: updatedOrder.id,
+          orderNumber: updatedOrder.orderNumber,
+          patientName: updatedOrder.patientName,
+          clinicName: updatedOrder.clinic.name,
+          doctorName: updatedOrder.doctor.name || 'Sin nombre',
+          createdAt: updatedOrder.createdAt.toISOString(),
+          laboratoryId: orderWithLab.clinic.laboratoryId,
+        });
+      }
+    } catch (newOrderError) {
+      // Log error but don't fail the status update
+      console.error('Error emitting new-order event:', newOrderError);
+    }
+  }
+
   return {
     success: true,
     order: updatedOrder,
