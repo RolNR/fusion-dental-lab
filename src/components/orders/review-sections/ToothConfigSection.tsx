@@ -1,5 +1,6 @@
 import { DetailRow, SectionTitle } from './ReviewSectionComponents';
 import { Odontogram } from '@/components/clinic-staff/order-form/Odontogram';
+import { CollapsibleToothList } from '../CollapsibleToothCard';
 import type { ToothData } from '@/types/tooth';
 
 interface ToothConfigSectionProps {
@@ -8,6 +9,81 @@ interface ToothConfigSectionProps {
 
 export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
   if (!teeth || teeth.length === 0) return null;
+
+  const renderToothDetails = (tooth: ToothData) => (
+    <dl className="space-y-1">
+      {tooth.tipoTrabajo && (
+        <DetailRow
+          label="Tipo de Trabajo"
+          value={tooth.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'}
+        />
+      )}
+      {tooth.tipoRestauracion && (
+        <DetailRow
+          label="Tipo de Restauración"
+          value={
+            tooth.tipoRestauracion === 'corona'
+              ? 'Corona'
+              : tooth.tipoRestauracion === 'puente'
+                ? 'Puente'
+                : tooth.tipoRestauracion === 'inlay'
+                  ? 'Inlay'
+                  : tooth.tipoRestauracion === 'onlay'
+                    ? 'Onlay'
+                    : tooth.tipoRestauracion === 'carilla'
+                      ? 'Carilla'
+                      : 'Provisional'
+          }
+        />
+      )}
+      {tooth.material && <DetailRow label="Material" value={tooth.material} />}
+      {tooth.materialBrand && (
+        <DetailRow label="Marca del Material" value={tooth.materialBrand} />
+      )}
+      {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
+        <>
+          {(tooth.colorInfo as any).shadeCode && (
+            <DetailRow label="Código de Color" value={(tooth.colorInfo as any).shadeCode} />
+          )}
+          {(tooth.colorInfo as any).shadeType && (
+            <DetailRow
+              label="Tipo de Guía de Color"
+              value={(tooth.colorInfo as any).shadeType}
+            />
+          )}
+        </>
+      )}
+      {tooth.trabajoSobreImplante && (
+        <div className="mt-2 pt-2 border-t border-border">
+          <p className="text-sm font-medium text-foreground mb-1">
+            Trabajo sobre Implante
+          </p>
+          {tooth.informacionImplante && typeof tooth.informacionImplante === 'object' && (
+            <dl className="ml-4 space-y-1">
+              {(tooth.informacionImplante as any).marcaImplante && (
+                <DetailRow
+                  label="Marca del Implante"
+                  value={(tooth.informacionImplante as any).marcaImplante}
+                />
+              )}
+              {(tooth.informacionImplante as any).sistemaConexion && (
+                <DetailRow
+                  label="Sistema de Conexión"
+                  value={(tooth.informacionImplante as any).sistemaConexion}
+                />
+              )}
+              {(tooth.informacionImplante as any).numeroImplantes && (
+                <DetailRow
+                  label="Número de Implantes"
+                  value={(tooth.informacionImplante as any).numeroImplantes}
+                />
+              )}
+            </dl>
+          )}
+        </div>
+      )}
+    </dl>
+  );
 
   return (
     <>
@@ -32,90 +108,7 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
 
       {/* Detailed configuration for each tooth */}
       <h3 className="text-sm font-semibold text-foreground mb-3">Detalles por Diente</h3>
-      <div className="space-y-4">
-        {teeth.map((tooth) => (
-          <div
-            key={tooth.toothNumber}
-            className="rounded-lg border-l-4 border-primary bg-muted/20 pl-4 pr-4 py-3"
-          >
-            <h4 className="font-semibold text-lg text-foreground mb-2">
-              Diente {tooth.toothNumber}
-            </h4>
-            <dl className="space-y-1">
-              {tooth.tipoTrabajo && (
-                <DetailRow
-                  label="Tipo de Trabajo"
-                  value={tooth.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'}
-                />
-              )}
-              {tooth.tipoRestauracion && (
-                <DetailRow
-                  label="Tipo de Restauración"
-                  value={
-                    tooth.tipoRestauracion === 'corona'
-                      ? 'Corona'
-                      : tooth.tipoRestauracion === 'puente'
-                        ? 'Puente'
-                        : tooth.tipoRestauracion === 'inlay'
-                          ? 'Inlay'
-                          : tooth.tipoRestauracion === 'onlay'
-                            ? 'Onlay'
-                            : tooth.tipoRestauracion === 'carilla'
-                              ? 'Carilla'
-                              : 'Provisional'
-                  }
-                />
-              )}
-              {tooth.material && <DetailRow label="Material" value={tooth.material} />}
-              {tooth.materialBrand && (
-                <DetailRow label="Marca del Material" value={tooth.materialBrand} />
-              )}
-              {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
-                <>
-                  {(tooth.colorInfo as any).shadeCode && (
-                    <DetailRow label="Código de Color" value={(tooth.colorInfo as any).shadeCode} />
-                  )}
-                  {(tooth.colorInfo as any).shadeType && (
-                    <DetailRow
-                      label="Tipo de Guía de Color"
-                      value={(tooth.colorInfo as any).shadeType}
-                    />
-                  )}
-                </>
-              )}
-              {tooth.trabajoSobreImplante && (
-                <div className="mt-2 pt-2 border-t border-border">
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    Trabajo sobre Implante
-                  </p>
-                  {tooth.informacionImplante && typeof tooth.informacionImplante === 'object' && (
-                    <dl className="ml-4 space-y-1">
-                      {(tooth.informacionImplante as any).marcaImplante && (
-                        <DetailRow
-                          label="Marca del Implante"
-                          value={(tooth.informacionImplante as any).marcaImplante}
-                        />
-                      )}
-                      {(tooth.informacionImplante as any).sistemaConexion && (
-                        <DetailRow
-                          label="Sistema de Conexión"
-                          value={(tooth.informacionImplante as any).sistemaConexion}
-                        />
-                      )}
-                      {(tooth.informacionImplante as any).numeroImplantes && (
-                        <DetailRow
-                          label="Número de Implantes"
-                          value={(tooth.informacionImplante as any).numeroImplantes}
-                        />
-                      )}
-                    </dl>
-                  )}
-                </div>
-              )}
-            </dl>
-          </div>
-        ))}
-      </div>
+      <CollapsibleToothList teeth={teeth} renderToothDetails={renderToothDetails} />
     </>
   );
 }
