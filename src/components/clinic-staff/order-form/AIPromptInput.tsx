@@ -38,12 +38,17 @@ export function AIPromptInput({
   showManualButton = true,
 }: AIPromptInputProps) {
   return (
-    <div className="rounded-lg border-2 border-primary bg-primary/5 p-4 sm:p-6">
+    <div className="ai-prompt-container-border">
+      <div className="ai-prompt-container-inner p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="rounded-full bg-primary/10 p-2">
+        <div
+          className="rounded-full p-2"
+          style={{ backgroundColor: 'rgb(var(--ai-prompt-icon-bg-rgb))' }}
+        >
           <svg
-            className="h-5 w-5 text-primary"
+            className="h-5 w-5"
+            style={{ color: 'rgb(var(--ai-prompt-icon-rgb))' }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -66,36 +71,28 @@ export function AIPromptInput({
 
       {/* Content */}
       <div className="space-y-3">
-        <Textarea
-          label=""
-          id="aiPrompt"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={isLoading || isParsingAI}
-          rows={4}
-          placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
-        />
+        {/* Textarea with embedded Dictate button */}
+        <div className="relative ai-prompt-textarea-wrapper">
+          <Textarea
+            label=""
+            id="aiPrompt"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={isLoading || isParsingAI}
+            rows={4}
+            placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
+            className="ai-prompt-textarea pb-12"
+          />
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={onParse}
-            isLoading={isParsingAI}
-            disabled={isLoading || !value || value.trim().length === 0}
-            className="w-full sm:w-auto"
-          >
-            {isParsingAI ? 'Procesando con IA...' : 'Procesar con IA'}
-          </Button>
-
+          {/* Dictate button - positioned inside textarea bottom-left */}
           {speechSupported && (
             <Button
               type="button"
-              variant={isListening ? 'danger' : 'secondary'}
+              variant={isListening ? 'danger' : 'ghost'}
               onClick={onToggleSpeechRecognition}
               disabled={isLoading || isParsingAI}
-              className="w-full sm:w-auto"
+              size="sm"
+              className="absolute bottom-2 left-2 z-10"
             >
               {isListening ? (
                 <>
@@ -112,8 +109,8 @@ export function AIPromptInput({
           )}
 
           {!speechSupported && (
-            <p className="text-sm text-muted-foreground">
-              Reconocimiento de voz no disponible en este navegador
+            <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">
+              Reconocimiento de voz no disponible
             </p>
           )}
         </div>
@@ -121,18 +118,38 @@ export function AIPromptInput({
         {/* Error Message */}
         {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
 
-        {/* Manual Fill Button */}
-        {!showFullForm && showManualButton && (
+        {/* Buttons Row */}
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Manual Fill Button - Left on desktop, bottom on mobile */}
+          {!showFullForm && showManualButton && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onShowFullForm}
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
+              <Icons.edit className="h-4 w-4 mr-2" />
+              Completar Manualmente
+            </Button>
+          )}
+
+          {/* Spacer for when manual button is hidden */}
+          {(showFullForm || !showManualButton) && <div className="hidden sm:block" />}
+
+          {/* Process AI Button - Right on desktop, top on mobile */}
           <Button
             type="button"
-            variant="secondary"
-            onClick={onShowFullForm}
-            disabled={isLoading}
-            className="w-full sm:w-auto"
+            variant="primary"
+            onClick={onParse}
+            isLoading={isParsingAI}
+            disabled={isLoading || !value || value.trim().length === 0}
+            className="w-full sm:w-auto sm:ml-auto ai-prompt-button-primary"
           >
-            Completar Manualmente
+            {isParsingAI ? 'Procesando con IA...' : 'Procesar con IA'}
           </Button>
-        )}
+        </div>
+      </div>
       </div>
     </div>
   );

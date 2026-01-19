@@ -32,6 +32,15 @@
     --color-info-hover: 8 145 178; /* Deeper cyan (cyan-600) */
     --color-info-foreground: 255 255 255; /* white */
 
+    /* AI Prompt colors - White with Navy-Cyan gradient borders (LabWise Link brand) */
+    --ai-prompt-bg-from-rgb: 255 255 255; /* White #FFFFFF */
+    --ai-prompt-bg-to-rgb: 249 250 251; /* Gray-50 #F9FAFB */
+    --ai-prompt-icon-bg-rgb: 243 244 246; /* Gray-100 #F3F4F6 */
+    --ai-prompt-icon-rgb: 30 58 95; /* Navy blue #1E3A5F */
+    --ai-prompt-textarea-bg-rgb: 255 255 255; /* White background */
+    --ai-prompt-gradient-from: 30 58 95; /* Navy blue #1E3A5F */
+    --ai-prompt-gradient-to: 109 181 199; /* Cyan #6DB5C7 */
+
     /* Neutral/UI colors - Apple style */
     --color-background: 255 255 255; /* Pure white */
     --color-foreground: 28 28 30; /* Apple dark gray */
@@ -136,6 +145,138 @@ body {
 
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
+}
+
+/* AI Prompt component custom styles - Gradient borders and button */
+.ai-prompt-container-border {
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+  border-radius: 0.5rem;
+  padding: 2px;
+}
+
+.ai-prompt-container-inner {
+  background: linear-gradient(to bottom right, rgb(var(--ai-prompt-bg-from-rgb)), rgb(var(--ai-prompt-bg-to-rgb)));
+  border-radius: calc(0.5rem - 2px);
+}
+
+.ai-prompt-textarea-wrapper {
+  position: relative;
+  border-radius: 0.5rem;
+  padding: 2px;
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+}
+
+.ai-prompt-textarea-wrapper:hover {
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-to)), rgb(var(--ai-prompt-gradient-from)));
+}
+
+.ai-prompt-textarea-wrapper:focus-within {
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+}
+
+.ai-prompt-textarea {
+  position: relative;
+  background-color: rgb(var(--ai-prompt-textarea-bg-rgb)) !important;
+  border: none !important;
+  border-radius: calc(0.5rem - 2px) !important;
+}
+
+.ai-prompt-textarea:focus {
+  --tw-ring-color: transparent !important;
+  outline: none !important;
+}
+
+.ai-prompt-button-primary {
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to))) !important;
+  color: white !important;
+  border-radius: 0.5rem !important;
+}
+
+.ai-prompt-button-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-to)), rgb(var(--ai-prompt-gradient-from))) !important;
+}
+
+.ai-prompt-button-primary:focus {
+  --tw-ring-color: rgb(var(--ai-prompt-gradient-from)) !important;
+}
+
+/* AI Prompt snake eating elephant animation - bright ball travels around border */
+@keyframes snake-border {
+  0% {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--ai-prompt-gradient-from)) 0%,
+      rgb(var(--ai-prompt-gradient-from)) 35%,
+      rgb(var(--ai-prompt-gradient-to)) 40%,
+      rgba(255, 255, 255, 1) 50%,
+      rgb(var(--ai-prompt-gradient-to)) 60%,
+      rgb(var(--ai-prompt-gradient-from)) 65%,
+      rgb(var(--ai-prompt-gradient-from)) 100%
+    ) top,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+  }
+  25% {
+    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+    linear-gradient(
+      180deg,
+      rgb(var(--ai-prompt-gradient-from)) 0%,
+      rgb(var(--ai-prompt-gradient-from)) 35%,
+      rgb(var(--ai-prompt-gradient-to)) 40%,
+      rgba(255, 255, 255, 1) 50%,
+      rgb(var(--ai-prompt-gradient-to)) 60%,
+      rgb(var(--ai-prompt-gradient-from)) 65%,
+      rgb(var(--ai-prompt-gradient-from)) 100%
+    ) right,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+  }
+  50% {
+    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
+    linear-gradient(
+      270deg,
+      rgb(var(--ai-prompt-gradient-from)) 0%,
+      rgb(var(--ai-prompt-gradient-from)) 35%,
+      rgb(var(--ai-prompt-gradient-to)) 40%,
+      rgba(255, 255, 255, 1) 50%,
+      rgb(var(--ai-prompt-gradient-to)) 60%,
+      rgb(var(--ai-prompt-gradient-from)) 65%,
+      rgb(var(--ai-prompt-gradient-from)) 100%
+    ) bottom,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+  }
+  75% {
+    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
+    linear-gradient(
+      0deg,
+      rgb(var(--ai-prompt-gradient-from)) 0%,
+      rgb(var(--ai-prompt-gradient-from)) 35%,
+      rgb(var(--ai-prompt-gradient-to)) 40%,
+      rgba(255, 255, 255, 1) 50%,
+      rgb(var(--ai-prompt-gradient-to)) 60%,
+      rgb(var(--ai-prompt-gradient-from)) 65%,
+      rgb(var(--ai-prompt-gradient-from)) 100%
+    ) left;
+  }
+  100% {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--ai-prompt-gradient-from)) 0%,
+      rgb(var(--ai-prompt-gradient-from)) 35%,
+      rgb(var(--ai-prompt-gradient-to)) 40%,
+      rgba(255, 255, 255, 1) 50%,
+      rgb(var(--ai-prompt-gradient-to)) 60%,
+      rgb(var(--ai-prompt-gradient-from)) 65%,
+      rgb(var(--ai-prompt-gradient-from)) 100%
+    ) top,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
+    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+  }
 }
 
 /* Toast notification animations */
