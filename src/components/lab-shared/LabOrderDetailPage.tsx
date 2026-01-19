@@ -16,6 +16,7 @@ import { FileList } from '@/components/orders/FileList';
 import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
 import { FileCategory } from '@/types/file';
 import { useSession } from 'next-auth/react';
+import { CollapsibleToothList } from '@/components/orders/CollapsibleToothCard';
 
 interface CopyButtonProps {
   value: string;
@@ -193,69 +194,90 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
               <h2 className="mb-4 text-xl font-semibold text-foreground">
                 Configuración de Dientes
               </h2>
-              <div className="space-y-6">
-                {order.teeth.map((tooth) => (
-                  <div key={tooth.id} className="border-l-4 border-primary pl-4">
-                    <h3 className="font-semibold text-lg text-foreground mb-3">
-                      Diente {tooth.toothNumber}
-                    </h3>
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {tooth.material && (
-                        <div>
-                          <dt className="text-sm font-medium text-muted-foreground">Material</dt>
-                          <dd className="text-sm text-foreground">{tooth.material}</dd>
-                        </div>
-                      )}
-                      {tooth.materialBrand && (
-                        <div>
-                          <dt className="text-sm font-medium text-muted-foreground">Marca del Material</dt>
-                          <dd className="text-sm text-foreground">{tooth.materialBrand}</dd>
-                        </div>
-                      )}
-                      {tooth.tipoTrabajo && (
-                        <div>
-                          <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
-                          <dd className="text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
-                        </div>
-                      )}
-                      {tooth.tipoRestauracion && (
-                        <div>
-                          <dt className="text-sm font-medium text-muted-foreground">Tipo de Restauración</dt>
-                          <dd className="text-sm text-foreground capitalize">{tooth.tipoRestauracion}</dd>
-                        </div>
-                      )}
-                      {tooth.trabajoSobreImplante && (
-                        <div>
-                          <dt className="text-sm font-medium text-muted-foreground">Trabajo sobre Implante</dt>
-                          <dd className="text-sm text-foreground">Sí</dd>
-                        </div>
-                      )}
-                      {tooth.colorInfo && (
-                        <div className="col-span-2">
-                          <dt className="text-sm font-medium text-muted-foreground">Información de Color</dt>
-                          <dd className="text-sm text-foreground">
-                            {(tooth.colorInfo as any).shadeType && <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>}
-                            {(tooth.colorInfo as any).shadeCode && <span className="ml-2">Código: {(tooth.colorInfo as any).shadeCode}</span>}
-                          </dd>
-                        </div>
-                      )}
-                      {tooth.informacionImplante && (
-                        <div className="col-span-2">
-                          <dt className="text-sm font-medium text-muted-foreground mb-2">Información de Implante</dt>
-                          <dd className="text-sm text-foreground space-y-1">
-                            {(tooth.informacionImplante as any).marcaImplante && (
-                              <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
-                            )}
-                            {(tooth.informacionImplante as any).sistemaConexion && (
-                              <div>Sistema de Conexión: {(tooth.informacionImplante as any).sistemaConexion}</div>
-                            )}
-                          </dd>
-                        </div>
-                      )}
-                    </dl>
-                  </div>
-                ))}
-              </div>
+              <CollapsibleToothList
+                teeth={order.teeth}
+                renderToothDetails={(tooth) => (
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {tooth.material && (
+                      <div>
+                        <dt className="text-sm font-medium text-muted-foreground">Material</dt>
+                        <dd className="text-sm text-foreground">{tooth.material}</dd>
+                      </div>
+                    )}
+                    {tooth.materialBrand && (
+                      <div>
+                        <dt className="text-sm font-medium text-muted-foreground">
+                          Marca del Material
+                        </dt>
+                        <dd className="text-sm text-foreground">{tooth.materialBrand}</dd>
+                      </div>
+                    )}
+                    {tooth.tipoTrabajo && (
+                      <div>
+                        <dt className="text-sm font-medium text-muted-foreground">
+                          Tipo de Trabajo
+                        </dt>
+                        <dd className="text-sm text-foreground capitalize">
+                          {tooth.tipoTrabajo}
+                        </dd>
+                      </div>
+                    )}
+                    {tooth.tipoRestauracion && (
+                      <div>
+                        <dt className="text-sm font-medium text-muted-foreground">
+                          Tipo de Restauración
+                        </dt>
+                        <dd className="text-sm text-foreground capitalize">
+                          {tooth.tipoRestauracion}
+                        </dd>
+                      </div>
+                    )}
+                    {tooth.trabajoSobreImplante && (
+                      <div>
+                        <dt className="text-sm font-medium text-muted-foreground">
+                          Trabajo sobre Implante
+                        </dt>
+                        <dd className="text-sm text-foreground">Sí</dd>
+                      </div>
+                    )}
+                    {tooth.colorInfo && (
+                      <div className="col-span-2">
+                        <dt className="text-sm font-medium text-muted-foreground">
+                          Información de Color
+                        </dt>
+                        <dd className="text-sm text-foreground">
+                          {(tooth.colorInfo as any).shadeType && (
+                            <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>
+                          )}
+                          {(tooth.colorInfo as any).shadeCode && (
+                            <span className="ml-2">
+                              Código: {(tooth.colorInfo as any).shadeCode}
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                    {tooth.informacionImplante && (
+                      <div className="col-span-2">
+                        <dt className="text-sm font-medium text-muted-foreground mb-2">
+                          Información de Implante
+                        </dt>
+                        <dd className="text-sm text-foreground space-y-1">
+                          {(tooth.informacionImplante as any).marcaImplante && (
+                            <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
+                          )}
+                          {(tooth.informacionImplante as any).sistemaConexion && (
+                            <div>
+                              Sistema de Conexión:{' '}
+                              {(tooth.informacionImplante as any).sistemaConexion}
+                            </div>
+                          )}
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+                )}
+              />
             </div>
           )}
 
