@@ -174,6 +174,7 @@ model Order {
   submissionType               SubmissionType?  @default(terminado)
   oclusionDiseno               Json?
   articulatedBy                ArticulatedBy?   @default(doctor)
+  isUrgent                     Boolean          @default(false)
   status                       OrderStatus      @default(DRAFT)
   clinicId                     String
   createdById                  String
@@ -198,6 +199,7 @@ model Order {
   @@index([doctorId])
   @@index([orderNumber])
   @@index([status])
+  @@index([isUrgent])
 }
 
 model Tooth {

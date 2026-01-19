@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Table, TableColumn } from '@/components/ui/Table';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
 import { OrderWithRelations } from '@/types/order';
+import { Icons } from '@/components/ui/Icons';
 
 interface OrdersTableProps {
   orders: OrderWithRelations[];
@@ -43,13 +44,23 @@ export function OrdersTable({
     {
       header: 'Estado',
       accessor: (order) => (
-        <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getStatusColor(
-            order.status
-          )}`}
-        >
-          {getStatusLabel(order.status)}
-        </span>
+        <div className="flex flex-wrap gap-1.5">
+          <span
+            className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getStatusColor(
+              order.status
+            )}`}
+          >
+            {getStatusLabel(order.status)}
+          </span>
+
+          {/* Urgent Badge */}
+          {order.isUrgent && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold bg-warning/10 text-warning">
+              <Icons.zap className="h-3 w-3" />
+              Urgente
+            </span>
+          )}
+        </div>
       ),
     },
     {

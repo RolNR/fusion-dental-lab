@@ -133,13 +133,24 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
               <CopyButton value={order.patientName} label="nombre del paciente" />
             </p>
           </div>
-          <span
-            className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold self-start ${getStatusColor(
-              order.status
-            )}`}
-          >
-            {getStatusLabel(order.status)}
-          </span>
+          <div className="flex flex-wrap gap-2 self-start">
+            {/* Status Badge */}
+            <span
+              className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusColor(
+                order.status
+              )}`}
+            >
+              {getStatusLabel(order.status)}
+            </span>
+
+            {/* Urgent Badge */}
+            {order.isUrgent && (
+              <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold bg-warning/10 text-warning">
+                <Icons.zap className="h-4 w-4" />
+                Urgente (+30%)
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

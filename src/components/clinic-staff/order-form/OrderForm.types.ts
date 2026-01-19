@@ -45,6 +45,9 @@ export interface OrderFormData {
   oclusionDiseno?: OcclusionInfo;
   articulatedBy?: ArticulatedBy | null;
 
+  // Urgent order
+  isUrgent?: boolean;
+
   // Per-tooth configuration
   teeth?: ToothData[];
 }
@@ -76,4 +79,7 @@ export interface OrderFormState {
   submissionType: SubmissionType | null;
   oclusionDiseno?: OcclusionInfo;
   articulatedBy: ArticulatedBy | null;
+
+  // Urgent order
+  isUrgent?: boolean;
 }

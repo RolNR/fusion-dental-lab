@@ -208,6 +208,9 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     submissionType: initialData?.submissionType || null,
     oclusionDiseno: initialData?.oclusionDiseno,
     articulatedBy: initialData?.articulatedBy || null,
+
+    // Urgent order
+    isUrgent: initialData?.isUrgent || false,
   };
 }
 

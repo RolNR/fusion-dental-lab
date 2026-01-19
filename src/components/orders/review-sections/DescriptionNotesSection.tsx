@@ -1,9 +1,11 @@
 import { DetailRow, SectionTitle } from './ReviewSectionComponents';
 import { Textarea } from '@/components/ui/Textarea';
+import { Icons } from '@/components/ui/Icons';
 
 interface DescriptionNotesSectionProps {
   description?: string;
   notes?: string;
+  isUrgent?: boolean;
   // Optional edit handlers
   onDescriptionChange?: (value: string) => void;
   onNotesChange?: (value: string) => void;
@@ -16,13 +18,14 @@ interface DescriptionNotesSectionProps {
 export function DescriptionNotesSection({
   description,
   notes,
+  isUrgent,
   onDescriptionChange,
   onNotesChange,
   errors,
 }: DescriptionNotesSectionProps) {
-  // Show section if there's content OR if it's editable
+  // Show section if there's content OR if it's editable OR if urgent
   const isEditable = !!(onDescriptionChange || onNotesChange);
-  if (!description && !notes && !isEditable) return null;
+  if (!description && !notes && !isUrgent && !isEditable) return null;
 
   return (
     <>
@@ -54,6 +57,16 @@ export function DescriptionNotesSection({
           />
         ) : (
           notes && <DetailRow label="Notas Adicionales" value={notes} />
+        )}
+
+        {/* Urgent indicator in review modal */}
+        {isUrgent && (
+          <div className="rounded-lg bg-warning/10 border border-warning/30 p-3 mt-3">
+            <div className="flex items-center gap-2">
+              <Icons.zap className="h-4 w-4 text-warning" />
+              <span className="font-semibold text-warning">Orden Urgente (+30%)</span>
+            </div>
+          </div>
         )}
       </div>
     </>

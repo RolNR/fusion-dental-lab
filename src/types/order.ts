@@ -52,6 +52,9 @@ export interface Order {
   // POC fields - Articulation
   articulatedBy?: ArticulatedBy;
 
+  // Urgent order
+  isUrgent?: boolean;
+
   // Per-tooth configuration
   teeth?: Tooth[];
 
@@ -86,6 +89,7 @@ export interface OrderWithRelations {
   patientName: string;
   status: OrderStatus;
   createdAt: string;
+  isUrgent: boolean;
   clinic: {
     id: string;
     name: string;
@@ -142,6 +146,9 @@ export interface OrderDetail {
 
   // POC fields - Articulation
   articulatedBy: ArticulatedBy | null;
+
+  // Urgent order
+  isUrgent: boolean;
 
   // Per-tooth configuration
   teeth: Tooth[];
@@ -282,6 +289,9 @@ export const orderDraftSchema = z.object({
   // Articulation
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
 
+  // Urgent order
+  isUrgent: z.boolean().optional(),
+
   // Per-tooth configuration
   teeth: z.array(z.object({
     toothNumber: z.string().min(1),
@@ -354,6 +364,7 @@ export const orderUpdateSchema = z.object({
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   articulatedBy: z.nativeEnum(ArticulatedBy).nullable().optional(),
+  isUrgent: z.boolean().optional(),
 });
 
 export type OrderUpdateData = z.infer<typeof orderUpdateSchema>;

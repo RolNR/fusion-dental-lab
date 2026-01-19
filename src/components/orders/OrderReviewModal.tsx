@@ -196,6 +196,7 @@ export function OrderReviewModal({
           <DescriptionNotesSection
             description={formData.description}
             notes={formData.notes}
+            isUrgent={formData.isUrgent}
             onDescriptionChange={onFormDataChange ? handleDescriptionChange : undefined}
             onNotesChange={onFormDataChange ? handleNotesChange : undefined}
           />

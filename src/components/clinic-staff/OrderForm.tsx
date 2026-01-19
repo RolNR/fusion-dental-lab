@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
 import { Doctor } from '@/types/user';
 import type { SpeechRecognition } from '@/types/speech-recognition';
@@ -689,6 +690,25 @@ if (!(err instanceof Error)) {
         showFullForm={showFullForm}
         onShowFullForm={() => setShowFullForm(true)}
       />
+
+      {/* Urgent Order Checkbox */}
+      <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <Checkbox
+              id="isUrgent"
+              label="Orden Urgente"
+              checked={formData.isUrgent || false}
+              onChange={(e) => setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))}
+              disabled={isLoading}
+            />
+            <p className="text-sm text-warning/80 mt-2 ml-6">
+              Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Show full form only after AI processing or when editing */}
       {showFullForm && (
