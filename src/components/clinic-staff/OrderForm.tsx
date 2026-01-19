@@ -919,6 +919,7 @@ if (!(err instanceof Error)) {
           onLowerFileChange={setLowerFile}
           onMouthPhotoFileChange={setMouthPhotoFile}
           orderId={orderId}
+          onFormDataChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}
           onSaveAsDraft={handleSaveAsDraft}

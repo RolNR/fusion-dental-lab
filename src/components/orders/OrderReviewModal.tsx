@@ -33,6 +33,15 @@ interface OrderReviewModalProps {
   onLowerFileChange?: (file: File | null) => void;
   onMouthPhotoFileChange?: (file: File | null) => void;
   orderId?: string;
+  // Form field edit handlers
+  onFormDataChange?: (updates: Partial<OrderFormState>) => void;
+  // Validation errors
+  validationErrors?: {
+    patientName?: string;
+    fechaEntregaDeseada?: string;
+    description?: string;
+    notes?: string;
+  };
   // Actions
   onConfirm: () => void;
   onCancel: () => void;
@@ -52,6 +61,8 @@ export function OrderReviewModal({
   onLowerFileChange,
   onMouthPhotoFileChange,
   orderId,
+  onFormDataChange,
+  validationErrors,
   onConfirm,
   onCancel,
   onSaveAsDraft,
@@ -61,6 +72,43 @@ export function OrderReviewModal({
   // Warranty disclaimer state
   const requiresWarrantyAcceptance = hasNonWarrantyMaterials(formData.materialSent);
   const [warrantyAccepted, setWarrantyAccepted] = useState(false);
+
+  // Validation state
+  const [localErrors, setLocalErrors] = useState<{
+    patientName?: string;
+    fechaEntregaDeseada?: string;
+  }>({});
+
+  // Validate required fields on mount and when formData changes
+  useEffect(() => {
+    const errors: typeof localErrors = {};
+
+    if (!formData.patientName || formData.patientName.trim() === '') {
+      errors.patientName = 'El nombre del paciente es requerido';
+    }
+
+    setLocalErrors(errors);
+  }, [formData.patientName]);
+
+  // Check if form is valid for submission
+  const hasValidationErrors = Object.keys(localErrors).length > 0;
+
+  // Field change handlers
+  const handlePatientNameChange = (value: string) => {
+    onFormDataChange?.({ patientName: value });
+  };
+
+  const handleFechaEntregaChange = (value: string) => {
+    onFormDataChange?.({ fechaEntregaDeseada: value });
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    onFormDataChange?.({ description: value });
+  };
+
+  const handleNotesChange = (value: string) => {
+    onFormDataChange?.({ notes: value });
+  };
 
   // Close on Escape key
   useEffect(() => {
@@ -112,10 +160,28 @@ export function OrderReviewModal({
 
         {/* Content */}
         <div className="p-6">
+          {/* Validation Error Summary */}
+          {hasValidationErrors && (
+            <div className="mb-6 rounded-lg bg-danger/10 border border-danger/30 p-4">
+              <div className="flex items-start gap-3">
+                <Icons.alertCircle className="h-5 w-5 text-danger shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-danger mb-2">Campos Requeridos Faltantes</h3>
+                  <p className="text-sm text-danger/80">
+                    Por favor completa los campos marcados con (*) antes de enviar la orden.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <PatientInfoSection
             patientName={formData.patientName}
             patientId={formData.patientId}
             fechaEntregaDeseada={formData.fechaEntregaDeseada}
+            onPatientNameChange={onFormDataChange ? handlePatientNameChange : undefined}
+            onFechaEntregaChange={onFormDataChange ? handleFechaEntregaChange : undefined}
+            errors={localErrors}
           />
 
           <AIPromptSection aiPrompt={formData.aiPrompt} />
@@ -127,7 +193,12 @@ export function OrderReviewModal({
             />
           )}
 
-          <DescriptionNotesSection description={formData.description} notes={formData.notes} />
+          <DescriptionNotesSection
+            description={formData.description}
+            notes={formData.notes}
+            onDescriptionChange={onFormDataChange ? handleDescriptionChange : undefined}
+            onNotesChange={onFormDataChange ? handleNotesChange : undefined}
+          />
 
           <DentalDetailsSection teethNumbers={formData.teethNumbers} scanType={formData.scanType} />
 
@@ -194,7 +265,12 @@ export function OrderReviewModal({
             variant="primary"
             onClick={onConfirm}
             isLoading={isSubmitting}
-            disabled={isSubmitting || isSavingDraft || (requiresWarrantyAcceptance && !warrantyAccepted)}
+            disabled={
+              isSubmitting ||
+              isSavingDraft ||
+              hasValidationErrors ||
+              (requiresWarrantyAcceptance && !warrantyAccepted)
+            }
             fullWidth
             className="sm:w-auto sm:flex-1"
           >
