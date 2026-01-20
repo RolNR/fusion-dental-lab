@@ -75,7 +75,8 @@ export default function DoctorsPage() {
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
+      mobileLabel: 'Acciones',
       accessor: (doctor) => (
         <div className="flex gap-3 justify-end">
           <Link

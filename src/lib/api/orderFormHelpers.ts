@@ -195,6 +195,16 @@ export async function submitOrderForReview(role: RoleType, orderId: string): Pro
 
   const data = await response.json();
   if (!response.ok) {
+    // Preserve validation error details if present
+    if (data.details && Array.isArray(data.details)) {
+      const error = new Error(data.error || 'Error al enviar orden') as Error & {
+        details: Array<{ path?: string[]; message?: string }>;
+        error?: string;
+      };
+      error.details = data.details;
+      error.error = data.error;
+      throw error;
+    }
     throw new Error(data.error || 'Error al enviar orden');
   }
 }

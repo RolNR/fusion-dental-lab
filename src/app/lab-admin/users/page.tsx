@@ -150,7 +150,8 @@ export default function UsersPage() {
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
+      mobileLabel: 'Acciones',
       accessor: (user) => (
         <div className="flex gap-3 justify-end">
           <Link

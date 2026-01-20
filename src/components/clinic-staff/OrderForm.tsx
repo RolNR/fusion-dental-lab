@@ -402,7 +402,9 @@ if (!(err instanceof Error)) {
         setShowErrorSummary(true);
         setError('Hay errores en el formulario');
 
-        setTimeout(() => scrollToSection('impression'), 100);
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
         return;
       }
 
@@ -428,11 +430,10 @@ if (!(err instanceof Error)) {
         setShowErrorSummary(true);
         setError(validationError.message);
 
-        // Scroll to first error section
-        const firstSection = Array.from(grouped.keys())[0];
-        if (firstSection) {
-          setTimeout(() => scrollToSection(firstSection), 100);
-        }
+        // Scroll to top to show the validation error summary
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
       } else {
         setError(err.message);
       }
@@ -633,6 +634,10 @@ if (!(err instanceof Error)) {
         <ValidationErrorSummary
           errorsBySection={validationErrors}
           onSectionClick={scrollToSection}
+          onToothClick={(toothNumber) => {
+            // Select the tooth in the odontogram
+            setSelectedToothNumber(toothNumber);
+          }}
           onDismiss={() => setShowErrorSummary(false)}
         />
       )}
@@ -765,7 +770,7 @@ if (!(err instanceof Error)) {
       />
 
       {/* Tooth Configuration Section (Odontogram) */}
-      <div ref={(el) => registerSectionRef('teeth', el)}>
+      <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
         <ToothConfigurationSection
           teethNumbers={teethNumbers}
           selectedTooth={selectedToothNumber}

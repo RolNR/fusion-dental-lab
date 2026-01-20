@@ -75,7 +75,8 @@ export default function AssistantsPage() {
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
+      mobileLabel: 'Acciones',
       accessor: (assistant) => (
         <div className="flex gap-3 justify-end">
           <Link

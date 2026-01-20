@@ -120,7 +120,8 @@ export default function ClinicsPage() {
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
+      mobileLabel: 'Acciones',
       accessor: (clinic) => (
         <div className="flex gap-3 justify-end">
           <Link

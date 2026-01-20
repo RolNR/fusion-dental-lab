@@ -78,7 +78,8 @@ export default function CollaboratorsPage() {
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
+      mobileLabel: 'Acciones',
       accessor: (user) => (
         <div className="flex gap-3 justify-end">
           <Link

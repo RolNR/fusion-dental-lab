@@ -310,6 +310,30 @@ export const orderCreateSchema = orderDraftSchema.extend({
   patientName: z.string().min(1, 'El nombre del paciente es requerido'),
 });
 
+// Schema for tooth configuration when submitting (stricter validation)
+// Accept any input first, then validate with Spanish messages
+const toothSubmitSchema = z.object({
+  toothNumber: z.string().min(1, 'Número de diente requerido'),
+  material: z.any().refine((val) => typeof val === 'string' && val.length > 0, {
+    message: 'Material requerido',
+  }),
+  materialBrand: z.string().nullable().optional(),
+  colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+  tipoTrabajo: z.any().refine((val) => Object.values(WorkType).includes(val), {
+    message: 'Tipo de trabajo requerido',
+  }),
+  tipoRestauracion: z.any().refine((val) => Object.values(RestorationType).includes(val), {
+    message: 'Tipo de restauración requerido',
+  }),
+  trabajoSobreImplante: z.boolean().optional(),
+  informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+});
+
+// Schema for submitting orders for review (stricter validation on teeth)
+export const orderSubmitSchema = orderCreateSchema.extend({
+  teeth: z.array(toothSubmitSchema).optional(),
+});
+
 // Schema for assistants creating draft orders (includes doctorId, patientName optional)
 export const assistantOrderDraftSchema = orderDraftSchema.extend({
   doctorId: z.string().min(1, 'El doctor es requerido'),
@@ -317,6 +341,11 @@ export const assistantOrderDraftSchema = orderDraftSchema.extend({
 
 // Schema for assistants creating orders (includes doctorId)
 export const assistantOrderCreateSchema = orderCreateSchema.extend({
+  doctorId: z.string().min(1, 'El doctor es requerido'),
+});
+
+// Schema for assistants submitting orders for review (includes doctorId + stricter teeth validation)
+export const assistantOrderSubmitSchema = orderSubmitSchema.extend({
   doctorId: z.string().min(1, 'El doctor es requerido'),
 });
 
