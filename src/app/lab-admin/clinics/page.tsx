@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Icons } from '@/components/ui/Icons';
 
 type ClinicWithCounts = {
   id: string;
@@ -121,20 +122,22 @@ export default function ClinicsPage() {
     {
       header: 'Acciones',
       accessor: (clinic) => (
-        <div className="flex gap-4 justify-end">
+        <div className="flex gap-3 justify-end">
           <Link
             href={`/lab-admin/clinics/${clinic.id}`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Ver detalles"
           >
-            Ver
+            <Icons.eye className="h-5 w-5" />
           </Link>
           <Link
             href={`/lab-admin/clinics/${clinic.id}/edit`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Editar"
           >
-            Editar
+            <Icons.edit className="h-5 w-5" />
           </Link>
         </div>
       ),

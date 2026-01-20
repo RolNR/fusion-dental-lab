@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
 import { Role } from '@prisma/client';
+import { Icons } from '@/components/ui/Icons';
 
 type Collaborator = {
   id: string;
@@ -79,20 +80,22 @@ export default function CollaboratorsPage() {
     {
       header: 'Acciones',
       accessor: (user) => (
-        <div className="flex gap-4 justify-end">
+        <div className="flex gap-3 justify-end">
           <Link
             href={`/lab-admin/users/${user.id}`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Ver detalles"
           >
-            Ver
+            <Icons.eye className="h-5 w-5" />
           </Link>
           <Link
             href={`/lab-admin/users/${user.id}/edit`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Editar"
           >
-            Editar
+            <Icons.edit className="h-5 w-5" />
           </Link>
         </div>
       ),

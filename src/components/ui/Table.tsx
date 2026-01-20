@@ -81,7 +81,7 @@ export function Table<T>({
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground ${
+                  className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground whitespace-normal ${
                     column.headerClassName || ''
                   }`}
                 >

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { Table, TableColumn } from '@/components/ui/Table';
+import { Icons } from '@/components/ui/Icons';
 
 type Doctor = {
   id: string;
@@ -76,20 +77,22 @@ export default function DoctorsPage() {
     {
       header: 'Acciones',
       accessor: (doctor) => (
-        <div className="flex gap-4 justify-end">
+        <div className="flex gap-3 justify-end">
           <Link
             href={`/clinic-admin/doctors/${doctor.id}`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Ver detalles"
           >
-            Ver
+            <Icons.eye className="h-5 w-5" />
           </Link>
           <Link
             href={`/clinic-admin/doctors/${doctor.id}/edit`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 transition-colors"
             onClick={(e) => e.stopPropagation()}
+            title="Editar"
           >
-            Editar
+            <Icons.edit className="h-5 w-5" />
           </Link>
         </div>
       ),
