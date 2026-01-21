@@ -62,6 +62,7 @@ export interface Order {
     name: string;
     email?: string;
     phone?: string;
+    address?: string;
     laboratory?: {
       name: string;
       email?: string;

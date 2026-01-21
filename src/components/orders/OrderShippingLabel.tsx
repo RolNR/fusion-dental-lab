@@ -36,6 +36,9 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
               {order.clinic && (
                 <>
                   <p className="font-bold text-lg">{order.clinic.name}</p>
+                  {order.clinic.address && (
+                    <p className="text-sm">{order.clinic.address}</p>
+                  )}
                   {order.clinic.phone && (
                     <p className="text-sm">Tel: {order.clinic.phone}</p>
                   )}
