@@ -69,6 +69,11 @@ export async function GET(
             role: true,
           },
         },
+        teeth: {
+          orderBy: {
+            toothNumber: 'asc',
+          },
+        },
         files: {
           select: {
             id: true,

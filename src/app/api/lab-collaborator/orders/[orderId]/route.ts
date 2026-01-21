@@ -74,6 +74,11 @@ export async function GET(
             role: true,
           },
         },
+        teeth: {
+          orderBy: {
+            toothNumber: 'asc',
+          },
+        },
         files: {
           select: {
             id: true,
@@ -82,6 +87,7 @@ export async function GET(
             fileType: true,
             fileSize: true,
             storageUrl: true,
+            category: true,
             createdAt: true,
           },
           orderBy: {

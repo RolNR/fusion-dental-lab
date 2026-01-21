@@ -17,6 +17,7 @@ import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
 import { FileCategory } from '@/types/file';
 import { useSession } from 'next-auth/react';
 import { CollapsibleToothList } from '@/components/orders/CollapsibleToothCard';
+import { generateCaseSummary } from '@/lib/orderSummaryGenerator';
 
 interface CopyButtonProps {
   value: string;
@@ -150,6 +151,36 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                 Urgente (+30%)
               </span>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Case Summary */}
+      <div className="mb-6 rounded-xl bg-blue-50 border-2 border-blue-200 p-6 shadow-md">
+        <div className="flex items-start gap-3">
+          <Icons.fileText className="h-6 w-6 text-blue-600 flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-blue-700 mb-3">Resumen del Caso</h2>
+            <p className="text-base text-foreground leading-relaxed">
+              {generateCaseSummary(order)}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(generateCaseSummary(order));
+                  } catch (err) {
+                    console.error('Failed to copy:', err);
+                  }
+                }}
+                className="!px-2 !py-1 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-100"
+              >
+                <Icons.copy className="h-3 w-3 mr-1" />
+                Copiar resumen
+              </Button>
+            </div>
           </div>
         </div>
       </div>
