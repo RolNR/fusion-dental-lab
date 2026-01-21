@@ -5,6 +5,7 @@ import { Table, TableColumn } from '@/components/ui/Table';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
 import { OrderWithRelations } from '@/types/order';
 import { Icons } from '@/components/ui/Icons';
+import { Button } from '@/components/ui/Button';
 
 interface OrdersTableProps {
   orders: OrderWithRelations[];
@@ -76,20 +77,34 @@ export function OrdersTable({
       ),
     },
     {
-      header: 'Acciones',
+      header: '',
       accessor: (order) => (
-        <div className="flex gap-4">
+        <div className="flex gap-2 justify-end">
           <Link
             href={`${baseUrl}/${order.id}`}
-            className="text-primary hover:text-primary/80"
+            className="text-primary hover:text-primary/80 p-2"
             onClick={(e) => e.stopPropagation()}
+            title="Ver detalles"
           >
-            Ver Detalles
+            <Icons.eye size={18} />
           </Link>
+          <Button
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Navigate to detail page and trigger print
+              window.location.href = `${baseUrl}/${order.id}?print=true`;
+            }}
+            className="text-muted-foreground hover:text-foreground p-2"
+            title="Imprimir guía de envío"
+          >
+            <Icons.printer size={18} />
+          </Button>
         </div>
       ),
       headerClassName: 'text-right',
-      className: 'text-right text-sm font-medium',
+      className: 'text-right',
+      mobileLabel: 'Acciones',
     },
   ];
 

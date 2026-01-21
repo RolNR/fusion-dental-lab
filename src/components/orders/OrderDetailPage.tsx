@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { OrderStatus } from '@prisma/client';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
@@ -22,6 +22,7 @@ interface OrderDetailPageProps {
 export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPageProps) {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const orderId = params.orderId as string;
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [fileRefreshTrigger, setFileRefreshTrigger] = useState(0);
@@ -46,6 +47,16 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
   const handlePrintShippingLabel = () => {
     window.print();
   };
+
+  // Auto-print when print parameter is present
+  useEffect(() => {
+    if (searchParams.get('print') === 'true' && order) {
+      // Wait a bit for the page to fully load
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    }
+  }, [searchParams, order]);
 
   if (sessionStatus === 'loading' || loading) {
     return (
