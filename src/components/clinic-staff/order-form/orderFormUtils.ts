@@ -5,11 +5,12 @@ import {
   updateOrder,
   submitOrderForReview,
   handleSuccessNavigation,
-  OrderFiles,
 } from '@/lib/api/orderFormHelpers';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { ToothData } from '@/types/tooth';
 import type { AISuggestion } from '@/types/ai-suggestions';
+import { FileCategory } from '@/types/file';
+import { getFileMimeType } from '@/lib/fileUtils';
 
 /**
  * Fetches the current doctor's information from the session
@@ -40,31 +41,14 @@ export async function fetchDoctors() {
 }
 
 /**
- * Validates digital scan file uploads
- */
-export function validateDigitalScanFiles(
-  scanType: ScanType | null,
-  upperFile: File | null,
-  lowerFile: File | null
-): string | null {
-  if (scanType === ScanType.DIGITAL_SCAN) {
-    if (!upperFile || !lowerFile) {
-      return 'Debes subir los archivos STL/PLY obligatorios: Superior e Inferior';
-    }
-  }
-  return null;
-}
-
-/**
  * Handles order creation
  */
 export async function handleCreateOrder(
   role: 'doctor' | 'assistant',
   formData: OrderFormState,
-  files: OrderFiles,
   submitForReview: boolean
 ) {
-  const newOrder = await createOrder(role, formData, files);
+  const newOrder = await createOrder(role, formData);
 
   if (submitForReview) {
     await submitOrderForReview(role, newOrder.id);
@@ -80,10 +64,9 @@ export async function handleUpdateOrder(
   role: 'doctor' | 'assistant',
   orderId: string,
   formData: OrderFormState,
-  files: OrderFiles,
   submitForReview: boolean
 ) {
-  await updateOrder(role, orderId, formData, files);
+  await updateOrder(role, orderId, formData);
 
   if (submitForReview) {
     await submitOrderForReview(role, orderId);
@@ -91,40 +74,26 @@ export async function handleUpdateOrder(
 }
 
 /**
- * Main save order handler
+ * Main save order handler - files are uploaded separately after order creation
  */
 export async function saveOrder(
   orderId: string | undefined,
   role: 'doctor' | 'assistant',
   formData: OrderFormState,
-  files: OrderFiles,
   submitForReview: boolean,
   onSuccess: (() => void) | undefined,
   router: AppRouterInstance
-) {
-  // Only validate digital scan files when submitting for review
-  // Allow saving as draft even with missing required files
-  if (submitForReview) {
-    const validationError = validateDigitalScanFiles(
-      formData.scanType,
-      files.upperFile ?? null,
-      files.lowerFile ?? null
-    );
-
-    if (validationError) {
-      throw new Error(validationError);
-    }
-  }
-
+): Promise<{ id: string } | void> {
   // Create or update order
   if (orderId) {
-    await handleUpdateOrder(role, orderId, formData, files, submitForReview);
+    await handleUpdateOrder(role, orderId, formData, submitForReview);
+    // Handle success navigation for updates
+    handleSuccessNavigation(onSuccess, router, role);
   } else {
-    await handleCreateOrder(role, formData, files, submitForReview);
+    const newOrder = await handleCreateOrder(role, formData, submitForReview);
+    // Return new order so caller can redirect to detail page
+    return newOrder;
   }
-
-  // Handle success navigation
-  handleSuccessNavigation(onSuccess, router, role);
 }
 
 /**
@@ -190,117 +159,203 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     aiPrompt: initialData?.aiPrompt || '',
     teethNumbers: initialData?.teethNumbers || '',
     scanType: initialData?.scanType || null,
-    doctorId: initialData?.doctorId || '',
-
-    // Case type fields
-    tipoCaso: initialData?.tipoCaso || 'nuevo',
+    tipoCaso: initialData?.tipoCaso || null,
     motivoGarantia: initialData?.motivoGarantia || '',
     seDevuelveTrabajoOriginal: initialData?.seDevuelveTrabajoOriginal || false,
-
-    // Impression fields
     escanerUtilizado: initialData?.escanerUtilizado || null,
     otroEscaner: initialData?.otroEscaner || '',
     tipoSilicon: initialData?.tipoSilicon || null,
     notaModeloFisico: initialData?.notaModeloFisico || '',
-
-    // Order-level fields (shared)
-    materialSent: initialData?.materialSent,
+    materialSent: initialData?.materialSent || {},
     submissionType: initialData?.submissionType || null,
     oclusionDiseno: initialData?.oclusionDiseno,
     articulatedBy: initialData?.articulatedBy || null,
-
-    // Urgent order
     isUrgent: initialData?.isUrgent || false,
+    doctorId: initialData?.doctorId || '',
   };
 }
 
 /**
- * Parse teeth numbers string into array
+ * Parses teeth numbers from comma-separated string into array
  */
-export function parseTeethNumbers(teethNumbersStr: string | undefined): string[] {
-  if (!teethNumbersStr?.trim()) {
+export function parseTeethNumbers(teethNumbers: string): string[] {
+  if (!teethNumbers || teethNumbers.trim() === '') {
     return [];
   }
 
-  // Parse comma-separated teeth numbers
-  return (
-    teethNumbersStr
-      .split(',')
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0)
-      // Remove duplicates
-      .filter((t, idx, arr) => arr.indexOf(t) === idx)
-      // Sort numerically
-      .sort((a, b) => parseInt(a) - parseInt(b))
-  );
+  return teethNumbers
+    .split(',')
+    .map((num) => num.trim())
+    .filter((num) => num !== '');
 }
 
 /**
- * Initialize teeth data Map from parsed teeth numbers
+ * Initializes teeth data map from teeth numbers array
  */
 export function initializeTeethData(
-  parsedTeeth: string[],
-  existingData: Map<string, ToothData>
+  teethNumbers: string[],
+  existingTeeth?: ToothData[]
 ): Map<string, ToothData> {
-  const updated = new Map(existingData);
+  const teethMap = new Map<string, ToothData>();
 
-  // Add new teeth with empty configuration
-  parsedTeeth.forEach((toothNumber) => {
-    if (!updated.has(toothNumber)) {
-      updated.set(toothNumber, { toothNumber });
-    }
-  });
-
-  // Remove teeth that are no longer in the list
-  Array.from(updated.keys()).forEach((toothNumber) => {
-    if (!parsedTeeth.includes(toothNumber)) {
-      updated.delete(toothNumber);
-    }
-  });
-
-  return updated;
-}
-
-/**
- * Get the correct selected tooth (first available if current selection is invalid)
- */
-export function getValidSelectedTooth(
-  currentSelection: string | null,
-  availableTeeth: string[]
-): string | null {
-  if (availableTeeth.length === 0) {
-    return null;
+  // If we have existing teeth data, use it
+  if (existingTeeth && existingTeeth.length > 0) {
+    existingTeeth.forEach((tooth) => {
+      teethMap.set(tooth.toothNumber, tooth);
+    });
+    return teethMap;
   }
 
-  // If current selection is valid, keep it
-  if (currentSelection && availableTeeth.includes(currentSelection)) {
-    return currentSelection;
-  }
-
-  // Otherwise, select the first tooth
-  return availableTeeth[0];
-}
-
-/**
- * Copy tooth data from source to target teeth
- */
-export function copyToothData(
-  sourceToothNumber: string,
-  targetToothNumbers: string[],
-  teethData: Map<string, ToothData>
-): Map<string, ToothData> {
-  const sourceData = teethData.get(sourceToothNumber);
-  if (!sourceData) {
-    return teethData;
-  }
-
-  const updated = new Map(teethData);
-  targetToothNumbers.forEach((toothNumber) => {
-    updated.set(toothNumber, {
-      ...sourceData,
-      toothNumber, // Keep the tooth number unique
+  // Otherwise create minimal tooth entries
+  teethNumbers.forEach((toothNumber) => {
+    teethMap.set(toothNumber, {
+      toothNumber,
+      material: undefined,
+      materialBrand: undefined,
+      colorInfo: null,
+      tipoTrabajo: null,
+      tipoRestauracion: null,
+      trabajoSobreImplante: false,
+      informacionImplante: null,
     });
   });
 
-  return updated;
+  return teethMap;
+}
+
+/**
+ * Gets a valid selected tooth number, ensuring it exists in the current teeth data
+ */
+export function getValidSelectedTooth(
+  currentSelected: string | null,
+  teethData: Map<string, ToothData>
+): string | null {
+  if (currentSelected && teethData.has(currentSelected)) {
+    return currentSelected;
+  }
+
+  // Return first tooth if current selection is invalid
+  const firstTooth = Array.from(teethData.keys())[0];
+  return firstTooth || null;
+}
+
+/**
+ * Copies tooth data from source tooth to target teeth
+ */
+export function copyToothData(
+  sourceTooth: string,
+  targetTeeth: string[],
+  teethData: Map<string, ToothData>
+): Map<string, ToothData> {
+  const newTeethData = new Map(teethData);
+  const sourceData = newTeethData.get(sourceTooth);
+
+  if (!sourceData) {
+    return newTeethData;
+  }
+
+  // Copy all properties except toothNumber
+  targetTeeth.forEach((toothNumber) => {
+    if (toothNumber !== sourceTooth) {
+      newTeethData.set(toothNumber, {
+        ...sourceData,
+        toothNumber,
+      });
+    }
+  });
+
+  return newTeethData;
+}
+
+/**
+ * Upload a single file to R2 via pre-signed URL
+ */
+async function uploadFileToR2(orderId: string, file: File, category: FileCategory): Promise<void> {
+  const mimeType = getFileMimeType(file);
+
+  // Step 1: Get pre-signed URL
+  const uploadUrlResponse = await fetch(`/api/orders/${orderId}/files/upload-url`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType,
+      category,
+    }),
+  });
+
+  if (!uploadUrlResponse.ok) {
+    const data = await uploadUrlResponse.json();
+    throw new Error(data.error || 'Error al generar URL de carga');
+  }
+
+  const { uploadUrl, storageKey } = await uploadUrlResponse.json();
+
+  // Step 2: Upload to R2
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': mimeType,
+    },
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error('Error al subir archivo a R2');
+  }
+
+  // Step 3: Process upload and save metadata
+  const processResponse = await fetch(`/api/orders/${orderId}/files/process-upload`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      storageKey,
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType,
+      category,
+    }),
+  });
+
+  if (!processResponse.ok) {
+    const data = await processResponse.json();
+    throw new Error(data.error || 'Error al procesar carga');
+  }
+}
+
+/**
+ * Upload multiple files to an order
+ */
+export async function uploadFilesToOrder(
+  orderId: string,
+  upperFiles: File[],
+  lowerFiles: File[],
+  photographFiles: File[],
+  otherFiles: File[]
+): Promise<void> {
+  const uploads: Promise<void>[] = [];
+
+  // Upload upper arch files
+  upperFiles.forEach((file) => {
+    uploads.push(uploadFileToR2(orderId, file, FileCategory.SCAN_UPPER));
+  });
+
+  // Upload lower arch files
+  lowerFiles.forEach((file) => {
+    uploads.push(uploadFileToR2(orderId, file, FileCategory.SCAN_LOWER));
+  });
+
+  // Upload photograph files
+  photographFiles.forEach((file) => {
+    uploads.push(uploadFileToR2(orderId, file, FileCategory.PHOTOGRAPH));
+  });
+
+  // Upload other files
+  otherFiles.forEach((file) => {
+    uploads.push(uploadFileToR2(orderId, file, FileCategory.OTHER));
+  });
+
+  // Upload all files in parallel
+  await Promise.all(uploads);
 }

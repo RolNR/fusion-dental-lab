@@ -32,6 +32,7 @@ import {
   parseTeethNumbers,
   initializeTeethData,
   getValidSelectedTooth,
+  uploadFilesToOrder,
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
 import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
@@ -75,13 +76,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const [formData, setFormData] = useState(initializeFormState(initialData));
 
-  // File upload state for digital scans
-  const [upperFile, setUpperFile] = useState<File | null>(null);
-  const [lowerFile, setLowerFile] = useState<File | null>(null);
-
-  // File upload state for mouth photos
-  const [mouthPhotoFile, setMouthPhotoFile] = useState<File | null>(null);
-
   // Per-tooth configuration state
   const [selectedToothNumber, setSelectedToothNumber] = useState<string | null>(null);
   const [teethData, setTeethData] = useState<Map<string, ToothData>>(new Map());
@@ -89,6 +83,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   // AI suggestions state
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
+
+  // File upload state (max 3 per category)
+  const [upperFiles, setUpperFiles] = useState<File[]>([]);
+  const [lowerFiles, setLowerFiles] = useState<File[]>([]);
+  const [photographFiles, setPhotographFiles] = useState<File[]>([]);
+  const [otherFiles, setOtherFiles] = useState<File[]>([]);
 
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
@@ -120,8 +120,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   useEffect(() => {
     const parsed = parseTeethNumbers(formData.teethNumbers);
     setTeethNumbers(parsed);
-    setTeethData((prev) => initializeTeethData(parsed, prev));
-    setSelectedToothNumber((prev) => getValidSelectedTooth(prev, parsed));
+    const newTeethData = initializeTeethData(parsed, Array.from(teethData.values()));
+    setTeethData(newTeethData);
+    setSelectedToothNumber((prev) => getValidSelectedTooth(prev, newTeethData));
   }, [formData.teethNumbers]);
 
   // Restart recognition after a result (for non-continuous mode)
@@ -329,17 +330,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const handleConfirmSubmit = async () => {
     // Called when user confirms in the review modal
-    await handleSaveOrder(true);
+    // Create order, upload files, and submit for review
+    await handleSaveOrder(true, true); // true = submit for review, true = redirect to detail
     setShowReviewModal(false);
   };
 
   const handleSaveAsDraft = async () => {
     // Called when user clicks "Save as Draft" in the review modal
-    await handleSaveOrder(false);
+    await handleSaveOrder(false, false); // false = don't submit, false = redirect to list
     setShowReviewModal(false);
   };
 
-  const handleSaveOrder = async (submitForReview: boolean) => {
+  const handleSaveOrder = async (submitForReview: boolean, redirectToDetail = false) => {
     setError(null);
     setValidationErrors(new Map());
     setShowErrorSummary(false);
@@ -352,12 +354,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
 
     try {
-      const files = {
-        upperFile,
-        lowerFile,
-        mouthPhotoFile,
-      };
-
       // Convert teethData Map to array
       const teethArray = Array.from(teethData.values());
 
@@ -367,7 +363,32 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         teeth: teethArray.length > 0 ? teethArray : undefined,
       };
 
-      await saveOrderUtil(orderId, role, dataToSave, files, submitForReview, onSuccess, router);
+      const result = await saveOrderUtil(orderId, role, dataToSave, submitForReview, onSuccess, router);
+
+      // If creating a new order, upload files
+      if (result) {
+        const hasFiles = upperFiles.length > 0 || lowerFiles.length > 0 || photographFiles.length > 0 || otherFiles.length > 0;
+
+        if (hasFiles) {
+          try {
+            await uploadFilesToOrder(result.id, upperFiles, lowerFiles, photographFiles, otherFiles);
+          } catch (uploadErr) {
+            console.error('Error uploading files:', uploadErr);
+            // Don't fail the whole operation if files fail to upload
+            // User can add them later from detail page
+          }
+        }
+
+        // Redirect to detail page if requested
+        if (redirectToDetail) {
+          router.push(`/${role}/orders/${result.id}`);
+        } else if (onSuccess) {
+          onSuccess();
+        } else {
+          router.push(`/${role}/orders`);
+          router.refresh();
+        }
+      }
     } catch (err) {
       if (!(err instanceof Error)) {
         setError('Error desconocido');
@@ -865,24 +886,20 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             otroEscaner={formData.otroEscaner}
             tipoSilicon={formData.tipoSilicon ?? undefined}
             notaModeloFisico={formData.notaModeloFisico}
+            upperFiles={upperFiles}
+            lowerFiles={lowerFiles}
+            onUpperFilesChange={setUpperFiles}
+            onLowerFilesChange={setLowerFiles}
             onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
             disabled={isLoading}
-            upperFile={upperFile}
-            lowerFile={lowerFile}
-            onUpperFileChange={setUpperFile}
-            onLowerFileChange={setLowerFile}
             hasErrors={getSectionErrorInfo('impression').hasErrors}
             errorCount={getSectionErrorInfo('impression').errorCount}
           />
 
           {/* Mouth Photos Section - Optional */}
           <MouthPhotosSection
-            value={mouthPhotoFile}
-            onChange={setMouthPhotoFile}
-            orderId={orderId}
-            onUploadComplete={(fileId) => {
-              // No action needed after upload for now
-            }}
+            photographFiles={photographFiles}
+            onPhotographFilesChange={setPhotographFiles}
           />
 
           {/* Submission Type Section */}
@@ -948,13 +965,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           }}
           suggestions={aiSuggestions}
           onApplySuggestion={handleApplySuggestion}
-          upperFile={upperFile}
-          lowerFile={lowerFile}
-          mouthPhotoFile={mouthPhotoFile}
-          onUpperFileChange={setUpperFile}
-          onLowerFileChange={setLowerFile}
-          onMouthPhotoFileChange={setMouthPhotoFile}
-          orderId={orderId}
+          upperFiles={upperFiles}
+          lowerFiles={lowerFiles}
+          photographFiles={photographFiles}
+          otherFiles={otherFiles}
+          onUpperFilesChange={setUpperFiles}
+          onLowerFilesChange={setLowerFiles}
+          onPhotographFilesChange={setPhotographFiles}
+          onOtherFilesChange={setOtherFiles}
           onFormDataChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
           onConfirm={handleConfirmSubmit}
           onCancel={() => setShowReviewModal(false)}

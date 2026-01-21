@@ -64,7 +64,7 @@ export interface OrderFormState {
   doctorId: string;
 
   // Case type fields
-  tipoCaso: CaseType;
+  tipoCaso: CaseType | null;
   motivoGarantia: string;
   seDevuelveTrabajoOriginal: boolean;
 

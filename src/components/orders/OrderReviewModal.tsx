@@ -17,8 +17,8 @@ import {
   CaseTypeSection,
   SubmissionTypeSection,
   OcclusionDesignSection,
-  FileUploadsSection,
   WarrantyDisclaimerSection,
+  FilesReviewSection,
 } from './review-sections';
 
 interface OrderReviewModalProps {
@@ -26,13 +26,14 @@ interface OrderReviewModalProps {
   suggestions?: AISuggestion[];
   onApplySuggestion?: (suggestion: AISuggestion) => void;
   // File upload props
-  upperFile?: File | null;
-  lowerFile?: File | null;
-  mouthPhotoFile?: File | null;
-  onUpperFileChange?: (file: File | null) => void;
-  onLowerFileChange?: (file: File | null) => void;
-  onMouthPhotoFileChange?: (file: File | null) => void;
-  orderId?: string;
+  upperFiles: File[];
+  lowerFiles: File[];
+  photographFiles: File[];
+  otherFiles: File[];
+  onUpperFilesChange: (files: File[]) => void;
+  onLowerFilesChange: (files: File[]) => void;
+  onPhotographFilesChange: (files: File[]) => void;
+  onOtherFilesChange: (files: File[]) => void;
   // Form field edit handlers
   onFormDataChange?: (updates: Partial<OrderFormState>) => void;
   // Validation errors
@@ -54,13 +55,14 @@ export function OrderReviewModal({
   formData,
   suggestions = [],
   onApplySuggestion,
-  upperFile,
-  lowerFile,
-  mouthPhotoFile,
-  onUpperFileChange,
-  onLowerFileChange,
-  onMouthPhotoFileChange,
-  orderId,
+  upperFiles,
+  lowerFiles,
+  photographFiles,
+  otherFiles,
+  onUpperFilesChange,
+  onLowerFilesChange,
+  onPhotographFilesChange,
+  onOtherFilesChange,
   onFormDataChange,
   validationErrors,
   onConfirm,
@@ -143,9 +145,9 @@ export function OrderReviewModal({
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-6 py-4">
           <div>
-            <h2 className="text-xl font-bold text-foreground">Revisar Orden Antes de Enviar</h2>
+            <h2 className="text-xl font-bold text-foreground">Revisar Orden</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Verifica que toda la información sea correcta
+              Verifica que toda la información sea correcta. Podrás añadir archivos después de crear la orden.
             </p>
           </div>
           <button
@@ -202,19 +204,19 @@ export function OrderReviewModal({
 
           <ToothConfigSection teeth={formData.teeth} />
 
-          <FileUploadsSection
-            scanType={formData.scanType}
-            upperFile={upperFile}
-            lowerFile={lowerFile}
-            mouthPhotoFile={mouthPhotoFile}
-            onUpperFileChange={onUpperFileChange}
-            onLowerFileChange={onLowerFileChange}
-            onMouthPhotoFileChange={onMouthPhotoFileChange}
-            orderId={orderId}
+          <FilesReviewSection
+            upperFiles={upperFiles}
+            lowerFiles={lowerFiles}
+            photographFiles={photographFiles}
+            otherFiles={otherFiles}
+            onUpperFilesChange={onUpperFilesChange}
+            onLowerFilesChange={onLowerFilesChange}
+            onPhotographFilesChange={onPhotographFilesChange}
+            onOtherFilesChange={onOtherFilesChange}
           />
 
           <CaseTypeSection
-            tipoCaso={formData.tipoCaso}
+            tipoCaso={formData.tipoCaso ?? undefined}
             motivoGarantia={formData.motivoGarantia}
             seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
           />
@@ -272,7 +274,7 @@ export function OrderReviewModal({
             fullWidth
             className="sm:w-auto sm:flex-1"
           >
-            {isSubmitting ? 'Enviando...' : 'Confirmar y Enviar para Revisión'}
+            {isSubmitting ? 'Creando...' : 'Crear Orden'}
           </Button>
         </div>
       </div>

@@ -47,7 +47,7 @@ export function FileUpload({
 
   // Create and cleanup object URL for image preview
   useEffect(() => {
-    if (value && category === FileCategory.MOUTH_PHOTO) {
+    if (value && category === FileCategory.PHOTOGRAPH) {
       const url = URL.createObjectURL(value);
       setPreviewUrl(url);
       return () => {
@@ -288,7 +288,7 @@ export function FileUpload({
               </div>
             ) : (
               <div className="space-y-3">
-                {category === FileCategory.MOUTH_PHOTO ? (
+                {category === FileCategory.PHOTOGRAPH ? (
                   // Image preview with details
                   <div className="space-y-2">
                     <div className="rounded-lg border border-border bg-background overflow-hidden">

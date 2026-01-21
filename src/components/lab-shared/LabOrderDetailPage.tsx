@@ -67,14 +67,13 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
   const apiEndpoint = `/api/${role}/orders/${orderId}`;
   const backUrl = `/${role}/orders`;
 
-  // Check if order has both upper and lower STL files
-  const hasOcclusionFiles = order?.files
-    ? order.files.some((f) => f.category === FileCategory.SCAN_UPPER) &&
-      order.files.some((f) => f.category === FileCategory.SCAN_LOWER)
-    : false;
+  // Check if order has both upper and lower scan files (for occlusion)
+  const upperFiles = order?.files?.filter((f) => f.category === FileCategory.SCAN_UPPER) || [];
+  const lowerFiles = order?.files?.filter((f) => f.category === FileCategory.SCAN_LOWER) || [];
+  const hasOcclusionFiles = upperFiles.length > 0 && lowerFiles.length > 0;
 
-  const upperFile = order?.files.find((f) => f.category === FileCategory.SCAN_UPPER);
-  const lowerFile = order?.files.find((f) => f.category === FileCategory.SCAN_LOWER);
+  const upperFile = upperFiles[0];
+  const lowerFile = lowerFiles[0];
 
   const fetchOrder = useCallback(async () => {
     try {

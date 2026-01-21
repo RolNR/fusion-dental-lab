@@ -8,8 +8,10 @@ import {
   FileCategory,
   ALLOWED_SCAN_TYPES,
   ALLOWED_IMAGE_TYPES,
+  ALLOWED_OTHER_TYPES,
   MAX_FILE_SIZE_MB,
   MAX_IMAGE_SIZE_MB,
+  MAX_OTHER_SIZE_MB,
 } from '@/types/file';
 
 const uploadUrlSchema = z.object({
@@ -52,18 +54,31 @@ export async function POST(
     // Validate file type based on category
     const ext = '.' + validatedData.fileName.split('.').pop()?.toLowerCase();
 
-    if (validatedData.category === FileCategory.MOUTH_PHOTO) {
+    if (validatedData.category === FileCategory.PHOTOGRAPH) {
       if (!ALLOWED_IMAGE_TYPES.includes(ext)) {
         return NextResponse.json(
           { error: `Tipo de archivo no válido. Se aceptan: ${ALLOWED_IMAGE_TYPES.join(', ')}` },
           { status: 400 }
         );
       }
-    } else {
+    } else if (
+      validatedData.category === FileCategory.SCAN_UPPER ||
+      validatedData.category === FileCategory.SCAN_LOWER
+    ) {
       if (!ALLOWED_SCAN_TYPES.includes(ext)) {
         return NextResponse.json(
           {
-            error: `Tipo de archivo no válido para escaneos. Se aceptan: ${ALLOWED_SCAN_TYPES.join(', ')}`,
+            error: `Tipo de archivo no válido para archivos 3D. Se aceptan: ${ALLOWED_SCAN_TYPES.join(', ')}`,
+          },
+          { status: 400 }
+        );
+      }
+    } else if (validatedData.category === FileCategory.OTHER) {
+      const allAllowedTypes = [...ALLOWED_SCAN_TYPES, ...ALLOWED_IMAGE_TYPES, ...ALLOWED_OTHER_TYPES];
+      if (!allAllowedTypes.includes(ext)) {
+        return NextResponse.json(
+          {
+            error: `Tipo de archivo no válido. Se aceptan: ${allAllowedTypes.join(', ')}`,
           },
           { status: 400 }
         );
@@ -71,8 +86,17 @@ export async function POST(
     }
 
     // Validate file size
-    const maxSizeMB =
-      validatedData.category === FileCategory.MOUTH_PHOTO ? MAX_IMAGE_SIZE_MB : MAX_FILE_SIZE_MB;
+    let maxSizeMB: number;
+    if (validatedData.category === FileCategory.PHOTOGRAPH) {
+      maxSizeMB = MAX_IMAGE_SIZE_MB;
+    } else if (
+      validatedData.category === FileCategory.SCAN_UPPER ||
+      validatedData.category === FileCategory.SCAN_LOWER
+    ) {
+      maxSizeMB = MAX_FILE_SIZE_MB;
+    } else {
+      maxSizeMB = MAX_OTHER_SIZE_MB;
+    }
     const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
     if (validatedData.fileSize > maxSizeBytes) {

@@ -80,6 +80,22 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           backUrl={redirectPath}
         />
 
+        {/* Upload Reminder */}
+        {searchParams.get('uploadReminder') === 'true' && order.status === OrderStatus.DRAFT && (
+          <div className="mb-6 rounded-lg bg-primary/10 border border-primary/30 p-4">
+            <div className="flex items-start gap-3">
+              <Icons.info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-primary mb-1">Orden Creada Exitosamente</h3>
+                <p className="text-sm text-primary/90">
+                  Ahora puedes añadir archivos (STL/PLY, fotografías) usando el botón "Añadir Archivos" a continuación.
+                  Cuando termines de subir los archivos, haz clic en "Enviar para Revisión" para enviar la orden al laboratorio.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {order.status === OrderStatus.NEEDS_INFO && order.comments && (
           <OrderComments comments={order.comments} />
         )}

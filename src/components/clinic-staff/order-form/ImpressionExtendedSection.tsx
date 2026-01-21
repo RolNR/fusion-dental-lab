@@ -5,10 +5,10 @@ import { ScanType, ScannerType, SiliconType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import { FileUpload } from '@/components/ui/FileUpload';
-import { FileCategory } from '@/types/file';
 import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
 import { getScanTypeOptions } from '@/lib/scanTypeUtils';
+import { FilePickerSection } from './FilePickerSection';
+import { ALLOWED_SCAN_TYPES, MAX_FILES_PER_CATEGORY, MAX_FILE_SIZE_MB } from '@/types/file';
 
 type ImpressionExtendedSectionProps = {
   scanType?: ScanType | null;
@@ -16,6 +16,10 @@ type ImpressionExtendedSectionProps = {
   otroEscaner?: string;
   tipoSilicon?: SiliconType;
   notaModeloFisico?: string;
+  upperFiles?: File[];
+  lowerFiles?: File[];
+  onUpperFilesChange?: (files: File[]) => void;
+  onLowerFilesChange?: (files: File[]) => void;
   onChange: (field: string, value: string | ScanType | null | undefined) => void;
   errors?: {
     scanType?: string;
@@ -25,13 +29,6 @@ type ImpressionExtendedSectionProps = {
     notaModeloFisico?: string;
   };
   disabled?: boolean;
-  // File upload props for digital scans
-  upperFile?: File | null;
-  lowerFile?: File | null;
-  biteFile?: File | null;
-  onUpperFileChange?: (file: File | null) => void;
-  onLowerFileChange?: (file: File | null) => void;
-  onBiteFileChange?: (file: File | null) => void;
   hasErrors?: boolean;
   errorCount?: number;
   collapsed?: boolean;
@@ -46,15 +43,13 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
       otroEscaner,
       tipoSilicon,
       notaModeloFisico,
+      upperFiles = [],
+      lowerFiles = [],
+      onUpperFilesChange,
+      onLowerFilesChange,
       onChange,
       errors,
       disabled = false,
-      upperFile,
-      lowerFile,
-      biteFile,
-      onUpperFileChange,
-      onLowerFileChange,
-      onBiteFileChange,
       hasErrors,
       errorCount,
       collapsed,
@@ -123,7 +118,7 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
             )}
           </div>
 
-          {/* Digital Scan - Scanner Type & File Uploads */}
+          {/* Digital Scan - Scanner Type */}
           {scanType === ScanType.DIGITAL_SCAN && (
             <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
               <Select
@@ -155,37 +150,33 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
                 />
               )}
 
-              {/* Digital Scan File Uploads */}
-              <div className="space-y-4 pt-4 border-t border-border">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-1">
-                    Archivos de Escaneo Digital
-                  </h4>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    Sube los archivos STL o PLY de los escaneos (obligatorios)
-                  </p>
-                </div>
-
-                <FileUpload
-                  label="Escaneo Superior (Upper)"
-                  accept=".stl,.ply"
-                  maxSize={50}
-                  value={upperFile || null}
-                  onChange={onUpperFileChange || (() => {})}
-                  required
-                  category={FileCategory.SCAN_UPPER}
+              {/* File upload - Upper Arch */}
+              {onUpperFilesChange && (
+                <FilePickerSection
+                  title="Arcada Superior (STL/PLY)"
+                  description="Sube los archivos del maxilar superior (máx. 3)"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={upperFiles}
+                  onFilesChange={onUpperFilesChange}
+                  icon="upload"
                 />
+              )}
 
-                <FileUpload
-                  label="Escaneo Inferior (Lower)"
-                  accept=".stl,.ply"
-                  maxSize={50}
-                  value={lowerFile || null}
-                  onChange={onLowerFileChange || (() => {})}
-                  required
-                  category={FileCategory.SCAN_LOWER}
+              {/* File upload - Lower Arch */}
+              {onLowerFilesChange && (
+                <FilePickerSection
+                  title="Arcada Inferior (STL/PLY)"
+                  description="Sube los archivos de la mandíbula inferior (máx. 3)"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={lowerFiles}
+                  onFilesChange={onLowerFilesChange}
+                  icon="upload"
                 />
-              </div>
+              )}
             </div>
           )}
 

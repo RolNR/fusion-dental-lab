@@ -1,41 +1,47 @@
 'use client';
 
-import { FileUpload } from '@/components/ui/FileUpload';
-import { FileCategory } from '@/types/file';
 import { SectionContainer, SectionHeader } from '@/components/ui/form';
+import { FilePickerSection } from './FilePickerSection';
+import { ALLOWED_IMAGE_TYPES, MAX_FILES_PER_CATEGORY, MAX_IMAGE_SIZE_MB } from '@/types/file';
 
-type MouthPhotosSectionProps = {
-  value?: File | null;
-  onChange: (file: File | null) => void;
-  orderId?: string;
-  onUploadComplete?: (fileId: string) => void;
-};
+interface MouthPhotosSectionProps {
+  photographFiles?: File[];
+  onPhotographFilesChange?: (files: File[]) => void;
+}
 
 export function MouthPhotosSection({
-  value,
-  onChange,
-  orderId,
-  onUploadComplete,
+  photographFiles = [],
+  onPhotographFilesChange,
 }: MouthPhotosSectionProps) {
   return (
     <SectionContainer>
       <SectionHeader
         icon="eye"
         title="Fotos Intraorales"
-        description="Imágenes de referencia del caso (opcional)"
+        description="Imágenes de referencia del caso"
       />
 
       <div className="p-6">
-        <FileUpload
-          label="Foto Intraoral"
-          accept=".jpg,.jpeg,.png,.webp"
-          maxSize={10}
-          value={value || null}
-          onChange={onChange}
-          category={FileCategory.MOUTH_PHOTO}
-          orderId={orderId}
-          onUploadComplete={onUploadComplete}
-        />
+        {onPhotographFilesChange ? (
+          <FilePickerSection
+            title="Fotografías Intraorales"
+            description="Sube fotografías del caso (máx. 3)"
+            acceptedTypes={ALLOWED_IMAGE_TYPES.join(',')}
+            maxFiles={MAX_FILES_PER_CATEGORY}
+            maxSizeMB={MAX_IMAGE_SIZE_MB}
+            files={photographFiles}
+            onFilesChange={onPhotographFilesChange}
+            icon="camera"
+          />
+        ) : (
+          <div className="rounded-lg bg-primary/10 p-4">
+            <p className="text-sm text-primary">
+              <strong>Nota:</strong> Las fotografías intraorales se pueden subir después de crear la
+              orden usando el botón &quot;Añadir Archivos&quot;. Puedes subir hasta 3 fotografías por
+              orden.
+            </p>
+          </div>
+        )}
       </div>
     </SectionContainer>
   );
