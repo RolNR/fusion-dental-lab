@@ -42,38 +42,38 @@ export const OrderInfoSection = forwardRef<HTMLDivElement, OrderInfoSectionProps
         collapsed={collapsed}
         onCollapseChange={onCollapseChange}
       >
-      <SectionHeader
-        icon="user"
-        title="Información de la Orden"
-        description="Datos básicos del paciente y entrega"
-        required
-      />
-
-      <div className="space-y-4 p-6">
-        <Input
-          label="Nombre del Paciente"
-          type="text"
-          value={patientName}
-          onChange={(e) => onChange('patientName', e.target.value)}
+        <SectionHeader
+          icon="user"
+          title="Información de la Orden"
+          description="Datos básicos del paciente y entrega"
           required
-          disabled={disabled}
-          placeholder="Juan Pérez"
-          error={errors?.patientName}
         />
 
-        <Input
-          label="Fecha de Entrega Deseada"
-          type="date"
-          value={fechaEntregaDeseada || ''}
-          onChange={(e) => onChange('fechaEntregaDeseada', e.target.value)}
-          disabled={disabled}
-          helperText="Fecha en que necesitas el trabajo completado"
-          error={errors?.fechaEntregaDeseada}
-        />
-      </div>
-    </SectionContainer>
-  );
-}
+        <div className="space-y-4 p-6">
+          <Input
+            label="Nombre del Paciente"
+            type="text"
+            value={patientName}
+            onChange={(e) => onChange('patientName', e.target.value)}
+            required
+            disabled={disabled}
+            placeholder="Juan Pérez"
+            error={errors?.patientName}
+          />
+
+          <Input
+            label="Fecha de Entrega Deseada"
+            type="date"
+            value={fechaEntregaDeseada || ''}
+            onChange={(e) => onChange('fechaEntregaDeseada', e.target.value)}
+            disabled={disabled}
+            helperText="Fecha en que necesitas el trabajo completado"
+            error={errors?.fechaEntregaDeseada}
+          />
+        </div>
+      </SectionContainer>
+    );
+  }
 );
 
 OrderInfoSection.displayName = 'OrderInfoSection';

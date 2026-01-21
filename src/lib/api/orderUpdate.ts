@@ -28,9 +28,7 @@ export async function updateOrderWithTeeth<T extends Prisma.OrderInclude>(
 export async function updateOrderWithTeeth(
   params: UpdateOrderWithTeethParams
 ): Promise<Prisma.OrderGetPayload<object>>;
-export async function updateOrderWithTeeth(
-  params: UpdateOrderWithTeethParams
-) {
+export async function updateOrderWithTeeth(params: UpdateOrderWithTeethParams) {
   const { orderId, orderFields, teeth, include } = params;
 
   return await prisma.$transaction(async (tx) => {

@@ -40,116 +40,114 @@ export function AIPromptInput({
   return (
     <div className="ai-prompt-container-border">
       <div className="ai-prompt-container-inner p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex items-start gap-3 mb-3">
-        <div
-          className="rounded-full p-2"
-          style={{ backgroundColor: 'rgb(var(--ai-prompt-icon-bg-rgb))' }}
-        >
-          <svg
-            className="h-5 w-5"
-            style={{ color: 'rgb(var(--ai-prompt-icon-rgb))' }}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        {/* Header */}
+        <div className="flex items-start gap-3 mb-3">
+          <div
+            className="rounded-full p-2"
+            style={{ backgroundColor: 'rgb(var(--ai-prompt-icon-bg-rgb))' }}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-            />
-          </svg>
+            <svg
+              className="h-5 w-5"
+              style={{ color: 'rgb(var(--ai-prompt-icon-rgb))' }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-foreground">{heading}</h3>
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-foreground">{heading}</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            {description}
-          </p>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="space-y-3">
-        {/* Textarea with embedded Dictate button */}
-        <div className="relative ai-prompt-textarea-wrapper">
-          <Textarea
-            label=""
-            id="aiPrompt"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            disabled={isLoading || isParsingAI}
-            rows={4}
-            placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
-            className="ai-prompt-textarea pb-12"
-          />
-
-          {/* Dictate button - positioned inside textarea bottom-left */}
-          {speechSupported && (
-            <Button
-              type="button"
-              variant={isListening ? 'danger' : 'ghost'}
-              onClick={onToggleSpeechRecognition}
+        {/* Content */}
+        <div className="space-y-3">
+          {/* Textarea with embedded Dictate button */}
+          <div className="relative ai-prompt-textarea-wrapper">
+            <Textarea
+              label=""
+              id="aiPrompt"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
               disabled={isLoading || isParsingAI}
-              size="sm"
-              className="absolute bottom-2 left-2 z-10"
-            >
-              {isListening ? (
-                <>
-                  <Icons.micOff className="h-4 w-4 mr-2" />
-                  <span>Detener</span>
-                </>
-              ) : (
-                <>
-                  <Icons.mic className="h-4 w-4 mr-2" />
-                  <span>Dictar</span>
-                </>
-              )}
-            </Button>
-          )}
+              rows={4}
+              placeholder="Ejemplo: 'Corona de zirconia para diente 11, color A2, escaneado con iTero, entregar en 5 días...'"
+              className="ai-prompt-textarea pb-12"
+            />
 
-          {!speechSupported && (
-            <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">
-              Reconocimiento de voz no disponible
-            </p>
-          )}
-        </div>
+            {/* Dictate button - positioned inside textarea bottom-left */}
+            {speechSupported && (
+              <Button
+                type="button"
+                variant={isListening ? 'danger' : 'ghost'}
+                onClick={onToggleSpeechRecognition}
+                disabled={isLoading || isParsingAI}
+                size="sm"
+                className="absolute bottom-2 left-2 z-10"
+              >
+                {isListening ? (
+                  <>
+                    <Icons.micOff className="h-4 w-4 mr-2" />
+                    <span>Detener</span>
+                  </>
+                ) : (
+                  <>
+                    <Icons.mic className="h-4 w-4 mr-2" />
+                    <span>Dictar</span>
+                  </>
+                )}
+              </Button>
+            )}
 
-        {/* Error Message */}
-        {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
+            {!speechSupported && (
+              <p className="absolute bottom-2 left-2 text-xs text-muted-foreground">
+                Reconocimiento de voz no disponible
+              </p>
+            )}
+          </div>
 
-        {/* Buttons Row */}
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Manual Fill Button - Left on desktop, bottom on mobile */}
-          {!showFullForm && showManualButton && (
+          {/* Error Message */}
+          {aiError && <p className="text-sm text-danger font-medium">{aiError}</p>}
+
+          {/* Buttons Row */}
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+            {/* Manual Fill Button - Left on desktop, bottom on mobile */}
+            {!showFullForm && showManualButton && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onShowFullForm}
+                disabled={isLoading}
+                className="w-full sm:w-auto"
+              >
+                <Icons.edit className="h-4 w-4 mr-2" />
+                Completar Manualmente
+              </Button>
+            )}
+
+            {/* Spacer for when manual button is hidden */}
+            {(showFullForm || !showManualButton) && <div className="hidden sm:block" />}
+
+            {/* Process AI Button - Right on desktop, top on mobile */}
             <Button
               type="button"
-              variant="secondary"
-              onClick={onShowFullForm}
-              disabled={isLoading}
-              className="w-full sm:w-auto"
+              variant="primary"
+              onClick={onParse}
+              isLoading={isParsingAI}
+              disabled={isLoading || !value || value.trim().length === 0}
+              className="w-full sm:w-auto sm:ml-auto ai-prompt-button-primary"
             >
-              <Icons.edit className="h-4 w-4 mr-2" />
-              Completar Manualmente
+              {isParsingAI ? 'Procesando con IA...' : 'Procesar con IA'}
             </Button>
-          )}
-
-          {/* Spacer for when manual button is hidden */}
-          {(showFullForm || !showManualButton) && <div className="hidden sm:block" />}
-
-          {/* Process AI Button - Right on desktop, top on mobile */}
-          <Button
-            type="button"
-            variant="primary"
-            onClick={onParse}
-            isLoading={isParsingAI}
-            disabled={isLoading || !value || value.trim().length === 0}
-            className="w-full sm:w-auto sm:ml-auto ai-prompt-button-primary"
-          >
-            {isParsingAI ? 'Procesando con IA...' : 'Procesar con IA'}
-          </Button>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

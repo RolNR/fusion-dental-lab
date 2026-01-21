@@ -31,34 +31,34 @@ export const TeethNumberSection = forwardRef<HTMLDivElement, TeethNumberSectionP
     },
     ref
   ) => {
-  return (
-    <SectionContainer
-      ref={ref}
-      hasErrors={hasErrors}
-      errorCount={errorCount}
-      collapsed={collapsed}
-      onCollapseChange={onCollapseChange}
-    >
-      <SectionHeader
-        icon="user"
-        title="Números de Dientes"
-        description="Ingrese los números de los dientes"
-        required
-      />
-
-      <div className="space-y-4 p-6">
-        <Input
-          label="Números de Dientes"
-          type="text"
-          value={teethNumbers || ''}
-          onChange={(e) => onChange('teethNumbers', e.target.value)}
-          disabled={disabled}
-          placeholder="11, 12, 21, 22"
-          error={errors?.teethNumbers}
+    return (
+      <SectionContainer
+        ref={ref}
+        hasErrors={hasErrors}
+        errorCount={errorCount}
+        collapsed={collapsed}
+        onCollapseChange={onCollapseChange}
+      >
+        <SectionHeader
+          icon="user"
+          title="Números de Dientes"
+          description="Ingrese los números de los dientes"
+          required
         />
-      </div>
-    </SectionContainer>
-  );
+
+        <div className="space-y-4 p-6">
+          <Input
+            label="Números de Dientes"
+            type="text"
+            value={teethNumbers || ''}
+            onChange={(e) => onChange('teethNumbers', e.target.value)}
+            disabled={disabled}
+            placeholder="11, 12, 21, 22"
+            error={errors?.teethNumbers}
+          />
+        </div>
+      </SectionContainer>
+    );
   }
 );
 

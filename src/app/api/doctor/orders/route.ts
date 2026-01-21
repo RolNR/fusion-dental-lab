@@ -128,20 +128,21 @@ export async function POST(request: NextRequest) {
         },
         status: 'DRAFT',
         // Create teeth if provided
-        ...(teeth && teeth.length > 0 && {
-          teeth: {
-            create: teeth.map((tooth) => ({
-              toothNumber: tooth.toothNumber,
-              material: tooth.material,
-              materialBrand: tooth.materialBrand,
-              colorInfo: tooth.colorInfo,
-              tipoTrabajo: tooth.tipoTrabajo,
-              tipoRestauracion: tooth.tipoRestauracion,
-              trabajoSobreImplante: tooth.trabajoSobreImplante,
-              informacionImplante: tooth.informacionImplante,
-            })),
-          },
-        }),
+        ...(teeth &&
+          teeth.length > 0 && {
+            teeth: {
+              create: teeth.map((tooth) => ({
+                toothNumber: tooth.toothNumber,
+                material: tooth.material,
+                materialBrand: tooth.materialBrand,
+                colorInfo: tooth.colorInfo,
+                tipoTrabajo: tooth.tipoTrabajo,
+                tipoRestauracion: tooth.tipoRestauracion,
+                trabajoSobreImplante: tooth.trabajoSobreImplante,
+                informacionImplante: tooth.informacionImplante,
+              })),
+            },
+          }),
       },
       clinicId: doctor.activeClinicId,
       patientName: validatedData.patientName,

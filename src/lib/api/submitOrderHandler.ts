@@ -84,15 +84,13 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
           return NextResponse.json(
             {
               error: 'Validación fallida',
-              details: (validationError as {issues: Array<{path: string[]; message: string}>}).issues,
+              details: (validationError as { issues: Array<{ path: string[]; message: string }> })
+                .issues,
             },
             { status: 400 }
           );
         }
-        return NextResponse.json(
-          { error: 'Error de validación' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Error de validación' }, { status: 400 });
       }
 
       // Update order status to PENDING_REVIEW

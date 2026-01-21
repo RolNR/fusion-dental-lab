@@ -158,12 +158,8 @@ export function OrderDetails({
                 )}
                 {tooth.tipoTrabajo && (
                   <div>
-                    <dt className="text-sm font-medium text-muted-foreground">
-                      Tipo de Trabajo
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground capitalize">
-                      {tooth.tipoTrabajo}
-                    </dd>
+                    <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
+                    <dd className="mt-1 text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
                   </div>
                 )}
                 {tooth.tipoRestauracion && (
@@ -210,8 +206,7 @@ export function OrderDetails({
                       )}
                       {(tooth.informacionImplante as any).sistemaConexion && (
                         <div>
-                          Sistema de Conexión:{' '}
-                          {(tooth.informacionImplante as any).sistemaConexion}
+                          Sistema de Conexión: {(tooth.informacionImplante as any).sistemaConexion}
                         </div>
                       )}
                     </dd>

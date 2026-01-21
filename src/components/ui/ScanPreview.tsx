@@ -13,7 +13,15 @@ interface ScanPreviewProps {
   onClose?: () => void;
 }
 
-function Model({ url, fileExtension, shouldRevokeUrl }: { url: string; fileExtension: string; shouldRevokeUrl: boolean }) {
+function Model({
+  url,
+  fileExtension,
+  shouldRevokeUrl,
+}: {
+  url: string;
+  fileExtension: string;
+  shouldRevokeUrl: boolean;
+}) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

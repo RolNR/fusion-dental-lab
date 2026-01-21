@@ -149,13 +149,21 @@ body {
 
 /* AI Prompt component custom styles - Gradient borders and button */
 .ai-prompt-container-border {
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-from)),
+    rgb(var(--ai-prompt-gradient-to))
+  );
   border-radius: 0.5rem;
   padding: 2px;
 }
 
 .ai-prompt-container-inner {
-  background: linear-gradient(to bottom right, rgb(var(--ai-prompt-bg-from-rgb)), rgb(var(--ai-prompt-bg-to-rgb)));
+  background: linear-gradient(
+    to bottom right,
+    rgb(var(--ai-prompt-bg-from-rgb)),
+    rgb(var(--ai-prompt-bg-to-rgb))
+  );
   border-radius: calc(0.5rem - 2px);
 }
 
@@ -163,15 +171,27 @@ body {
   position: relative;
   border-radius: 0.5rem;
   padding: 2px;
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-from)),
+    rgb(var(--ai-prompt-gradient-to))
+  );
 }
 
 .ai-prompt-textarea-wrapper:hover {
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-to)), rgb(var(--ai-prompt-gradient-from)));
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-to)),
+    rgb(var(--ai-prompt-gradient-from))
+  );
 }
 
 .ai-prompt-textarea-wrapper:focus-within {
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to)));
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-from)),
+    rgb(var(--ai-prompt-gradient-to))
+  );
 }
 
 .ai-prompt-textarea {
@@ -187,13 +207,21 @@ body {
 }
 
 .ai-prompt-button-primary {
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-to))) !important;
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-from)),
+    rgb(var(--ai-prompt-gradient-to))
+  ) !important;
   color: white !important;
   border-radius: 0.5rem !important;
 }
 
 .ai-prompt-button-primary:hover:not(:disabled) {
-  background: linear-gradient(to right, rgb(var(--ai-prompt-gradient-to)), rgb(var(--ai-prompt-gradient-from))) !important;
+  background: linear-gradient(
+    to right,
+    rgb(var(--ai-prompt-gradient-to)),
+    rgb(var(--ai-prompt-gradient-from))
+  ) !important;
 }
 
 .ai-prompt-button-primary:focus {
@@ -203,79 +231,97 @@ body {
 /* AI Prompt snake eating elephant animation - bright ball travels around border */
 @keyframes snake-border {
   0% {
-    background: linear-gradient(
-      90deg,
-      rgb(var(--ai-prompt-gradient-from)) 0%,
-      rgb(var(--ai-prompt-gradient-from)) 35%,
-      rgb(var(--ai-prompt-gradient-to)) 40%,
-      rgba(255, 255, 255, 1) 50%,
-      rgb(var(--ai-prompt-gradient-to)) 60%,
-      rgb(var(--ai-prompt-gradient-from)) 65%,
-      rgb(var(--ai-prompt-gradient-from)) 100%
-    ) top,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+    background:
+      linear-gradient(
+          90deg,
+          rgb(var(--ai-prompt-gradient-from)) 0%,
+          rgb(var(--ai-prompt-gradient-from)) 35%,
+          rgb(var(--ai-prompt-gradient-to)) 40%,
+          rgba(255, 255, 255, 1) 50%,
+          rgb(var(--ai-prompt-gradient-to)) 60%,
+          rgb(var(--ai-prompt-gradient-from)) 65%,
+          rgb(var(--ai-prompt-gradient-from)) 100%
+        )
+        top,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        right,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        bottom,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
   }
   25% {
-    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
-    linear-gradient(
-      180deg,
-      rgb(var(--ai-prompt-gradient-from)) 0%,
-      rgb(var(--ai-prompt-gradient-from)) 35%,
-      rgb(var(--ai-prompt-gradient-to)) 40%,
-      rgba(255, 255, 255, 1) 50%,
-      rgb(var(--ai-prompt-gradient-to)) 60%,
-      rgb(var(--ai-prompt-gradient-from)) 65%,
-      rgb(var(--ai-prompt-gradient-from)) 100%
-    ) right,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+    background:
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+      linear-gradient(
+          180deg,
+          rgb(var(--ai-prompt-gradient-from)) 0%,
+          rgb(var(--ai-prompt-gradient-from)) 35%,
+          rgb(var(--ai-prompt-gradient-to)) 40%,
+          rgba(255, 255, 255, 1) 50%,
+          rgb(var(--ai-prompt-gradient-to)) 60%,
+          rgb(var(--ai-prompt-gradient-from)) 65%,
+          rgb(var(--ai-prompt-gradient-from)) 100%
+        )
+        right,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        bottom,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
   }
   50% {
-    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
-    linear-gradient(
-      270deg,
-      rgb(var(--ai-prompt-gradient-from)) 0%,
-      rgb(var(--ai-prompt-gradient-from)) 35%,
-      rgb(var(--ai-prompt-gradient-to)) 40%,
-      rgba(255, 255, 255, 1) 50%,
-      rgb(var(--ai-prompt-gradient-to)) 60%,
-      rgb(var(--ai-prompt-gradient-from)) 65%,
-      rgb(var(--ai-prompt-gradient-from)) 100%
-    ) bottom,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+    background:
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        right,
+      linear-gradient(
+          270deg,
+          rgb(var(--ai-prompt-gradient-from)) 0%,
+          rgb(var(--ai-prompt-gradient-from)) 35%,
+          rgb(var(--ai-prompt-gradient-to)) 40%,
+          rgba(255, 255, 255, 1) 50%,
+          rgb(var(--ai-prompt-gradient-to)) 60%,
+          rgb(var(--ai-prompt-gradient-from)) 65%,
+          rgb(var(--ai-prompt-gradient-from)) 100%
+        )
+        bottom,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
   }
   75% {
-    background: linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
-    linear-gradient(
-      0deg,
-      rgb(var(--ai-prompt-gradient-from)) 0%,
-      rgb(var(--ai-prompt-gradient-from)) 35%,
-      rgb(var(--ai-prompt-gradient-to)) 40%,
-      rgba(255, 255, 255, 1) 50%,
-      rgb(var(--ai-prompt-gradient-to)) 60%,
-      rgb(var(--ai-prompt-gradient-from)) 65%,
-      rgb(var(--ai-prompt-gradient-from)) 100%
-    ) left;
+    background:
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) top,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        right,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        bottom,
+      linear-gradient(
+          0deg,
+          rgb(var(--ai-prompt-gradient-from)) 0%,
+          rgb(var(--ai-prompt-gradient-from)) 35%,
+          rgb(var(--ai-prompt-gradient-to)) 40%,
+          rgba(255, 255, 255, 1) 50%,
+          rgb(var(--ai-prompt-gradient-to)) 60%,
+          rgb(var(--ai-prompt-gradient-from)) 65%,
+          rgb(var(--ai-prompt-gradient-from)) 100%
+        )
+        left;
   }
   100% {
-    background: linear-gradient(
-      90deg,
-      rgb(var(--ai-prompt-gradient-from)) 0%,
-      rgb(var(--ai-prompt-gradient-from)) 35%,
-      rgb(var(--ai-prompt-gradient-to)) 40%,
-      rgba(255, 255, 255, 1) 50%,
-      rgb(var(--ai-prompt-gradient-to)) 60%,
-      rgb(var(--ai-prompt-gradient-from)) 65%,
-      rgb(var(--ai-prompt-gradient-from)) 100%
-    ) top,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) right,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) bottom,
-    linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
+    background:
+      linear-gradient(
+          90deg,
+          rgb(var(--ai-prompt-gradient-from)) 0%,
+          rgb(var(--ai-prompt-gradient-from)) 35%,
+          rgb(var(--ai-prompt-gradient-to)) 40%,
+          rgba(255, 255, 255, 1) 50%,
+          rgb(var(--ai-prompt-gradient-to)) 60%,
+          rgb(var(--ai-prompt-gradient-from)) 65%,
+          rgb(var(--ai-prompt-gradient-from)) 100%
+        )
+        top,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        right,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from)))
+        bottom,
+      linear-gradient(rgb(var(--ai-prompt-gradient-from)), rgb(var(--ai-prompt-gradient-from))) left;
   }
 }
 

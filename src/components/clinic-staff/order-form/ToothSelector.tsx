@@ -53,12 +53,8 @@ export function ToothSelector({
             >
               <span className="flex items-center gap-1.5">
                 {toothNumber}
-                {hasData && !hasError && (
-                  <Icons.check className="h-3 w-3 text-success" />
-                )}
-                {hasError && (
-                  <Icons.alertCircle className="h-3 w-3 text-danger" />
-                )}
+                {hasData && !hasError && <Icons.check className="h-3 w-3 text-success" />}
+                {hasError && <Icons.alertCircle className="h-3 w-3 text-danger" />}
               </span>
             </button>
           );
@@ -67,7 +63,8 @@ export function ToothSelector({
 
       {selectedTooth && (
         <div className="mt-3 text-xs text-muted-foreground">
-          Configurando diente: <span className="font-semibold text-foreground">{selectedTooth}</span>
+          Configurando diente:{' '}
+          <span className="font-semibold text-foreground">{selectedTooth}</span>
         </div>
       )}
     </div>

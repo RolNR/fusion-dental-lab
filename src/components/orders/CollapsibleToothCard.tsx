@@ -24,9 +24,7 @@ export function CollapsibleToothCard({
         onClick={onToggle}
         className="w-full flex items-center justify-between pl-4 pr-4 py-3 hover:bg-muted/30 transition-colors"
       >
-        <h3 className="font-semibold text-lg text-foreground">
-          Diente {tooth.toothNumber}
-        </h3>
+        <h3 className="font-semibold text-lg text-foreground">Diente {tooth.toothNumber}</h3>
         <Icons.chevronDown
           className={`h-5 w-5 text-foreground transition-transform ${
             isExpanded ? 'rotate-180' : ''
@@ -34,11 +32,7 @@ export function CollapsibleToothCard({
         />
       </button>
 
-      {isExpanded && (
-        <div className="pl-4 pr-4 pb-3">
-          {children}
-        </div>
-      )}
+      {isExpanded && <div className="pl-4 pr-4 pb-3">{children}</div>}
     </div>
   );
 }

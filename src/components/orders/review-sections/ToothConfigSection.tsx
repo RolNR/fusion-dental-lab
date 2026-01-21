@@ -37,27 +37,20 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
         />
       )}
       {tooth.material && <DetailRow label="Material" value={tooth.material} />}
-      {tooth.materialBrand && (
-        <DetailRow label="Marca del Material" value={tooth.materialBrand} />
-      )}
+      {tooth.materialBrand && <DetailRow label="Marca del Material" value={tooth.materialBrand} />}
       {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
         <>
           {(tooth.colorInfo as any).shadeCode && (
             <DetailRow label="Código de Color" value={(tooth.colorInfo as any).shadeCode} />
           )}
           {(tooth.colorInfo as any).shadeType && (
-            <DetailRow
-              label="Tipo de Guía de Color"
-              value={(tooth.colorInfo as any).shadeType}
-            />
+            <DetailRow label="Tipo de Guía de Color" value={(tooth.colorInfo as any).shadeType} />
           )}
         </>
       )}
       {tooth.trabajoSobreImplante && (
         <div className="mt-2 pt-2 border-t border-border">
-          <p className="text-sm font-medium text-foreground mb-1">
-            Trabajo sobre Implante
-          </p>
+          <p className="text-sm font-medium text-foreground mb-1">Trabajo sobre Implante</p>
           {tooth.informacionImplante && typeof tooth.informacionImplante === 'object' && (
             <dl className="ml-4 space-y-1">
               {(tooth.informacionImplante as any).marcaImplante && (

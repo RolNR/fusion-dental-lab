@@ -223,14 +223,16 @@ export function parseTeethNumbers(teethNumbersStr: string | undefined): string[]
   }
 
   // Parse comma-separated teeth numbers
-  return teethNumbersStr
-    .split(',')
-    .map((t) => t.trim())
-    .filter((t) => t.length > 0)
-    // Remove duplicates
-    .filter((t, idx, arr) => arr.indexOf(t) === idx)
-    // Sort numerically
-    .sort((a, b) => parseInt(a) - parseInt(b));
+  return (
+    teethNumbersStr
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+      // Remove duplicates
+      .filter((t, idx, arr) => arr.indexOf(t) === idx)
+      // Sort numerically
+      .sort((a, b) => parseInt(a) - parseInt(b))
+  );
 }
 
 /**

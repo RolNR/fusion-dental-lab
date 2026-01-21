@@ -71,9 +71,7 @@ function SuggestionCard({ suggestion, onApply }: SuggestionCardProps) {
     <div className="flex items-start gap-3 rounded-lg bg-background border border-border p-3">
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-foreground text-sm">
-            {suggestion.label}
-          </span>
+          <span className="font-semibold text-foreground text-sm">{suggestion.label}</span>
           {suggestion.toothNumber && (
             <span className="text-xs bg-muted px-2 py-0.5 rounded">
               Diente {suggestion.toothNumber}
@@ -97,25 +95,15 @@ function SuggestionCard({ suggestion, onApply }: SuggestionCardProps) {
         </div>
 
         {formatValue(suggestion.value) && (
-          <p className="text-sm text-primary font-medium">
-            {formatValue(suggestion.value)}
-          </p>
+          <p className="text-sm text-primary font-medium">{formatValue(suggestion.value)}</p>
         )}
 
-        <p className="text-xs text-muted-foreground">
-          {suggestion.reason}
-        </p>
+        <p className="text-xs text-muted-foreground">{suggestion.reason}</p>
       </div>
 
       {/* Only show "Aplicar" button if it's not a reminder and has a value */}
       {!isReminder && suggestion.value !== null && (
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={onApply}
-          className="shrink-0"
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={onApply} className="shrink-0">
           Aplicar
         </Button>
       )}

@@ -27,7 +27,15 @@ interface ArchModelProps {
   onLoadingChange?: (isLoading: boolean) => void;
 }
 
-function ArchModel({ url, fileExtension, shouldRevokeUrl, position, color, label, onLoadingChange }: ArchModelProps) {
+function ArchModel({
+  url,
+  fileExtension,
+  shouldRevokeUrl,
+  position,
+  color,
+  label,
+  onLoadingChange,
+}: ArchModelProps) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +145,13 @@ function Scene({
   );
 }
 
-export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onClose }: OcclusionPreviewProps) {
+export function OcclusionPreview({
+  upperFile,
+  lowerFile,
+  upperUrl,
+  lowerUrl,
+  onClose,
+}: OcclusionPreviewProps) {
   const [upperObjectUrl, setUpperObjectUrl] = useState<string | null>(null);
   const [lowerObjectUrl, setLowerObjectUrl] = useState<string | null>(null);
   const [upperExtension, setUpperExtension] = useState<string | null>(null);
@@ -253,7 +267,9 @@ export function OcclusionPreview({ upperFile, lowerFile, upperUrl, lowerUrl, onC
       {/* Title and instructions */}
       <div className="absolute top-3 right-3 bg-background/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border">
         <p className="text-xs font-medium text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">Usa el mouse para rotar, zoom y mover</p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          Usa el mouse para rotar, zoom y mover
+        </p>
       </div>
 
       {/* Bite toggle button (only show if both scans are loaded) */}

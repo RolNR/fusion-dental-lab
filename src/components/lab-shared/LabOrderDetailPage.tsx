@@ -259,9 +259,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         <dt className="text-sm font-medium text-muted-foreground">
                           Tipo de Trabajo
                         </dt>
-                        <dd className="text-sm text-foreground capitalize">
-                          {tooth.tipoTrabajo}
-                        </dd>
+                        <dd className="text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
                       </div>
                     )}
                     {tooth.tipoRestauracion && (
@@ -328,11 +326,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-foreground">Archivos</h2>
               {hasOcclusionFiles && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setShowOcclusionPreview(true)}
-                >
+                <Button variant="secondary" size="sm" onClick={() => setShowOcclusionPreview(true)}>
                   <Icons.eye className="h-4 w-4 mr-2" />
                   Ver Vista de Oclusión
                 </Button>

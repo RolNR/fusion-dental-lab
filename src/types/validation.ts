@@ -129,7 +129,9 @@ export const SECTION_NAMES: Record<string, string> = {
 /**
  * Groups validation errors by section
  */
-export function groupErrorsBySection(details: ValidationErrorDetail[]): Map<string, ValidationErrorDetail[]> {
+export function groupErrorsBySection(
+  details: ValidationErrorDetail[]
+): Map<string, ValidationErrorDetail[]> {
   const grouped = new Map<string, ValidationErrorDetail[]>();
 
   for (const detail of details) {

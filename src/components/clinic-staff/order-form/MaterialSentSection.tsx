@@ -264,7 +264,11 @@ function countSelectedInCategory(
   return count;
 }
 
-export function MaterialSentSection({ materialSent = {}, onChange, errors }: MaterialSentSectionProps) {
+export function MaterialSentSection({
+  materialSent = {},
+  onChange,
+  errors,
+}: MaterialSentSectionProps) {
   const [activeCategories, setActiveCategories] = useState<Set<string>>(() => {
     // Auto-expand categories that have selected items
     const active = new Set<string>();
@@ -381,9 +385,7 @@ export function MaterialSentSection({ materialSent = {}, onChange, errors }: Mat
                   {totalSelected} material{totalSelected !== 1 ? 'es' : ''} seleccionado
                   {totalSelected !== 1 ? 's' : ''}
                 </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedLabels.join(', ')}
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{selectedLabels.join(', ')}</p>
               </div>
             </div>
           </div>

@@ -31,10 +31,7 @@ export function ToothConfigurationSection({
   // Determine which teeth have data configured
   const teethWithData = new Set(
     Array.from(teethData.entries())
-      .filter(
-        ([_, data]) =>
-          data.material || data.tipoTrabajo || data.trabajoSobreImplante
-      )
+      .filter(([_, data]) => data.material || data.tipoTrabajo || data.trabajoSobreImplante)
       .map(([toothNumber]) => toothNumber)
   );
 
@@ -59,9 +56,7 @@ export function ToothConfigurationSection({
             sourceTooth={selectedTooth}
             allTeeth={teethNumbers}
             onCopyToAll={() => {
-              onTeethDataChange((prev) =>
-                copyToothData(selectedTooth, teethNumbers, prev)
-              );
+              onTeethDataChange((prev) => copyToothData(selectedTooth, teethNumbers, prev));
             }}
             onCopyToSelected={(targets) => {
               onTeethDataChange((prev) => copyToothData(selectedTooth, targets, prev));

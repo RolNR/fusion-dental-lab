@@ -65,13 +65,17 @@ export function generateCaseSummary(order: OrderDetail): string {
     const toothSummaries: string[] = [];
 
     // Sort teeth numerically
-    const sortedTeeth = [...order.teeth].sort((a, b) =>
-      parseInt(a.toothNumber) - parseInt(b.toothNumber)
+    const sortedTeeth = [...order.teeth].sort(
+      (a, b) => parseInt(a.toothNumber) - parseInt(b.toothNumber)
     );
 
-    sortedTeeth.forEach(tooth => {
-      const workType = tooth.tipoTrabajo ? WORK_TYPE_LABELS[tooth.tipoTrabajo] || tooth.tipoTrabajo : '';
-      const restType = tooth.tipoRestauracion ? RESTORATION_TYPE_LABELS[tooth.tipoRestauracion] || tooth.tipoRestauracion : '';
+    sortedTeeth.forEach((tooth) => {
+      const workType = tooth.tipoTrabajo
+        ? WORK_TYPE_LABELS[tooth.tipoTrabajo] || tooth.tipoTrabajo
+        : '';
+      const restType = tooth.tipoRestauracion
+        ? RESTORATION_TYPE_LABELS[tooth.tipoRestauracion] || tooth.tipoRestauracion
+        : '';
       const material = tooth.material || '';
 
       let toothDesc = `Diente ${tooth.toothNumber}: `;
@@ -173,7 +177,7 @@ export function generateCaseSummary(order: OrderDetail): string {
     const formattedDate = date.toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
     sections.push(`Fecha de entrega deseada: ${formattedDate}.`);
   }

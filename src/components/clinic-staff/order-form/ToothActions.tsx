@@ -47,21 +47,14 @@ export function ToothActions({
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-4">
       <div className="mb-3">
-        <label className="text-sm font-medium text-foreground">
-          Copiar Configuración
-        </label>
+        <label className="text-sm font-medium text-foreground">Copiar Configuración</label>
         <p className="text-xs text-muted-foreground mt-1">
           Copia la configuración del diente {sourceTooth} a otros dientes
         </p>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={onCopyToAll}
-        >
+        <Button type="button" variant="secondary" size="sm" onClick={onCopyToAll}>
           <Icons.copy className="h-4 w-4 mr-2" />
           Copiar a Todos
         </Button>
@@ -86,7 +79,8 @@ export function ToothActions({
             </h3>
 
             <p className="text-sm text-muted-foreground mb-4">
-              Selecciona los dientes a los que deseas copiar la configuración del diente {sourceTooth}
+              Selecciona los dientes a los que deseas copiar la configuración del diente{' '}
+              {sourceTooth}
             </p>
 
             <div className="grid grid-cols-4 gap-2 mb-6">

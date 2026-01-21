@@ -31,33 +31,33 @@ export const AdditionalNotesSection = forwardRef<HTMLDivElement, AdditionalNotes
     },
     ref
   ) => {
-  return (
-    <SectionContainer
-      ref={ref}
-      hasErrors={hasErrors}
-      errorCount={errorCount}
-      collapsed={collapsed}
-      onCollapseChange={onCollapseChange}
-    >
-      <SectionHeader
-        icon="fileText"
-        title="Notas Adicionales"
-        description="Información extra que es relevante para el caso"
-      />
-
-      <div className="p-6">
-        <Textarea
-          id="notes"
-          value={additionalNotes}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={disabled}
-          rows={4}
-          placeholder="Agrega cualquier instrucción o detalle adicional que deba considerarse para este caso."
-          error={errors?.additionalNotes}
+    return (
+      <SectionContainer
+        ref={ref}
+        hasErrors={hasErrors}
+        errorCount={errorCount}
+        collapsed={collapsed}
+        onCollapseChange={onCollapseChange}
+      >
+        <SectionHeader
+          icon="fileText"
+          title="Notas Adicionales"
+          description="Información extra que es relevante para el caso"
         />
-      </div>
-    </SectionContainer>
-  );
+
+        <div className="p-6">
+          <Textarea
+            id="notes"
+            value={additionalNotes}
+            onChange={(e) => onChange(e.target.value)}
+            disabled={disabled}
+            rows={4}
+            placeholder="Agrega cualquier instrucción o detalle adicional que deba considerarse para este caso."
+            error={errors?.additionalNotes}
+          />
+        </div>
+      </SectionContainer>
+    );
   }
 );
 

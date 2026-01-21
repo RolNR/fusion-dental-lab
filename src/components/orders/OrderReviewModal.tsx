@@ -187,10 +187,7 @@ export function OrderReviewModal({
           <AIPromptSection aiPrompt={formData.aiPrompt} />
 
           {suggestions.length > 0 && onApplySuggestion && (
-            <AISuggestionsSection
-              suggestions={suggestions}
-              onApplySuggestion={onApplySuggestion}
-            />
+            <AISuggestionsSection suggestions={suggestions} onApplySuggestion={onApplySuggestion} />
           )}
 
           <DescriptionNotesSection

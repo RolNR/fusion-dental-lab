@@ -198,14 +198,9 @@ export const implantInfoSchema = z.object({
 
 // Occlusion schema
 export const occlusionSchema = z.object({
-  tipoOclusion: z.enum([
-    'normal',
-    'clase_i',
-    'clase_ii',
-    'clase_iii',
-    'borde_a_borde',
-    'mordida_cruzada',
-  ]).optional(),
+  tipoOclusion: z
+    .enum(['normal', 'clase_i', 'clase_ii', 'clase_iii', 'borde_a_borde', 'mordida_cruzada'])
+    .optional(),
   espacioInteroclusalSuficiente: z.boolean().optional(),
   solucionEspacioInsuficiente: z
     .enum(['reduccion_oclusal', 'aumento_vertical', 'ambas'])
@@ -233,10 +228,12 @@ export const colorInfoSchema = z.object({
   texture: z.array(z.string()).optional(),
   gloss: z.array(z.string()).optional(),
   mamelones: z.enum(['si', 'no']).optional(),
-  translucency: z.object({
-    level: z.number().min(1).max(10),
-    description: z.string(),
-  }).optional(),
+  translucency: z
+    .object({
+      level: z.number().min(1).max(10),
+      description: z.string(),
+    })
+    .optional(),
 });
 
 // TypeScript types for the schemas
@@ -293,16 +290,26 @@ export const orderDraftSchema = z.object({
   isUrgent: z.boolean().optional(),
 
   // Per-tooth configuration
-  teeth: z.array(z.object({
-    toothNumber: z.string().min(1),
-    material: z.string().optional(),
-    materialBrand: z.string().optional(),
-    colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
-    tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
-    tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
-    trabajoSobreImplante: z.boolean().optional(),
-    informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
-  })).optional(),
+  teeth: z
+    .array(
+      z.object({
+        toothNumber: z.string().min(1),
+        material: z.string().optional(),
+        materialBrand: z.string().optional(),
+        colorInfo: z
+          .union([colorInfoSchema, z.null()])
+          .optional()
+          .transform((val) => val as Prisma.InputJsonValue | undefined),
+        tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+        tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
+        trabajoSobreImplante: z.boolean().optional(),
+        informacionImplante: z
+          .union([implantInfoSchema, z.null()])
+          .optional()
+          .transform((val) => val as Prisma.InputJsonValue | undefined),
+      })
+    )
+    .optional(),
 });
 
 // Schema for creating orders with validation (patientName required)
@@ -318,7 +325,10 @@ const toothSubmitSchema = z.object({
     message: 'Material requerido',
   }),
   materialBrand: z.string().nullable().optional(),
-  colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+  colorInfo: z
+    .union([colorInfoSchema, z.null()])
+    .optional()
+    .transform((val) => val as Prisma.InputJsonValue | undefined),
   tipoTrabajo: z.any().refine((val) => Object.values(WorkType).includes(val), {
     message: 'Tipo de trabajo requerido',
   }),
@@ -326,7 +336,10 @@ const toothSubmitSchema = z.object({
     message: 'Tipo de restauración requerido',
   }),
   trabajoSobreImplante: z.boolean().optional(),
-  informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
+  informacionImplante: z
+    .union([implantInfoSchema, z.null()])
+    .optional()
+    .transform((val) => val as Prisma.InputJsonValue | undefined),
 });
 
 // Schema for submitting orders for review (stricter validation on teeth)
@@ -368,16 +381,26 @@ export const orderUpdateSchema = z.object({
   motivoGarantia: z.string().optional(),
 
   // Per-tooth configuration
-  teeth: z.array(z.object({
-    toothNumber: z.string().min(1),
-    material: z.string().optional(),
-    materialBrand: z.string().optional(),
-    colorInfo: z.union([colorInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
-    tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
-    tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
-    trabajoSobreImplante: z.boolean().optional(),
-    informacionImplante: z.union([implantInfoSchema, z.null()]).optional().transform((val) => val as Prisma.InputJsonValue | undefined),
-  })).optional(),
+  teeth: z
+    .array(
+      z.object({
+        toothNumber: z.string().min(1),
+        material: z.string().optional(),
+        materialBrand: z.string().optional(),
+        colorInfo: z
+          .union([colorInfoSchema, z.null()])
+          .optional()
+          .transform((val) => val as Prisma.InputJsonValue | undefined),
+        tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
+        tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
+        trabajoSobreImplante: z.boolean().optional(),
+        informacionImplante: z
+          .union([implantInfoSchema, z.null()])
+          .optional()
+          .transform((val) => val as Prisma.InputJsonValue | undefined),
+      })
+    )
+    .optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),

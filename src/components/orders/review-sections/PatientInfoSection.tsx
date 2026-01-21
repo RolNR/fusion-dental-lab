@@ -42,11 +42,7 @@ export function PatientInfoSection({
             />
           </div>
         ) : (
-          <DetailRow
-            label="Nombre del Paciente"
-            value={patientName}
-            required={isEditable}
-          />
+          <DetailRow label="Nombre del Paciente" value={patientName} required={isEditable} />
         )}
 
         {/* Patient ID - Read-only display only (not editable in review modal) */}

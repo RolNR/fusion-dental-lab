@@ -50,7 +50,8 @@ export function loadDashboardAIData(): LoadedAIData | null {
   if (!dashboardData) return null;
 
   try {
-    const { aiPrompt, parsedData, suggestions, openReviewModal }: DashboardAIData = JSON.parse(dashboardData);
+    const { aiPrompt, parsedData, suggestions, openReviewModal }: DashboardAIData =
+      JSON.parse(dashboardData);
 
     // Clear session storage immediately
     sessionStorage.removeItem('dashboardAIData');

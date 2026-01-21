@@ -82,12 +82,13 @@ export function FileUploadsSection({
             {(upperFile || lowerFile) && (
               <div className="mt-4">
                 <p className="text-sm font-semibold text-foreground mb-3">
-                  {upperFile && lowerFile ? 'Vista de Oclusión' : upperFile ? 'Vista Previa - Arcada Superior' : 'Vista Previa - Arcada Inferior'}
+                  {upperFile && lowerFile
+                    ? 'Vista de Oclusión'
+                    : upperFile
+                      ? 'Vista Previa - Arcada Superior'
+                      : 'Vista Previa - Arcada Inferior'}
                 </p>
-                <OcclusionPreview
-                  upperFile={upperFile}
-                  lowerFile={lowerFile}
-                />
+                <OcclusionPreview upperFile={upperFile} lowerFile={lowerFile} />
               </div>
             )}
           </div>

@@ -139,8 +139,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognitionAPI =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (SpeechRecognitionAPI) {
         setSpeechSupported(true);
@@ -370,7 +369,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       await saveOrderUtil(orderId, role, dataToSave, files, submitForReview, onSuccess, router);
     } catch (err) {
-if (!(err instanceof Error)) {
+      if (!(err instanceof Error)) {
         setError('Error desconocido');
         return;
       }
@@ -584,7 +583,9 @@ if (!(err instanceof Error)) {
       // Apply suggestion to tooth-specific field (handles nested paths)
       setTeethData((prev) => {
         const newData = new Map(prev);
-        const toothData = newData.get(suggestion.toothNumber!) || { toothNumber: suggestion.toothNumber! };
+        const toothData = newData.get(suggestion.toothNumber!) || {
+          toothNumber: suggestion.toothNumber!,
+        };
 
         const fieldPath = suggestion.field.split('.');
 
@@ -724,206 +725,216 @@ if (!(err instanceof Error)) {
             patientName={formData.patientName}
             fechaEntregaDeseada={formData.fechaEntregaDeseada}
             onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        disabled={isLoading}
-        hasErrors={getSectionErrorInfo('patient').hasErrors}
-        errorCount={getSectionErrorInfo('patient').errorCount}
-      />
+            disabled={isLoading}
+            hasErrors={getSectionErrorInfo('patient').hasErrors}
+            errorCount={getSectionErrorInfo('patient').errorCount}
+          />
 
-      {/* Case Type Section */}
-      <CaseTypeSection
-        ref={(el) => registerSectionRef('caseType', el)}
-        tipoCaso={formData.tipoCaso ?? undefined}
-        motivoGarantia={formData.motivoGarantia}
-        seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
-        onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-        hasErrors={getSectionErrorInfo('caseType').hasErrors}
-        errorCount={getSectionErrorInfo('caseType').errorCount}
-      />
+          {/* Case Type Section */}
+          <CaseTypeSection
+            ref={(el) => registerSectionRef('caseType', el)}
+            tipoCaso={formData.tipoCaso ?? undefined}
+            motivoGarantia={formData.motivoGarantia}
+            seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
+            onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
+            hasErrors={getSectionErrorInfo('caseType').hasErrors}
+            errorCount={getSectionErrorInfo('caseType').errorCount}
+          />
 
-      {/* Work Type Section - Per-tooth configuration */}
-      {selectedToothNumber && (
-        <WorkTypeSection
-          ref={(el) => registerSectionRef('workType', el)}
-          tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
-          tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
-          onChange={(updates) => {
-            setTeethData((prev) => {
-              const updated = new Map(prev);
-              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
-              updated.set(selectedToothNumber, { ...currentData, ...updates });
-              return updated;
-            });
-          }}
-          hasErrors={getSectionErrorInfo('workType').hasErrors}
-          errorCount={getSectionErrorInfo('workType').errorCount}
-        />
-      )}
+          {/* Work Type Section - Per-tooth configuration */}
+          {selectedToothNumber && (
+            <WorkTypeSection
+              ref={(el) => registerSectionRef('workType', el)}
+              tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
+              tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
+              onChange={(updates) => {
+                setTeethData((prev) => {
+                  const updated = new Map(prev);
+                  const currentData = updated.get(selectedToothNumber) || {
+                    toothNumber: selectedToothNumber,
+                  };
+                  updated.set(selectedToothNumber, { ...currentData, ...updates });
+                  return updated;
+                });
+              }}
+              hasErrors={getSectionErrorInfo('workType').hasErrors}
+              errorCount={getSectionErrorInfo('workType').errorCount}
+            />
+          )}
 
-      {/* Description Section */}
-      <DescriptionSection
-        ref={(el) => registerSectionRef('notes', el)}
-        description={formData.description}
-        onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-        disabled={isLoading}
-        hasErrors={getSectionErrorInfo('notes').hasErrors}
-        errorCount={getSectionErrorInfo('notes').errorCount}
-      />
+          {/* Description Section */}
+          <DescriptionSection
+            ref={(el) => registerSectionRef('notes', el)}
+            description={formData.description}
+            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
+            disabled={isLoading}
+            hasErrors={getSectionErrorInfo('notes').hasErrors}
+            errorCount={getSectionErrorInfo('notes').errorCount}
+          />
 
-      {/* Tooth Configuration Section (Odontogram) */}
-      <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
-        <ToothConfigurationSection
-          teethNumbers={teethNumbers}
-          selectedTooth={selectedToothNumber}
-          onToothSelect={setSelectedToothNumber}
-          onToothToggle={handleToothToggle}
-          teethData={teethData}
-          onTeethDataChange={setTeethData}
-          teethWithErrors={teethWithErrors}
-          validationErrors={validationErrors}
-        />
-      </div>
+          {/* Tooth Configuration Section (Odontogram) */}
+          <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
+            <ToothConfigurationSection
+              teethNumbers={teethNumbers}
+              selectedTooth={selectedToothNumber}
+              onToothSelect={setSelectedToothNumber}
+              onToothToggle={handleToothToggle}
+              teethData={teethData}
+              onTeethDataChange={setTeethData}
+              teethWithErrors={teethWithErrors}
+              validationErrors={validationErrors}
+            />
+          </div>
 
-      {/* Implant Section - Per-tooth configuration */}
-      {selectedToothNumber && (
-        <ImplantSection
-          ref={(el) => registerSectionRef('implant', el)}
-          trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
-          informacionImplante={teethData.get(selectedToothNumber)?.informacionImplante ?? undefined}
-          onChange={(updates) => {
-            setTeethData((prev) => {
-              const updated = new Map(prev);
-              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
-              updated.set(selectedToothNumber, { ...currentData, ...updates });
-              return updated;
-            });
-          }}
-          hasErrors={getSectionErrorInfo('implant').hasErrors}
-          errorCount={getSectionErrorInfo('implant').errorCount}
-        />
-      )}
+          {/* Implant Section - Per-tooth configuration */}
+          {selectedToothNumber && (
+            <ImplantSection
+              ref={(el) => registerSectionRef('implant', el)}
+              trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
+              informacionImplante={
+                teethData.get(selectedToothNumber)?.informacionImplante ?? undefined
+              }
+              onChange={(updates) => {
+                setTeethData((prev) => {
+                  const updated = new Map(prev);
+                  const currentData = updated.get(selectedToothNumber) || {
+                    toothNumber: selectedToothNumber,
+                  };
+                  updated.set(selectedToothNumber, { ...currentData, ...updates });
+                  return updated;
+                });
+              }}
+              hasErrors={getSectionErrorInfo('implant').hasErrors}
+              errorCount={getSectionErrorInfo('implant').errorCount}
+            />
+          )}
 
-      {/* Material and Color Section - Per-tooth configuration */}
-      {selectedToothNumber && (
-        <MaterialAndColorSection
-          ref={(el) => registerSectionRef('material', el)}
-          material={teethData.get(selectedToothNumber)?.material ?? ''}
-          materialBrand={teethData.get(selectedToothNumber)?.materialBrand ?? ''}
-          colorInfo={teethData.get(selectedToothNumber)?.colorInfo ?? undefined}
-          onMaterialChange={(field, value) => {
-            setTeethData((prev) => {
-              const updated = new Map(prev);
-              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
-              updated.set(selectedToothNumber, { ...currentData, [field]: value });
-              return updated;
-            });
-          }}
-          onColorInfoChange={(value) => {
-            setTeethData((prev) => {
-              const updated = new Map(prev);
-              const currentData = updated.get(selectedToothNumber) || { toothNumber: selectedToothNumber };
-              updated.set(selectedToothNumber, { ...currentData, colorInfo: value });
-              return updated;
-            });
-          }}
-          disabled={isLoading}
-          hasErrors={getSectionErrorInfo('material').hasErrors}
-          errorCount={getSectionErrorInfo('material').errorCount}
-        />
-      )}
+          {/* Material and Color Section - Per-tooth configuration */}
+          {selectedToothNumber && (
+            <MaterialAndColorSection
+              ref={(el) => registerSectionRef('material', el)}
+              material={teethData.get(selectedToothNumber)?.material ?? ''}
+              materialBrand={teethData.get(selectedToothNumber)?.materialBrand ?? ''}
+              colorInfo={teethData.get(selectedToothNumber)?.colorInfo ?? undefined}
+              onMaterialChange={(field, value) => {
+                setTeethData((prev) => {
+                  const updated = new Map(prev);
+                  const currentData = updated.get(selectedToothNumber) || {
+                    toothNumber: selectedToothNumber,
+                  };
+                  updated.set(selectedToothNumber, { ...currentData, [field]: value });
+                  return updated;
+                });
+              }}
+              onColorInfoChange={(value) => {
+                setTeethData((prev) => {
+                  const updated = new Map(prev);
+                  const currentData = updated.get(selectedToothNumber) || {
+                    toothNumber: selectedToothNumber,
+                  };
+                  updated.set(selectedToothNumber, { ...currentData, colorInfo: value });
+                  return updated;
+                });
+              }}
+              disabled={isLoading}
+              hasErrors={getSectionErrorInfo('material').hasErrors}
+              errorCount={getSectionErrorInfo('material').errorCount}
+            />
+          )}
 
-      {/* Occlusion Section */}
-      <OcclusionSection
-        ref={(el) => registerSectionRef('occlusion', el)}
-        oclusionDiseno={formData.oclusionDiseno}
-        onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
-        hasErrors={getSectionErrorInfo('occlusion').hasErrors}
-        errorCount={getSectionErrorInfo('occlusion').errorCount}
-      />
+          {/* Occlusion Section */}
+          <OcclusionSection
+            ref={(el) => registerSectionRef('occlusion', el)}
+            oclusionDiseno={formData.oclusionDiseno}
+            onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
+            hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+            errorCount={getSectionErrorInfo('occlusion').errorCount}
+          />
 
-      {/* Material Sent Section */}
-      <MaterialSentSection
-        materialSent={formData.materialSent}
-        onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
-      />
+          {/* Material Sent Section */}
+          <MaterialSentSection
+            materialSent={formData.materialSent}
+            onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
+          />
 
-     {/* Impression Extended Section */}
-      <ImpressionExtendedSection
-        ref={(el) => registerSectionRef('impression', el)}
-        scanType={formData.scanType ?? undefined}
-        escanerUtilizado={formData.escanerUtilizado ?? undefined}
-        otroEscaner={formData.otroEscaner}
-        tipoSilicon={formData.tipoSilicon ?? undefined}
-        notaModeloFisico={formData.notaModeloFisico}
-        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        disabled={isLoading}
-        upperFile={upperFile}
-        lowerFile={lowerFile}
-        onUpperFileChange={setUpperFile}
-        onLowerFileChange={setLowerFile}
-        hasErrors={getSectionErrorInfo('impression').hasErrors}
-        errorCount={getSectionErrorInfo('impression').errorCount}
-      />
+          {/* Impression Extended Section */}
+          <ImpressionExtendedSection
+            ref={(el) => registerSectionRef('impression', el)}
+            scanType={formData.scanType ?? undefined}
+            escanerUtilizado={formData.escanerUtilizado ?? undefined}
+            otroEscaner={formData.otroEscaner}
+            tipoSilicon={formData.tipoSilicon ?? undefined}
+            notaModeloFisico={formData.notaModeloFisico}
+            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+            disabled={isLoading}
+            upperFile={upperFile}
+            lowerFile={lowerFile}
+            onUpperFileChange={setUpperFile}
+            onLowerFileChange={setLowerFile}
+            hasErrors={getSectionErrorInfo('impression').hasErrors}
+            errorCount={getSectionErrorInfo('impression').errorCount}
+          />
 
-      {/* Mouth Photos Section - Optional */}
-      <MouthPhotosSection
-        value={mouthPhotoFile}
-        onChange={setMouthPhotoFile}
-        orderId={orderId}
-        onUploadComplete={(fileId) => {
-          // No action needed after upload for now
-        }}
-      />
-      
-      {/* Submission Type Section */}
-      <SubmissionTypeSection
-        ref={(el) => registerSectionRef('submission', el)}
-        submissionType={formData.submissionType ?? undefined}
-        articulatedBy={formData.articulatedBy ?? undefined}
-        onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-        hasErrors={getSectionErrorInfo('submission').hasErrors}
-        errorCount={getSectionErrorInfo('submission').errorCount}
-      />
+          {/* Mouth Photos Section - Optional */}
+          <MouthPhotosSection
+            value={mouthPhotoFile}
+            onChange={setMouthPhotoFile}
+            orderId={orderId}
+            onUploadComplete={(fileId) => {
+              // No action needed after upload for now
+            }}
+          />
 
-      <AdditionalNotesSection
-        ref={(el) => registerSectionRef('notes', el)}
-        additionalNotes={formData.notes}
-        onChange={(value) => setFormData((prev) => ({ ...prev, notes: value }))}
-        hasErrors={getSectionErrorInfo('notes').hasErrors}
-        errorCount={getSectionErrorInfo('notes').errorCount}
-      />
+          {/* Submission Type Section */}
+          <SubmissionTypeSection
+            ref={(el) => registerSectionRef('submission', el)}
+            submissionType={formData.submissionType ?? undefined}
+            articulatedBy={formData.articulatedBy ?? undefined}
+            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+            hasErrors={getSectionErrorInfo('submission').hasErrors}
+            errorCount={getSectionErrorInfo('submission').errorCount}
+          />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-        <Button
-          type="submit"
-          variant="secondary"
-          isLoading={isLoading}
-          fullWidth
-          className="sm:w-auto"
-        >
-          {orderId ? 'Guardar Cambios' : 'Guardar Borrador'}
-        </Button>
-        {canSubmit && (
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleSubmitForReview}
-            isLoading={isLoading}
-            fullWidth
-            className="sm:w-auto"
-          >
-            {orderId ? 'Guardar y Enviar' : 'Enviar para Revisión'}
-          </Button>
-        )}
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => router.back()}
-          disabled={isLoading}
-          fullWidth
-          className="sm:w-auto"
-        >
-          Cancelar
-        </Button>
+          <AdditionalNotesSection
+            ref={(el) => registerSectionRef('notes', el)}
+            additionalNotes={formData.notes}
+            onChange={(value) => setFormData((prev) => ({ ...prev, notes: value }))}
+            hasErrors={getSectionErrorInfo('notes').hasErrors}
+            errorCount={getSectionErrorInfo('notes').errorCount}
+          />
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <Button
+              type="submit"
+              variant="secondary"
+              isLoading={isLoading}
+              fullWidth
+              className="sm:w-auto"
+            >
+              {orderId ? 'Guardar Cambios' : 'Guardar Borrador'}
+            </Button>
+            {canSubmit && (
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleSubmitForReview}
+                isLoading={isLoading}
+                fullWidth
+                className="sm:w-auto"
+              >
+                {orderId ? 'Guardar y Enviar' : 'Enviar para Revisión'}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => router.back()}
+              disabled={isLoading}
+              fullWidth
+              className="sm:w-auto"
+            >
+              Cancelar
+            </Button>
           </div>
         </>
       )}

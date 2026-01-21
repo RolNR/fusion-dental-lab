@@ -16,8 +16,7 @@ export function DetailRow({ label, value, required }: DetailRowProps) {
     return (
       <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2 border-b border-border last:border-0">
         <dt className="font-semibold text-foreground sm:w-1/3">
-          {label}:
-          <span className="text-danger ml-1">*</span>
+          {label}:<span className="text-danger ml-1">*</span>
         </dt>
         <dd className="text-danger sm:w-2/3 flex items-center gap-2">
           <Icons.alertCircle className="h-4 w-4 shrink-0" />
@@ -33,8 +32,7 @@ export function DetailRow({ label, value, required }: DetailRowProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 py-2 border-b border-border last:border-0">
       <dt className="font-semibold text-foreground sm:w-1/3">
-        {label}:
-        {required && <span className="text-danger ml-1">*</span>}
+        {label}:{required && <span className="text-danger ml-1">*</span>}
       </dt>
       <dd className="text-muted-foreground sm:w-2/3 break-words">{value}</dd>
     </div>

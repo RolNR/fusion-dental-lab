@@ -28,15 +28,11 @@ export function WarrantyDisclaimerSection({
         <div className="flex items-start gap-3 mb-4">
           <Icons.alertCircle className="h-5 w-5 text-warning mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-foreground">
-              Material sin garantía
-            </p>
+            <p className="text-sm font-semibold text-foreground">Material sin garantía</p>
             <p className="text-sm text-muted-foreground mt-1">
               El siguiente material no cuenta con garantía de resultados:
             </p>
-            <p className="text-sm font-medium text-foreground mt-2">
-              {materialsText}
-            </p>
+            <p className="text-sm font-medium text-foreground mt-2">{materialsText}</p>
           </div>
         </div>
 

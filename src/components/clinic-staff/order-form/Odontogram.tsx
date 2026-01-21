@@ -132,9 +132,9 @@ export function Odontogram({
       {/* Instructions */}
       {!readOnly && (
         <p className="text-xs text-muted-foreground text-center">
-          <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene configuración,
-          vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para editarlo o usa el
-          botón X para quitarlo.
+          <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene
+          configuración, vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para
+          editarlo o usa el botón X para quitarlo.
         </p>
       )}
     </div>

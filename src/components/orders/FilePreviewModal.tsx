@@ -19,8 +19,10 @@ interface FilePreviewModalProps {
 
 export function FilePreviewModal({ file, onClose }: FilePreviewModalProps) {
   const isImage = file.mimeType.startsWith('image/');
-  const is3DModel = file.mimeType.includes('stl') || file.mimeType.includes('ply') ||
-                    file.category.includes('scan');
+  const is3DModel =
+    file.mimeType.includes('stl') ||
+    file.mimeType.includes('ply') ||
+    file.category.includes('scan');
 
   // Close on Escape key
   useEffect(() => {
