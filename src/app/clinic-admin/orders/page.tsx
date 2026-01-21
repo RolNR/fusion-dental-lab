@@ -11,17 +11,28 @@ const SEARCH_DEBOUNCE_MS = 300;
 export default function ClinicOrdersPage() {
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalCount: 0,
+    totalPages: 0,
+  });
 
   useEffect(() => {
     // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(async () => {
       try {
+        setIsLoading(true);
         const params = new URLSearchParams();
         if (statusFilter) params.append('status', statusFilter);
         if (searchQuery) params.append('search', searchQuery);
+        params.append('page', currentPage.toString());
+        params.append('limit', '10');
 
         const url = `/api/clinic-admin/orders${params.toString() ? `?${params.toString()}` : ''}`;
         const response = await fetch(url);
@@ -30,15 +41,22 @@ export default function ClinicOrdersPage() {
         }
         const data = await response.json();
         setOrders(data.orders);
+        setPagination(data.pagination);
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');
       } finally {
         setIsInitialLoading(false);
+        setIsLoading(false);
       }
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
+  }, [statusFilter, searchQuery, currentPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [statusFilter, searchQuery]);
 
   if (isInitialLoading) {
@@ -74,7 +92,19 @@ export default function ClinicOrdersPage() {
       </div>
 
       {/* Orders Table */}
-      <OrdersTable orders={orders} baseUrl="/clinic-admin/orders" />
+      <OrdersTable
+        orders={orders}
+        baseUrl="/clinic-admin/orders"
+        showPrintIcon={true}
+        pagination={{
+          currentPage: pagination.page,
+          totalPages: pagination.totalPages,
+          totalItems: pagination.totalCount,
+          itemsPerPage: pagination.limit,
+        }}
+        onPageChange={setCurrentPage}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

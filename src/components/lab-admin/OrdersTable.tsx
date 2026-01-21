@@ -2,21 +2,36 @@
 
 import Link from 'next/link';
 import { Table, TableColumn } from '@/components/ui/Table';
+import { Pagination } from '@/components/ui/Pagination';
+import { Button } from '@/components/ui/Button';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
 import { OrderWithRelations } from '@/types/order';
 import { Icons } from '@/components/ui/Icons';
-import { Button } from '@/components/ui/Button';
 
 interface OrdersTableProps {
   orders: OrderWithRelations[];
   baseUrl?: string;
   showDoctorColumn?: boolean;
+  showPrintIcon?: boolean;
+  // Pagination props
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+  onPageChange?: (page: number) => void;
+  isLoading?: boolean;
 }
 
 export function OrdersTable({
   orders,
   baseUrl = '/lab-admin/orders',
   showDoctorColumn = true,
+  showPrintIcon = false,
+  pagination,
+  onPageChange,
+  isLoading = false,
 }: OrdersTableProps) {
   const columns: TableColumn<OrderWithRelations>[] = [
     {
@@ -88,18 +103,20 @@ export function OrdersTable({
           >
             <Icons.eye size={18} />
           </Link>
-          <Button
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              // Navigate to detail page and trigger print
-              window.location.href = `${baseUrl}/${order.id}?print=true`;
-            }}
-            className="text-muted-foreground hover:text-foreground p-2"
-            title="Imprimir guía de envío"
-          >
-            <Icons.printer size={18} />
-          </Button>
+          {showPrintIcon && order.status !== 'DRAFT' && (
+            <Button
+              variant="ghost"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Navigate to detail page and trigger print
+                window.location.href = `${baseUrl}/${order.id}?print=true`;
+              }}
+              className="text-muted-foreground hover:text-foreground p-2"
+              title="Imprimir guía de envío"
+            >
+              <Icons.printer size={18} />
+            </Button>
+          )}
         </div>
       ),
       headerClassName: 'text-right',
@@ -109,11 +126,23 @@ export function OrdersTable({
   ];
 
   return (
-    <Table
-      columns={columns}
-      data={orders}
-      keyExtractor={(order) => order.id}
-      emptyMessage="No hay órdenes registradas"
-    />
+    <div>
+      <Table
+        columns={columns}
+        data={orders}
+        keyExtractor={(order) => order.id}
+        emptyMessage="No hay órdenes registradas"
+      />
+      {pagination && onPageChange && (
+        <Pagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalItems={pagination.totalItems}
+          itemsPerPage={pagination.itemsPerPage}
+          onPageChange={onPageChange}
+          isLoading={isLoading}
+        />
+      )}
+    </div>
   );
 }

@@ -11,6 +11,8 @@ import { buildOrderWhereClause } from '@/lib/api/orderFilters';
 const queryParamsSchema = z.object({
   search: z.string().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(10),
 });
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -27,6 +29,8 @@ export async function GET(request: NextRequest) {
     const result = queryParamsSchema.safeParse({
       search: searchParams.get('search') || undefined,
       status: searchParams.get('status') || undefined,
+      page: searchParams.get('page') || undefined,
+      limit: searchParams.get('limit') || undefined,
     });
 
     if (!result.success) {
@@ -36,7 +40,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { search, status } = result.data;
+    const { search, status, page, limit } = result.data;
 
     // Build where clause using shared utility
     const where = buildOrderWhereClause({
@@ -44,6 +48,12 @@ export async function GET(request: NextRequest) {
       status,
       doctorId: session.user.id,
     });
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalCount = await prisma.order.count({ where });
 
     const orders = await prisma.order.findMany({
       where,
@@ -62,9 +72,19 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
+      skip,
+      take: limit,
     });
 
-    return NextResponse.json({ orders });
+    return NextResponse.json({
+      orders,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching doctor orders:', error);
     return NextResponse.json({ error: 'Error al cargar órdenes' }, { status: 500 });

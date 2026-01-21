@@ -15,14 +15,25 @@ export default function DoctorOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    totalCount: 0,
+    totalPages: 0,
+  });
 
   const fetchOrders = useCallback(async () => {
     try {
+      setIsLoading(true);
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
       if (statusFilter) params.append('status', statusFilter);
+      params.append('page', currentPage.toString());
+      params.append('limit', '10');
 
       const url = `/api/doctor/orders${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await fetch(url);
@@ -30,11 +41,19 @@ export default function DoctorOrdersPage() {
 
       const data = await response.json();
       setOrders(data.orders || []);
+      setPagination(data.pagination);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);
       setLoading(false);
+    } finally {
+      setIsLoading(false);
     }
+  }, [searchQuery, statusFilter, currentPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, [searchQuery, statusFilter]);
 
   useEffect(() => {
@@ -85,7 +104,20 @@ export default function DoctorOrdersPage() {
         </div>
 
         <div className="rounded-xl bg-background shadow-md border border-border">
-          <OrdersTable orders={orders} baseUrl="/doctor/orders" showDoctorColumn={false} />
+          <OrdersTable
+            orders={orders}
+            baseUrl="/doctor/orders"
+            showDoctorColumn={false}
+            showPrintIcon={true}
+            pagination={{
+              currentPage: pagination.page,
+              totalPages: pagination.totalPages,
+              totalItems: pagination.totalCount,
+              itemsPerPage: pagination.limit,
+            }}
+            onPageChange={setCurrentPage}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>

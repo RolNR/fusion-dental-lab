@@ -82,7 +82,7 @@ export default async function LabAdminDashboard() {
           Panel de Administración
         </h1>
         <p className="mt-2 text-sm sm:text-base text-muted-foreground">
-          Bienvenido, {session.user.name}
+          Buen día, {session.user.name}
         </p>
       </div>
 
