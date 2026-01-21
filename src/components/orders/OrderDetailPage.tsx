@@ -10,6 +10,7 @@ import { OrderDetails } from '@/components/orders/OrderDetails';
 import { OrderComments } from '@/components/orders/OrderComments';
 import { FileList } from '@/components/orders/FileList';
 import { UploadModal } from '@/components/orders/UploadModal';
+import { OrderShippingLabel } from '@/components/orders/OrderShippingLabel';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { useSubmitOrder } from '@/hooks/useSubmitOrder';
 
@@ -40,6 +41,10 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
     if (success) {
       refetch();
     }
+  };
+
+  const handlePrintShippingLabel = () => {
+    window.print();
   };
 
   if (sessionStatus === 'loading' || loading) {
@@ -87,7 +92,22 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           />
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4">
+        {/* Print Shipping Label Button */}
+        <div className="mt-6 print:hidden">
+          <Button
+            variant="secondary"
+            onClick={handlePrintShippingLabel}
+            className="w-full sm:w-auto"
+          >
+            <Icons.printer className="h-4 w-4 mr-2" />
+            Imprimir Guía de Envío
+          </Button>
+          <p className="text-sm text-muted-foreground mt-2">
+            Imprime esta guía y pégala en tu caja para facilitar la recolección y entrega.
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4 print:hidden">
           {(order.status === 'DRAFT' || order.status === 'NEEDS_INFO') && (
             <>
               <Button
@@ -138,6 +158,9 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             }}
           />
         )}
+
+        {/* Shipping Label for printing */}
+        <OrderShippingLabel order={order} />
       </div>
     </div>
   );

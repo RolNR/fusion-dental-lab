@@ -12,6 +12,14 @@ export const orderDetailInclude = {
       name: true,
       email: true,
       phone: true,
+      laboratory: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+          address: true,
+        },
+      },
     },
   },
   doctor: {
