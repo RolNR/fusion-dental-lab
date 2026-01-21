@@ -116,6 +116,36 @@ export function FileList({
     return FILE_CATEGORY_LABELS[category as FileCategory] || category;
   };
 
+  const handleDownload = async (file: FileData) => {
+    try {
+      // Fetch the file from R2
+      const response = await fetch(file.storageUrl);
+      if (!response.ok) {
+        throw new Error('Error al descargar archivo');
+      }
+
+      // Create a blob from the response
+      const blob = await response.blob();
+
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.originalName; // Use the original filename
+      document.body.appendChild(a);
+      a.click();
+
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      setError('Error al descargar archivo');
+    }
+  };
+
   // Group files by category
   const groupedFiles = files.reduce(
     (groups, file) => {
@@ -260,7 +290,7 @@ export function FileList({
                         <Button
                           variant="secondary"
                           size="sm"
-                          onClick={() => window.open(file.storageUrl, '_blank')}
+                          onClick={() => handleDownload(file)}
                           className="whitespace-nowrap"
                         >
                           <Icons.download className="h-4 w-4 mr-1" />
