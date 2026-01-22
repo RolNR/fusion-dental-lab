@@ -6,6 +6,7 @@ import { OrbitControls, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import { Icons } from './Icons';
 
 interface ScanPreviewProps {
   file?: File;
@@ -13,14 +14,16 @@ interface ScanPreviewProps {
   onClose?: () => void;
 }
 
-function Model({
+function ModelWithLoadingState({
   url,
   fileExtension,
   shouldRevokeUrl,
+  onLoadingChange,
 }: {
   url: string;
   fileExtension: string;
   shouldRevokeUrl: boolean;
+  onLoadingChange: (loading: boolean) => void;
 }) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +31,7 @@ function Model({
 
   useEffect(() => {
     setIsLoading(true);
+    onLoadingChange(true);
     setError(null);
 
     if (fileExtension === '.stl') {
@@ -38,12 +42,14 @@ function Model({
           loadedGeometry.computeVertexNormals();
           setGeometry(loadedGeometry);
           setIsLoading(false);
+          onLoadingChange(false);
         },
         undefined,
         (err) => {
           console.error('Error loading STL:', err);
           setError('Error al cargar el archivo 3D');
           setIsLoading(false);
+          onLoadingChange(false);
         }
       );
     } else if (fileExtension === '.ply') {
@@ -54,12 +60,14 @@ function Model({
           loadedGeometry.computeVertexNormals();
           setGeometry(loadedGeometry);
           setIsLoading(false);
+          onLoadingChange(false);
         },
         undefined,
         (err) => {
           console.error('Error loading PLY:', err);
           setError('Error al cargar el archivo 3D');
           setIsLoading(false);
+          onLoadingChange(false);
         }
       );
     }
@@ -69,7 +77,15 @@ function Model({
         URL.revokeObjectURL(url);
       }
     };
-  }, [url, fileExtension, shouldRevokeUrl]);
+  }, [url, fileExtension, shouldRevokeUrl, onLoadingChange]);
+
+  if (isLoading) {
+    return null; // Canvas handles the loading state in the parent component
+  }
+
+  if (error) {
+    return null; // Canvas handles the error state in the parent component
+  }
 
   if (!geometry) {
     return null;
@@ -87,6 +103,7 @@ function Model({
 export function ScanPreview({ file, url, onClose }: ScanPreviewProps) {
   const [objectUrl, setObjectUrl] = useState<string>('');
   const [fileExtension, setFileExtension] = useState<string>('');
+  const [isLoadingModel, setIsLoadingModel] = useState(true);
 
   useEffect(() => {
     if (file) {
@@ -110,7 +127,10 @@ export function ScanPreview({ file, url, onClose }: ScanPreviewProps) {
   if (!objectUrl) {
     return (
       <div className="flex items-center justify-center h-64 bg-muted rounded-lg">
-        <p className="text-muted-foreground">Cargando vista previa...</p>
+        <div className="text-center">
+          <Icons.spinner className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Preparando vista previa...</p>
+        </div>
       </div>
     );
   }
@@ -119,11 +139,29 @@ export function ScanPreview({ file, url, onClose }: ScanPreviewProps) {
 
   return (
     <div className="relative w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-muted to-muted/50 rounded-lg overflow-hidden border border-border">
+      {/* Loading Overlay */}
+      {isLoadingModel && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/80 backdrop-blur-sm">
+          <div className="text-center">
+            <Icons.spinner className="h-10 w-10 animate-spin text-primary mx-auto mb-3" />
+            <p className="text-sm font-medium text-foreground">Cargando modelo 3D...</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Esto puede tomar unos segundos
+            </p>
+          </div>
+        </div>
+      )}
+
       <Canvas camera={{ position: [0, 0, 100], fov: 50 }} style={{ width: '100%', height: '100%' }}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <directionalLight position={[-10, -10, -5]} intensity={0.3} />
-        <Model url={objectUrl} fileExtension={fileExtension} shouldRevokeUrl={shouldRevokeUrl} />
+        <ModelWithLoadingState
+          url={objectUrl}
+          fileExtension={fileExtension}
+          shouldRevokeUrl={shouldRevokeUrl}
+          onLoadingChange={setIsLoadingModel}
+        />
         <OrbitControls
           enableZoom={true}
           enablePan={true}

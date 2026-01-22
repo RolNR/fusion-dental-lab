@@ -289,10 +289,13 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           return parseInt(a, 10) - parseInt(b, 10);
         });
 
-        // Initialize empty ToothData
+        // Initialize ToothData with default values
         setTeethData((prevData) => {
           const newData = new Map(prevData);
-          newData.set(toothNumber, { toothNumber });
+          newData.set(toothNumber, {
+            toothNumber,
+            tipoTrabajo: 'restauracion' // Default to restauracion
+          });
           return newData;
         });
 
@@ -762,27 +765,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('caseType').errorCount}
           />
 
-          {/* Work Type Section - Per-tooth configuration */}
-          {selectedToothNumber && (
-            <WorkTypeSection
-              ref={(el) => registerSectionRef('workType', el)}
-              tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
-              tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
-              onChange={(updates) => {
-                setTeethData((prev) => {
-                  const updated = new Map(prev);
-                  const currentData = updated.get(selectedToothNumber) || {
-                    toothNumber: selectedToothNumber,
-                  };
-                  updated.set(selectedToothNumber, { ...currentData, ...updates });
-                  return updated;
-                });
-              }}
-              hasErrors={getSectionErrorInfo('workType').hasErrors}
-              errorCount={getSectionErrorInfo('workType').errorCount}
-            />
-          )}
-
           {/* Description Section */}
           <DescriptionSection
             ref={(el) => registerSectionRef('notes', el)}
@@ -807,14 +789,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             />
           </div>
 
-          {/* Implant Section - Per-tooth configuration */}
+          {/* Work Type Section - Per-tooth configuration */}
           {selectedToothNumber && (
-            <ImplantSection
-              ref={(el) => registerSectionRef('implant', el)}
-              trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
-              informacionImplante={
-                teethData.get(selectedToothNumber)?.informacionImplante ?? undefined
-              }
+            <WorkTypeSection
+              ref={(el) => registerSectionRef('workType', el)}
+              tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
+              tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
               onChange={(updates) => {
                 setTeethData((prev) => {
                   const updated = new Map(prev);
@@ -825,8 +805,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                   return updated;
                 });
               }}
-              hasErrors={getSectionErrorInfo('implant').hasErrors}
-              errorCount={getSectionErrorInfo('implant').errorCount}
+              hasErrors={getSectionErrorInfo('workType').hasErrors}
+              errorCount={getSectionErrorInfo('workType').errorCount}
             />
           )}
 
@@ -860,6 +840,29 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               disabled={isLoading}
               hasErrors={getSectionErrorInfo('material').hasErrors}
               errorCount={getSectionErrorInfo('material').errorCount}
+            />
+          )}
+
+          {/* Implant Section - Per-tooth configuration */}
+          {selectedToothNumber && (
+            <ImplantSection
+              ref={(el) => registerSectionRef('implant', el)}
+              trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
+              informacionImplante={
+                teethData.get(selectedToothNumber)?.informacionImplante ?? undefined
+              }
+              onChange={(updates) => {
+                setTeethData((prev) => {
+                  const updated = new Map(prev);
+                  const currentData = updated.get(selectedToothNumber) || {
+                    toothNumber: selectedToothNumber,
+                  };
+                  updated.set(selectedToothNumber, { ...currentData, ...updates });
+                  return updated;
+                });
+              }}
+              hasErrors={getSectionErrorInfo('implant').hasErrors}
+              errorCount={getSectionErrorInfo('implant').errorCount}
             />
           )}
 

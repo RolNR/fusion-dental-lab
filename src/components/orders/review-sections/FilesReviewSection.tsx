@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SectionTitle } from './ReviewSectionComponents';
 import { FilePickerSection } from '@/components/clinic-staff/order-form/FilePickerSection';
 import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
@@ -37,13 +37,24 @@ export function FilesReviewSection({
   onPhotographFilesChange,
   onOtherFilesChange,
 }: FilesReviewSectionProps) {
-  const [showOcclusionPreview, setShowOcclusionPreview] = useState(false);
   const totalFiles = upperFiles.length + lowerFiles.length + photographFiles.length + otherFiles.length;
 
   // Use first file from upper and first from lower for occlusion preview
   const hasOcclusionFiles = upperFiles.length > 0 && lowerFiles.length > 0;
   const upperFile = upperFiles[0] || null;
   const lowerFile = lowerFiles[0] || null;
+
+  // Show occlusion preview by default when both files exist
+  const [showOcclusionPreview, setShowOcclusionPreview] = useState(hasOcclusionFiles);
+
+  // Update showOcclusionPreview when hasOcclusionFiles changes
+  useEffect(() => {
+    if (hasOcclusionFiles && !showOcclusionPreview) {
+      setShowOcclusionPreview(true);
+    } else if (!hasOcclusionFiles && showOcclusionPreview) {
+      setShowOcclusionPreview(false);
+    }
+  }, [hasOcclusionFiles, showOcclusionPreview]);
 
   if (totalFiles === 0) {
     return (
@@ -126,7 +137,34 @@ export function FilesReviewSection({
           icon="upload"
         />
 
-        {/* Occlusion Preview Button (show if we have both upper and lower files) */}
+        {/* Occlusion Preview (show by default when both files exist) */}
+        {showOcclusionPreview && hasOcclusionFiles && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-foreground">Vista de Oclusión</h4>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOcclusionPreview(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Icons.x className="h-4 w-4 mr-1" />
+                Ocultar
+              </Button>
+            </div>
+            <OcclusionPreview
+              upperFile={upperFile}
+              lowerFile={lowerFile}
+              onClose={() => setShowOcclusionPreview(false)}
+            />
+            <p className="text-xs text-muted-foreground text-center">
+              Superior: {upperFile?.name} | Inferior: {lowerFile?.name}
+            </p>
+          </div>
+        )}
+
+        {/* Show Occlusion Preview Button (if hidden) */}
         {hasOcclusionFiles && !showOcclusionPreview && (
           <Button
             type="button"
@@ -136,22 +174,8 @@ export function FilesReviewSection({
             className="w-full"
           >
             <Icons.eye className="h-4 w-4 mr-2" />
-            Ver Vista de Oclusión
+            Mostrar Vista de Oclusión
           </Button>
-        )}
-
-        {/* Occlusion Preview */}
-        {showOcclusionPreview && hasOcclusionFiles && (
-          <div className="mt-4">
-            <OcclusionPreview
-              upperFile={upperFile}
-              lowerFile={lowerFile}
-              onClose={() => setShowOcclusionPreview(false)}
-            />
-            <p className="text-xs text-muted-foreground mt-2">
-              Superior: {upperFile?.name} | Inferior: {lowerFile?.name}
-            </p>
-          </div>
         )}
 
         <FilePickerSection

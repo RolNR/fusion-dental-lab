@@ -9,6 +9,8 @@ import {
   MAX_FILES_PER_CATEGORY,
 } from '@/types/file';
 import { FilePreviewModal } from './FilePreviewModal';
+import { Inline3DPreviewFromUrl } from './Inline3DPreviewFromUrl';
+import { InlineImagePreviewFromUrl } from './InlineImagePreviewFromUrl';
 import Image from 'next/image';
 
 interface FileData {
@@ -48,6 +50,12 @@ export function FileList({
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<FileData | null>(null);
+
+  // Inline preview state
+  const [showInline3DPreview, setShowInline3DPreview] = useState(true);
+  const [showInlineImagePreview, setShowInlineImagePreview] = useState(true);
+  const [selected3DIndex, setSelected3DIndex] = useState(0);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     fetchFiles();
@@ -145,6 +153,31 @@ export function FileList({
       setError('Error al descargar archivo');
     }
   };
+
+  // Helper to check if file is 3D
+  const is3DFile = (file: FileData) => {
+    const extension = file.fileType?.toLowerCase();
+    return extension === 'stl' || extension === 'ply';
+  };
+
+  // Helper to check if file is image
+  const isImageFile = (file: FileData) => {
+    return file.mimeType?.startsWith('image/');
+  };
+
+  // Get all 3D scan files (upper and lower)
+  const all3DFiles = files.filter(
+    (f) =>
+      is3DFile(f) &&
+      (f.category === FileCategory.SCAN_UPPER || f.category === FileCategory.SCAN_LOWER)
+  );
+  const has3DFiles = all3DFiles.length > 0;
+  const selected3DFile = all3DFiles[selected3DIndex] || null;
+
+  // Get all image files (photographs)
+  const allImageFiles = files.filter((f) => isImageFile(f) && f.category === FileCategory.PHOTOGRAPH);
+  const hasImageFiles = allImageFiles.length > 0;
+  const selectedImageFile = allImageFiles[selectedImageIndex] || null;
 
   // Group files by category
   const groupedFiles = files.reduce(
@@ -341,6 +374,64 @@ export function FileList({
           );
         })}
       </div>
+
+      {/* Inline 3D Preview */}
+      {selected3DFile && showInline3DPreview && (
+        <Inline3DPreviewFromUrl
+          selectedFile={selected3DFile}
+          allFiles={all3DFiles}
+          selectedIndex={selected3DIndex}
+          onIndexChange={setSelected3DIndex}
+          onClose={() => setShowInline3DPreview(false)}
+        />
+      )}
+
+      {/* Show 3D Preview Button (if hidden) */}
+      {has3DFiles && !showInline3DPreview && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setShowInline3DPreview(true)}
+          className="w-full"
+        >
+          <Icons.eye className="h-4 w-4 mr-2" />
+          Mostrar Vista Previa 3D
+          {all3DFiles.length > 1 && (
+            <span className="ml-2 text-xs text-muted-foreground">({all3DFiles.length} archivos)</span>
+          )}
+        </Button>
+      )}
+
+      {/* Inline Image Preview */}
+      {selectedImageFile && showInlineImagePreview && (
+        <InlineImagePreviewFromUrl
+          selectedFile={selectedImageFile}
+          allFiles={allImageFiles}
+          selectedIndex={selectedImageIndex}
+          onIndexChange={setSelectedImageIndex}
+          onClose={() => setShowInlineImagePreview(false)}
+        />
+      )}
+
+      {/* Show Image Preview Button (if hidden) */}
+      {hasImageFiles && !showInlineImagePreview && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => setShowInlineImagePreview(true)}
+          className="w-full"
+        >
+          <Icons.eye className="h-4 w-4 mr-2" />
+          Mostrar Vista Previa de Fotografías
+          {allImageFiles.length > 1 && (
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({allImageFiles.length} fotografías)
+            </span>
+          )}
+        </Button>
+      )}
 
       {/* Preview Modal */}
       {previewFile && <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}

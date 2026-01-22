@@ -193,7 +193,6 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <h2 className="mb-4 text-xl font-semibold text-foreground">Información de la Orden</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Nombre del Paciente" value={order.patientName} />
-              <CopyableField label="ID del Paciente" value={order.patientId} />
               <CopyableField label="Fecha de Creación" value={formatDate(order.createdAt, true)} />
               <CopyableField
                 label="Última Actualización"
@@ -242,7 +241,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                     {tooth.material && (
                       <div>
                         <dt className="text-sm font-medium text-muted-foreground">Material</dt>
-                        <dd className="text-sm text-foreground">{tooth.material}</dd>
+                        <dd className="text-sm text-foreground flex items-center">
+                          {tooth.material}
+                          <CopyButton value={tooth.material} label="material" />
+                        </dd>
                       </div>
                     )}
                     {tooth.materialBrand && (
@@ -250,7 +252,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         <dt className="text-sm font-medium text-muted-foreground">
                           Marca del Material
                         </dt>
-                        <dd className="text-sm text-foreground">{tooth.materialBrand}</dd>
+                        <dd className="text-sm text-foreground flex items-center">
+                          {tooth.materialBrand}
+                          <CopyButton value={tooth.materialBrand} label="marca del material" />
+                        </dd>
                       </div>
                     )}
                     {tooth.tipoTrabajo && (
@@ -258,7 +263,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         <dt className="text-sm font-medium text-muted-foreground">
                           Tipo de Trabajo
                         </dt>
-                        <dd className="text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
+                        <dd className="text-sm text-foreground capitalize flex items-center">
+                          {tooth.tipoTrabajo}
+                          <CopyButton value={tooth.tipoTrabajo} label="tipo de trabajo" />
+                        </dd>
                       </div>
                     )}
                     {tooth.tipoRestauracion && (
@@ -266,8 +274,9 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         <dt className="text-sm font-medium text-muted-foreground">
                           Tipo de Restauración
                         </dt>
-                        <dd className="text-sm text-foreground capitalize">
+                        <dd className="text-sm text-foreground capitalize flex items-center">
                           {tooth.tipoRestauracion}
+                          <CopyButton value={tooth.tipoRestauracion} label="tipo de restauración" />
                         </dd>
                       </div>
                     )}
@@ -276,7 +285,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         <dt className="text-sm font-medium text-muted-foreground">
                           Trabajo sobre Implante
                         </dt>
-                        <dd className="text-sm text-foreground">Sí</dd>
+                        <dd className="text-sm text-foreground flex items-center">
+                          Sí
+                          <CopyButton value="Sí" label="trabajo sobre implante" />
+                        </dd>
                       </div>
                     )}
                     {tooth.colorInfo && (
@@ -285,14 +297,18 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                           Información de Color
                         </dt>
                         <dd className="text-sm text-foreground">
-                          {(tooth.colorInfo as any).shadeType && (
-                            <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>
-                          )}
-                          {(tooth.colorInfo as any).shadeCode && (
-                            <span className="ml-2">
-                              Código: {(tooth.colorInfo as any).shadeCode}
-                            </span>
-                          )}
+                          <div className="flex items-center flex-wrap gap-2">
+                            {(tooth.colorInfo as any).shadeType && (
+                              <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>
+                            )}
+                            {(tooth.colorInfo as any).shadeCode && (
+                              <span>Código: {(tooth.colorInfo as any).shadeCode}</span>
+                            )}
+                            <CopyButton
+                              value={`${(tooth.colorInfo as any).shadeType || ''} ${(tooth.colorInfo as any).shadeCode || ''}`.trim()}
+                              label="información de color"
+                            />
+                          </div>
                         </dd>
                       </div>
                     )}
@@ -303,12 +319,22 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         </dt>
                         <dd className="text-sm text-foreground space-y-1">
                           {(tooth.informacionImplante as any).marcaImplante && (
-                            <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
+                            <div className="flex items-center">
+                              Marca: {(tooth.informacionImplante as any).marcaImplante}
+                              <CopyButton
+                                value={(tooth.informacionImplante as any).marcaImplante}
+                                label="marca de implante"
+                              />
+                            </div>
                           )}
                           {(tooth.informacionImplante as any).sistemaConexion && (
-                            <div>
+                            <div className="flex items-center">
                               Sistema de Conexión:{' '}
                               {(tooth.informacionImplante as any).sistemaConexion}
+                              <CopyButton
+                                value={(tooth.informacionImplante as any).sistemaConexion}
+                                label="sistema de conexión"
+                              />
                             </div>
                           )}
                         </dd>
