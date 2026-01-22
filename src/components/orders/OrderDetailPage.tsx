@@ -88,8 +88,9 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
               <div>
                 <h3 className="font-semibold text-primary mb-1">Orden Creada Exitosamente</h3>
                 <p className="text-sm text-primary/90">
-                  Ahora puedes añadir archivos (STL/PLY, fotografías) usando el botón "Añadir Archivos" a continuación.
-                  Cuando termines de subir los archivos, haz clic en "Enviar para Revisión" para enviar la orden al laboratorio.
+                  Ahora puedes añadir archivos (STL/PLY, fotografías) usando el botón "Añadir
+                  Archivos" a continuación. Cuando termines de subir los archivos, haz clic en
+                  "Enviar para Revisión" para enviar la orden al laboratorio.
                 </p>
               </div>
             </div>
@@ -130,7 +131,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             Imprimir Guía de Envío
           </Button>
           <p className="text-sm text-muted-foreground mt-2">
-            Imprime esta guía y pégala en tu caja para facilitar la recolección y entrega.
+            Imprime esta guía y coloque en tu caja para facilitar la recolección y entrega.
           </p>
         </div>
 

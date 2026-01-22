@@ -15,7 +15,7 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
         <div className="flex items-center gap-2">
           <img src="/ftd_logo.svg" alt="Logo" className="h-6 w-auto" />
           <div className="border-l-2 border-gray-400 pl-2">
-            <h1 className="text-xl font-bold text-black">GUÍA DE ENVÍO</h1>
+            <h1 className="text-xl font-bold text-black">CONTROL DE ENVÍO</h1>
           </div>
         </div>
         <div className="text-right flex-1 ml-4">
@@ -36,15 +36,9 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
               {order.clinic && (
                 <>
                   <p className="font-bold text-lg">{order.clinic.name}</p>
-                  {order.clinic.address && (
-                    <p className="text-sm">{order.clinic.address}</p>
-                  )}
-                  {order.clinic.phone && (
-                    <p className="text-sm">Tel: {order.clinic.phone}</p>
-                  )}
-                  {order.clinic.email && (
-                    <p className="text-sm">Email: {order.clinic.email}</p>
-                  )}
+                  {order.clinic.address && <p className="text-sm">{order.clinic.address}</p>}
+                  {order.clinic.phone && <p className="text-sm">Tel: {order.clinic.phone}</p>}
+                  {order.clinic.email && <p className="text-sm">Email: {order.clinic.email}</p>}
                 </>
               )}
               {order.doctor && (
@@ -60,7 +54,7 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
           </div>
 
           {/* To - Laboratory */}
-          <div className="border-2 border-gray-700 p-3 bg-[#FFF9E6] rounded-lg shadow-sm">
+          <div className="border-2 border-gray-700 p-3 bg-gray-100 rounded-lg shadow-sm">
             <div className="bg-[#D40511] text-white px-3 py-1 mb-3 inline-block font-bold rounded">
               PARA
             </div>
@@ -123,9 +117,7 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
             </div>
             {order.fechaEntregaDeseada && (
               <div className="col-span-2">
-                <p className="text-xs text-gray-600 font-semibold">
-                  Fecha de Entrega Deseada:
-                </p>
+                <p className="text-xs text-gray-600 font-semibold">Fecha de Entrega Deseada:</p>
                 <p className="font-semibold text-[#D40511]">
                   {formatDate(order.fechaEntregaDeseada, false)}
                 </p>
