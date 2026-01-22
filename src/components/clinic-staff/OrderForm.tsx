@@ -101,6 +101,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     currentProgress: 0,
   });
 
+  // Pre-submission validation state (shown when user tries to submit)
+  const [preSubmitErrors, setPreSubmitErrors] = useState<{
+    patientName?: string;
+    teeth?: string;
+    teethIncomplete?: string[];
+    digitalScanFiles?: string;
+  }>({});
+
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
     if (role === 'doctor') {
@@ -336,9 +344,56 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     await handleSaveOrder(false);
   };
 
+  // Compute pre-submission validation errors
+  const computePreSubmitValidation = useCallback(() => {
+    const errors: typeof preSubmitErrors = {};
+    const teethArray = Array.from(teethData.values());
+
+    if (!formData.patientName || formData.patientName.trim() === '') {
+      errors.patientName = 'El nombre del paciente es requerido';
+    }
+
+    // Validate teeth selection
+    if (teethArray.length === 0) {
+      errors.teeth = 'Al menos un diente debe ser configurado';
+    } else {
+      // Check if any teeth are missing required fields
+      const incompleteTeeth: string[] = [];
+      for (const tooth of teethArray) {
+        const missingFields: string[] = [];
+        if (!tooth.material) missingFields.push('material');
+        if (!tooth.tipoTrabajo) missingFields.push('tipo de trabajo');
+        if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
+
+        if (missingFields.length > 0) {
+          incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
+        }
+      }
+      if (incompleteTeeth.length > 0) {
+        errors.teethIncomplete = incompleteTeeth;
+      }
+    }
+
+    // Validate digital scan files - require upper AND lower when scan type is DIGITAL_SCAN
+    if (formData.scanType === 'DIGITAL_SCAN') {
+      const missingFiles: string[] = [];
+      if (upperFiles.length === 0) missingFiles.push('arcada superior');
+      if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
+
+      if (missingFiles.length > 0) {
+        errors.digitalScanFiles = `Escaneo digital requiere archivos STL/PLY de: ${missingFiles.join(' y ')}`;
+      }
+    }
+
+    return errors;
+  }, [formData.patientName, formData.scanType, teethData, upperFiles, lowerFiles]);
+
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Show review modal instead of immediately submitting
+    // Compute and set validation errors before showing modal
+    const errors = computePreSubmitValidation();
+    setPreSubmitErrors(errors);
+    // Show review modal
     setShowReviewModal(true);
   };
 
@@ -351,6 +406,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const handleSaveAsDraft = async () => {
     // Called when user clicks "Save as Draft" in the review modal
+    // Clear pre-submit errors when saving as draft
+    setPreSubmitErrors({});
     await handleSaveOrder(false, false); // false = don't submit, false = redirect to list
     setShowReviewModal(false);
   };
@@ -359,6 +416,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     setError(null);
     setValidationErrors(new Map());
     setShowErrorSummary(false);
+    // Clear pre-submit errors when attempting to save
+    if (!submitForReview) {
+      setPreSubmitErrors({});
+    }
 
     // Set appropriate loading state
     if (submitForReview) {
@@ -681,8 +742,50 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const isEditingNeedsInfo = orderId && initialData?.status === 'NEEDS_INFO';
   const canSubmit = !orderId || isEditingDraft || isEditingNeedsInfo;
 
+  const hasPreSubmitErrors = Object.keys(preSubmitErrors).length > 0;
+
   return (
     <form onSubmit={handleSaveDraft} className="space-y-4 sm:space-y-6">
+      {/* Pre-submission Validation Errors (shown when review modal was opened with issues) */}
+      {hasPreSubmitErrors && !showReviewModal && (
+        <div className="rounded-lg bg-danger/10 border border-danger/30 p-4">
+          <div className="flex items-start gap-3">
+            <Icons.alertCircle className="h-5 w-5 text-danger shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-danger">Información Requerida para Enviar</h3>
+                <button
+                  type="button"
+                  onClick={() => setPreSubmitErrors({})}
+                  className="text-danger/60 hover:text-danger transition-colors"
+                  aria-label="Cerrar"
+                >
+                  <Icons.x className="h-4 w-4" />
+                </button>
+              </div>
+              <p className="text-sm text-danger/80 mt-1 mb-2">
+                Completa los siguientes campos antes de enviar la orden para revisión:
+              </p>
+              <ul className="text-sm text-danger/80 space-y-1">
+                {preSubmitErrors.patientName && <li>• {preSubmitErrors.patientName}</li>}
+                {preSubmitErrors.teeth && <li>• {preSubmitErrors.teeth}</li>}
+                {preSubmitErrors.teethIncomplete && preSubmitErrors.teethIncomplete.length > 0 && (
+                  <li>
+                    • Dientes con información incompleta:
+                    <ul className="ml-4 mt-1 space-y-0.5">
+                      {preSubmitErrors.teethIncomplete.map((error, idx) => (
+                        <li key={idx} className="text-xs">- {error}</li>
+                      ))}
+                    </ul>
+                  </li>
+                )}
+                {preSubmitErrors.digitalScanFiles && <li>• {preSubmitErrors.digitalScanFiles}</li>}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Validation Error Summary */}
       {showErrorSummary && validationErrors.size > 0 && (
         <ValidationErrorSummary

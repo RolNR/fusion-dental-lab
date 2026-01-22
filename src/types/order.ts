@@ -351,7 +351,7 @@ const toothSubmitSchema = z.object({
 
 // Schema for submitting orders for review (stricter validation on teeth)
 export const orderSubmitSchema = orderCreateSchema.extend({
-  teeth: z.array(toothSubmitSchema).optional(),
+  teeth: z.array(toothSubmitSchema).min(1, 'Al menos un diente debe ser configurado'),
 });
 
 // Schema for assistants creating draft orders (includes doctorId, patientName optional)
