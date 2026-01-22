@@ -13,7 +13,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "create-lab-admin": "tsx scripts/create-lab-admin.ts"
+    "create-lab-admin": "tsx scripts/create-lab-admin.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
@@ -46,6 +47,7 @@
     "eslint-config-next": "16.0.10",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4",

@@ -6,6 +6,11 @@ import { ToothData } from '@/types/tooth';
 import { copyToothData } from './orderFormUtils';
 import { ValidationErrorDetail } from '@/types/validation';
 import { Icons } from '@/components/ui/Icons';
+import { WorkTypeSection } from './WorkTypeSection';
+import { MaterialAndColorSection } from './MaterialAndColorSection';
+import { ImplantSection } from './ImplantSection';
+import { WorkType, RestorationType } from '@prisma/client';
+import { ColorInfo, ImplantInfo } from '@/types/order';
 
 interface ToothConfigurationSectionProps {
   teethNumbers: string[];
@@ -16,6 +21,7 @@ interface ToothConfigurationSectionProps {
   onTeethDataChange: (updater: (prev: Map<string, ToothData>) => Map<string, ToothData>) => void;
   teethWithErrors?: Set<string>;
   validationErrors?: Map<string, ValidationErrorDetail[]>;
+  disabled?: boolean;
 }
 
 export function ToothConfigurationSection({
@@ -27,7 +33,11 @@ export function ToothConfigurationSection({
   onTeethDataChange,
   teethWithErrors = new Set(),
   validationErrors = new Map(),
+  disabled = false,
 }: ToothConfigurationSectionProps) {
+  // Get current tooth data
+  const currentToothData = selectedTooth ? teethData.get(selectedTooth) : undefined;
+
   // Determine which teeth have data configured
   const teethWithData = new Set(
     Array.from(teethData.entries())
@@ -47,10 +57,42 @@ export function ToothConfigurationSection({
     });
   }
 
+  // Helper to update tooth data
+  const updateToothData = (updates: Partial<ToothData>) => {
+    if (!selectedTooth) return;
+    onTeethDataChange((prev) => {
+      const updated = new Map(prev);
+      const currentData = updated.get(selectedTooth) || { toothNumber: selectedTooth };
+      updated.set(selectedTooth, { ...currentData, ...updates });
+      return updated;
+    });
+  };
+
+  // Handler for work type changes
+  const handleWorkTypeChange = (updates: { tipoTrabajo?: WorkType; tipoRestauracion?: RestorationType }) => {
+    updateToothData(updates);
+  };
+
+  // Handler for material changes
+  const handleMaterialChange = (field: 'material' | 'materialBrand', value: string) => {
+    updateToothData({ [field]: value });
+  };
+
+  // Handler for color info changes
+  const handleColorInfoChange = (value: ColorInfo | undefined) => {
+    updateToothData({ colorInfo: value });
+  };
+
+  // Handler for implant changes
+  const handleImplantChange = (updates: { trabajoSobreImplante?: boolean; informacionImplante?: ImplantInfo }) => {
+    updateToothData(updates);
+  };
+
   return (
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-foreground">Odontograma</h2>
+        <h2 className="text-xl font-bold text-foreground">Configuración por Diente</h2>
         {selectedTooth && (
           <ToothActions
             sourceTooth={selectedTooth}
@@ -64,6 +106,8 @@ export function ToothConfigurationSection({
           />
         )}
       </div>
+
+      {/* Odontogram */}
       <Odontogram
         selectedTeeth={teethNumbers}
         currentTooth={selectedTooth}
@@ -91,6 +135,45 @@ export function ToothConfigurationSection({
               </ul>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Per-tooth configuration sections - shown when a tooth is selected */}
+      {selectedTooth && (
+        <div className="mt-6 space-y-4 border-t border-border pt-6">
+          {/* Selected tooth indicator */}
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+              {selectedTooth}
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">
+              Configuración del Diente {selectedTooth}
+            </h3>
+          </div>
+
+          {/* Work Type Section */}
+          <WorkTypeSection
+            tipoTrabajo={currentToothData?.tipoTrabajo ?? undefined}
+            tipoRestauracion={currentToothData?.tipoRestauracion ?? undefined}
+            onChange={handleWorkTypeChange}
+          />
+
+          {/* Material and Color Section */}
+          <MaterialAndColorSection
+            material={currentToothData?.material ?? ''}
+            materialBrand={currentToothData?.materialBrand ?? ''}
+            colorInfo={currentToothData?.colorInfo ?? undefined}
+            onMaterialChange={handleMaterialChange}
+            onColorInfoChange={handleColorInfoChange}
+            disabled={disabled}
+          />
+
+          {/* Implant Section */}
+          <ImplantSection
+            trabajoSobreImplante={currentToothData?.trabajoSobreImplante}
+            informacionImplante={currentToothData?.informacionImplante ?? undefined}
+            onChange={handleImplantChange}
+          />
         </div>
       )}
     </div>

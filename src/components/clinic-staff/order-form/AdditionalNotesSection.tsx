@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import { Textarea } from '@/components/ui/Textarea';
-import { SectionContainer, SectionHeader } from '@/components/ui/form';
+import { CollapsibleSubsection } from '@/components/ui/form';
 
 type AdditionalNotesSectionProps = {
   additionalNotes: string;
@@ -13,39 +13,13 @@ type AdditionalNotesSectionProps = {
   disabled?: boolean;
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const AdditionalNotesSection = forwardRef<HTMLDivElement, AdditionalNotesSectionProps>(
-  (
-    {
-      additionalNotes,
-      onChange,
-      errors,
-      disabled = false,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
-    },
-    ref
-  ) => {
+  ({ additionalNotes, onChange, errors, disabled = false }, ref) => {
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="fileText"
-          title="Notas Adicionales"
-          description="Información extra que es relevante para el caso"
-        />
-
-        <div className="p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="fileText" title="Notas Adicionales">
           <Textarea
             id="notes"
             value={additionalNotes}
@@ -55,8 +29,8 @@ export const AdditionalNotesSection = forwardRef<HTMLDivElement, AdditionalNotes
             placeholder="Agrega cualquier instrucción o detalle adicional que deba considerarse para este caso."
             error={errors?.additionalNotes}
           />
-        </div>
-      </SectionContainer>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );

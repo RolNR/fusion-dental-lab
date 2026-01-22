@@ -5,8 +5,7 @@ import { ScanType, ScannerType, SiliconType } from '@prisma/client';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
-import { getScanTypeOptions } from '@/lib/scanTypeUtils';
+import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
 import { FilePickerSection } from './FilePickerSection';
 import { ALLOWED_SCAN_TYPES, MAX_FILES_PER_CATEGORY, MAX_FILE_SIZE_MB } from '@/types/file';
 
@@ -33,8 +32,6 @@ type ImpressionExtendedSectionProps = {
   disabled?: boolean;
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionExtendedSectionProps>(
@@ -54,10 +51,6 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
       onChange,
       errors,
       disabled = false,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
     },
     ref
   ) => {
@@ -87,20 +80,9 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
     ];
 
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="settings"
-          title="Detalles de Impresión"
-          description="Método de captura y especificaciones técnicas"
-        />
-
-        <div className="space-y-6 p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="settings" title="Detalles de Impresión">
+          <div className="space-y-6">
           {/* Scan Type Selector */}
           <div>
             <FieldLabel label="Tipo de Escaneo" />
@@ -235,8 +217,9 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
               />
             </div>
           )}
-        </div>
-      </SectionContainer>
+          </div>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );

@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import { SubmissionType, ArticulatedBy } from '@prisma/client';
-import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type SubmissionTypeSectionProps = {
   submissionType?: SubmissionType;
@@ -14,24 +14,10 @@ type SubmissionTypeSectionProps = {
   };
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSectionProps>(
-  (
-    {
-      submissionType,
-      articulatedBy,
-      onChange,
-      errors,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
-    },
-    ref
-  ) => {
+  ({ submissionType, articulatedBy, onChange, errors }, ref) => {
     const submissionTypes = [
       {
         value: 'prueba_estructura',
@@ -69,21 +55,9 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
     ];
 
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="upload"
-          title="Tipo de Entrega y Articulación"
-          description="Especifica cómo se entregará el trabajo"
-          required
-        />
-
-        <div className="space-y-6 p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="upload" title="Tipo de Entrega y Articulación">
+          <div className="space-y-6">
           {/* Submission Type */}
           <div>
             <FieldLabel label="Tipo de Entrega" required />
@@ -127,8 +101,9 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
               <p className="mt-2 text-sm text-danger font-medium">{errors.articulatedBy}</p>
             )}
           </div>
-        </div>
-      </SectionContainer>
+          </div>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );

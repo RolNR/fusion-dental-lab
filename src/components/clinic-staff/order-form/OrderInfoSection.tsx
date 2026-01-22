@@ -2,7 +2,7 @@
 
 import { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
-import { SectionContainer, SectionHeader } from '@/components/ui/form';
+import { CollapsibleSubsection } from '@/components/ui/form';
 
 type OrderInfoSectionProps = {
   patientName: string;
@@ -15,8 +15,6 @@ type OrderInfoSectionProps = {
   disabled?: boolean;
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const OrderInfoSection = forwardRef<HTMLDivElement, OrderInfoSectionProps>(
@@ -27,29 +25,13 @@ export const OrderInfoSection = forwardRef<HTMLDivElement, OrderInfoSectionProps
       onChange,
       errors,
       disabled = false,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
     },
     ref
   ) => {
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="user"
-          title="Información de la Orden"
-          description="Datos básicos del paciente y entrega"
-          required
-        />
-
-        <div className="space-y-4 p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="user" title="Información de la Orden">
+          <div className="space-y-4">
           <Input
             label="Nombre del Paciente"
             type="text"
@@ -70,8 +52,9 @@ export const OrderInfoSection = forwardRef<HTMLDivElement, OrderInfoSectionProps
             helperText="Fecha en que necesitas el trabajo completado"
             error={errors?.fechaEntregaDeseada}
           />
-        </div>
-      </SectionContainer>
+          </div>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );

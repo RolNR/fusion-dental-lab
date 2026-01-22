@@ -1,12 +1,11 @@
 'use client';
 
-import { forwardRef } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Range } from '@/components/ui/Range';
 import { ColorInfo, SHADE_SYSTEMS } from '@/types/order';
-import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type MaterialAndColorSectionProps = {
   material: string;
@@ -24,29 +23,17 @@ type MaterialAndColorSectionProps = {
     translucencyDescription?: string;
   };
   disabled?: boolean;
-  hasErrors?: boolean;
-  errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export const MaterialAndColorSection = forwardRef<HTMLDivElement, MaterialAndColorSectionProps>(
-  (
-    {
-      material,
-      materialBrand,
-      colorInfo,
-      onMaterialChange,
-      onColorInfoChange,
-      errors,
-      disabled = false,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
-    },
-    ref
-  ) => {
+export function MaterialAndColorSection({
+  material,
+  materialBrand,
+  colorInfo,
+  onMaterialChange,
+  onColorInfoChange,
+  errors,
+  disabled = false,
+}: MaterialAndColorSectionProps) {
     const handleColorFieldChange = <K extends keyof ColorInfo>(field: K, value: ColorInfo[K]) => {
       const updated = {
         shadeType: colorInfo?.shadeType ?? null,
@@ -73,21 +60,9 @@ export const MaterialAndColorSection = forwardRef<HTMLDivElement, MaterialAndCol
       });
     };
 
-    return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="layers"
-          title="Material y Color"
-          description="Especificaciones del material y tonalidad"
-        />
-
-        <div className="space-y-6 p-6">
+  return (
+    <CollapsibleSubsection icon="layers" title="Material y Color">
+      <div className="space-y-6">
           {/* Material Fields */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Input
@@ -188,10 +163,7 @@ export const MaterialAndColorSection = forwardRef<HTMLDivElement, MaterialAndCol
               error={errors?.translucencyDescription}
             />
           </div>
-        </div>
-      </SectionContainer>
-    );
-  }
-);
-
-MaterialAndColorSection.displayName = 'MaterialAndColorSection';
+      </div>
+    </CollapsibleSubsection>
+  );
+}

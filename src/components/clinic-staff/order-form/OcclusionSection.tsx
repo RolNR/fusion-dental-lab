@@ -3,7 +3,7 @@
 import { forwardRef } from 'react';
 import { Select } from '@/components/ui/Select';
 import { OcclusionInfo } from '@/types/order';
-import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type OcclusionSectionProps = {
   oclusionDiseno?: OcclusionInfo;
@@ -15,15 +15,10 @@ type OcclusionSectionProps = {
   };
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps>(
-  (
-    { oclusionDiseno, onChange, errors, hasErrors, errorCount, collapsed, onCollapseChange },
-    ref
-  ) => {
+  ({ oclusionDiseno, onChange, errors }, ref) => {
     const handleFieldChange = (field: keyof OcclusionInfo, value: unknown) => {
       const updated = {
         ...oclusionDiseno,
@@ -61,21 +56,9 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
     ];
 
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="layers"
-          title="Oclusión y Diseño"
-          description="Relación de mordida y diseño funcional"
-          required
-        />
-
-        <div className="space-y-6 p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="layers" title="Oclusión y Diseño">
+          <div className="space-y-6">
           {/* Occlusion Type */}
           <div>
             <FieldLabel icon="layers" label="Tipo de Oclusión" required />
@@ -151,8 +134,9 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
               </div>
             </div>
           )}
-        </div>
-      </SectionContainer>
+          </div>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );

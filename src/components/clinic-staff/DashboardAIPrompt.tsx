@@ -185,7 +185,7 @@ export function DashboardAIPrompt({ role }: DashboardAIPromptProps) {
         onShowFullForm={() => router.push(`/${role}/orders/new`)}
         heading="Crea tu próxima orden con IA"
         description="Describe la orden en lenguaje natural. La IA procesará la información y te mostrará una vista previa para confirmar."
-        showManualButton={false}
+        showManualButton={true}
       />
     </div>
   );

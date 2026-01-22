@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
-import { SectionContainer, SectionHeader } from '@/components/ui/form';
+import { CollapsibleSubsection } from '@/components/ui/form';
 
 type MaterialSentSectionProps = {
   materialSent?: Record<string, boolean>;
@@ -328,14 +328,8 @@ export function MaterialSentSection({
   const totalSelected = selectedLabels.length;
 
   return (
-    <SectionContainer>
-      <SectionHeader
-        icon="upload"
-        title="Materiales Enviados"
-        description="Selecciona los materiales que se enviarán al laboratorio"
-      />
-
-      <div className="space-y-6 p-6">
+    <CollapsibleSubsection icon="upload" title="Materiales Enviados">
+      <div className="space-y-6">
         {/* Category chips */}
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((category) => (
@@ -395,6 +389,6 @@ export function MaterialSentSection({
           <p className="text-sm text-danger font-medium">{errors.materialSent}</p>
         )}
       </div>
-    </SectionContainer>
+    </CollapsibleSubsection>
   );
 }

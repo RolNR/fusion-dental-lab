@@ -1,11 +1,10 @@
 'use client';
 
-import { forwardRef } from 'react';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { ImplantInfo } from '@/types/order';
-import { SectionContainer, SectionHeader } from '@/components/ui/form';
+import { CollapsibleSubsection } from '@/components/ui/form';
 
 type ImplantSectionProps = {
   trabajoSobreImplante?: boolean;
@@ -24,26 +23,14 @@ type ImplantSectionProps = {
     perfilEmergencia?: string;
     condicionTejidoBlando?: string;
   };
-  hasErrors?: boolean;
-  errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
-export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
-  (
-    {
-      trabajoSobreImplante,
-      informacionImplante,
-      onChange,
-      errors,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
-    },
-    ref
-  ) => {
+export function ImplantSection({
+  trabajoSobreImplante,
+  informacionImplante,
+  onChange,
+  errors,
+}: ImplantSectionProps) {
     const handleToggle = (checked: boolean) => {
       if (checked) {
         onChange({ trabajoSobreImplante: true });
@@ -74,21 +61,9 @@ export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
       onChange({ informacionImplante: updated });
     };
 
-    return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="settings"
-          title="Información de Implantes"
-          description="Especifica si el trabajo es sobre implante"
-        />
-
-        <div className="space-y-6 p-6">
+  return (
+    <CollapsibleSubsection icon="settings" title="Información de Implantes">
+      <div className="space-y-6">
           <div className="rounded-lg border border-border bg-muted/30 p-4">
             <Checkbox
               label="¿Es un trabajo sobre implante?"
@@ -230,10 +205,7 @@ export const ImplantSection = forwardRef<HTMLDivElement, ImplantSectionProps>(
               </div>
             </div>
           )}
-        </div>
-      </SectionContainer>
-    );
-  }
-);
-
-ImplantSection.displayName = 'ImplantSection';
+      </div>
+    </CollapsibleSubsection>
+  );
+}

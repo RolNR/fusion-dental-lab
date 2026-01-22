@@ -12,16 +12,12 @@ import { Doctor } from '@/types/user';
 import type { SpeechRecognition } from '@/types/speech-recognition';
 import { loadDashboardAIData } from '@/lib/dashboardAIDataLoader';
 import { OrderInfoSection } from './order-form/OrderInfoSection';
-import { DescriptionSection } from './order-form/DescriptionSection';
 import { MouthPhotosSection } from './order-form/MouthPhotosSection';
-import { MaterialAndColorSection } from './order-form/MaterialAndColorSection';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
-import { WorkTypeSection } from './order-form/WorkTypeSection';
 import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
 import { OcclusionSection } from './order-form/OcclusionSection';
 import { MaterialSentSection } from './order-form/MaterialSentSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
-import { ImplantSection } from './order-form/ImplantSection';
 import { OrderFormProps, OrderFormState } from './order-form/OrderForm.types';
 import {
   fetchCurrentDoctor,
@@ -853,25 +849,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         onShowFullForm={() => setShowFullForm(true)}
       />
 
-      {/* Urgent Order Checkbox */}
-      <div className="rounded-lg border border-warning/30 bg-warning/5 p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <Checkbox
-              id="isUrgent"
-              label="Orden Urgente"
-              checked={formData.isUrgent || false}
-              onChange={(e) => setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))}
-              disabled={isLoading}
-            />
-            <p className="text-sm text-warning/80 mt-2 ml-6">
-              Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Show full form only after AI processing or when editing */}
       {showFullForm && (
         <>
@@ -897,17 +874,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('caseType').errorCount}
           />
 
-          {/* Description Section */}
-          <DescriptionSection
-            ref={(el) => registerSectionRef('notes', el)}
-            description={formData.description}
-            onChange={(value) => setFormData((prev) => ({ ...prev, description: value }))}
-            disabled={isLoading}
-            hasErrors={getSectionErrorInfo('notes').hasErrors}
-            errorCount={getSectionErrorInfo('notes').errorCount}
-          />
-
-          {/* Tooth Configuration Section (Odontogram) */}
+          {/* Tooth Configuration Section (Odontogram + per-tooth config) */}
           <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
             <ToothConfigurationSection
               teethNumbers={teethNumbers}
@@ -918,100 +885,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               onTeethDataChange={setTeethData}
               teethWithErrors={teethWithErrors}
               validationErrors={validationErrors}
+              disabled={isLoading}
             />
           </div>
-
-          {/* Work Type Section - Per-tooth configuration */}
-          {selectedToothNumber && (
-            <WorkTypeSection
-              ref={(el) => registerSectionRef('workType', el)}
-              tipoTrabajo={teethData.get(selectedToothNumber)?.tipoTrabajo ?? undefined}
-              tipoRestauracion={teethData.get(selectedToothNumber)?.tipoRestauracion ?? undefined}
-              onChange={(updates) => {
-                setTeethData((prev) => {
-                  const updated = new Map(prev);
-                  const currentData = updated.get(selectedToothNumber) || {
-                    toothNumber: selectedToothNumber,
-                  };
-                  updated.set(selectedToothNumber, { ...currentData, ...updates });
-                  return updated;
-                });
-              }}
-              hasErrors={getSectionErrorInfo('workType').hasErrors}
-              errorCount={getSectionErrorInfo('workType').errorCount}
-            />
-          )}
-
-          {/* Material and Color Section - Per-tooth configuration */}
-          {selectedToothNumber && (
-            <MaterialAndColorSection
-              ref={(el) => registerSectionRef('material', el)}
-              material={teethData.get(selectedToothNumber)?.material ?? ''}
-              materialBrand={teethData.get(selectedToothNumber)?.materialBrand ?? ''}
-              colorInfo={teethData.get(selectedToothNumber)?.colorInfo ?? undefined}
-              onMaterialChange={(field, value) => {
-                setTeethData((prev) => {
-                  const updated = new Map(prev);
-                  const currentData = updated.get(selectedToothNumber) || {
-                    toothNumber: selectedToothNumber,
-                  };
-                  updated.set(selectedToothNumber, { ...currentData, [field]: value });
-                  return updated;
-                });
-              }}
-              onColorInfoChange={(value) => {
-                setTeethData((prev) => {
-                  const updated = new Map(prev);
-                  const currentData = updated.get(selectedToothNumber) || {
-                    toothNumber: selectedToothNumber,
-                  };
-                  updated.set(selectedToothNumber, { ...currentData, colorInfo: value });
-                  return updated;
-                });
-              }}
-              disabled={isLoading}
-              hasErrors={getSectionErrorInfo('material').hasErrors}
-              errorCount={getSectionErrorInfo('material').errorCount}
-            />
-          )}
-
-          {/* Implant Section - Per-tooth configuration */}
-          {selectedToothNumber && (
-            <ImplantSection
-              ref={(el) => registerSectionRef('implant', el)}
-              trabajoSobreImplante={teethData.get(selectedToothNumber)?.trabajoSobreImplante}
-              informacionImplante={
-                teethData.get(selectedToothNumber)?.informacionImplante ?? undefined
-              }
-              onChange={(updates) => {
-                setTeethData((prev) => {
-                  const updated = new Map(prev);
-                  const currentData = updated.get(selectedToothNumber) || {
-                    toothNumber: selectedToothNumber,
-                  };
-                  updated.set(selectedToothNumber, { ...currentData, ...updates });
-                  return updated;
-                });
-              }}
-              hasErrors={getSectionErrorInfo('implant').hasErrors}
-              errorCount={getSectionErrorInfo('implant').errorCount}
-            />
-          )}
-
-          {/* Occlusion Section */}
-          <OcclusionSection
-            ref={(el) => registerSectionRef('occlusion', el)}
-            oclusionDiseno={formData.oclusionDiseno}
-            onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
-            hasErrors={getSectionErrorInfo('occlusion').hasErrors}
-            errorCount={getSectionErrorInfo('occlusion').errorCount}
-          />
-
-          {/* Material Sent Section */}
-          <MaterialSentSection
-            materialSent={formData.materialSent}
-            onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
-          />
 
           {/* Impression Extended Section */}
           <ImpressionExtendedSection
@@ -1031,6 +907,21 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             disabled={isLoading}
             hasErrors={getSectionErrorInfo('impression').hasErrors}
             errorCount={getSectionErrorInfo('impression').errorCount}
+          />
+
+          {/* Occlusion Section */}
+          <OcclusionSection
+            ref={(el) => registerSectionRef('occlusion', el)}
+            oclusionDiseno={formData.oclusionDiseno}
+            onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
+            hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+            errorCount={getSectionErrorInfo('occlusion').errorCount}
+          />
+
+          {/* Material Sent Section */}
+          <MaterialSentSection
+            materialSent={formData.materialSent}
+            onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
           />
 
           {/* Mouth Photos Section - Optional */}
@@ -1056,6 +947,25 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             hasErrors={getSectionErrorInfo('notes').hasErrors}
             errorCount={getSectionErrorInfo('notes').errorCount}
           />
+
+          {/* Urgent Order Checkbox */}
+          <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
+            <div className="flex items-start gap-3">
+              <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <Checkbox
+                  id="isUrgent"
+                  label="Orden Urgente"
+                  checked={formData.isUrgent || false}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))}
+                  disabled={isLoading}
+                />
+                <p className="text-sm text-warning/80 mt-2 ml-6">
+                  Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Button

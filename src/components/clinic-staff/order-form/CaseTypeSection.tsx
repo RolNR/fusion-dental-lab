@@ -3,7 +3,7 @@
 import { forwardRef } from 'react';
 import { CaseType } from '@prisma/client';
 import { Textarea } from '@/components/ui/Textarea';
-import { SectionContainer, SectionHeader, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
 
 type CaseTypeSectionProps = {
   tipoCaso?: CaseType;
@@ -21,8 +21,6 @@ type CaseTypeSectionProps = {
   };
   hasErrors?: boolean;
   errorCount?: number;
-  collapsed?: boolean;
-  onCollapseChange?: (collapsed: boolean) => void;
 };
 
 export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
@@ -33,10 +31,6 @@ export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
       seDevuelveTrabajoOriginal,
       onChange,
       errors,
-      hasErrors,
-      errorCount,
-      collapsed,
-      onCollapseChange,
     },
     ref
   ) => {
@@ -69,21 +63,9 @@ export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
     ];
 
     return (
-      <SectionContainer
-        ref={ref}
-        hasErrors={hasErrors}
-        errorCount={errorCount}
-        collapsed={collapsed}
-        onCollapseChange={onCollapseChange}
-      >
-        <SectionHeader
-          icon="fileText"
-          title="Tipo de Caso"
-          description="Indica si es un caso nuevo o garantía"
-          required
-        />
-
-        <div className="space-y-6 p-6">
+      <div ref={ref}>
+        <CollapsibleSubsection icon="fileText" title="Tipo de Caso">
+          <div className="space-y-6">
           {/* Case Type Selection */}
           <div>
             <FieldLabel label="Selecciona el Tipo" required />
@@ -145,8 +127,9 @@ export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
               </div>
             </div>
           )}
-        </div>
-      </SectionContainer>
+          </div>
+        </CollapsibleSubsection>
+      </div>
     );
   }
 );
