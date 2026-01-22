@@ -37,16 +37,22 @@ function ArchModel({
   onLoadingChange,
 }: ArchModelProps) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [hasVertexColors, setHasVertexColors] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setIsLoading(true);
     setError(null);
+    setHasVertexColors(false);
     onLoadingChange?.(true);
 
-    const loadGeometry = (loadedGeometry: THREE.BufferGeometry) => {
+    const loadGeometry = (loadedGeometry: THREE.BufferGeometry, checkColors = false) => {
       loadedGeometry.computeVertexNormals();
+      if (checkColors) {
+        const hasColors = loadedGeometry.getAttribute('color') !== undefined;
+        setHasVertexColors(hasColors);
+      }
       setGeometry(loadedGeometry);
       setIsLoading(false);
       onLoadingChange?.(false);
@@ -61,10 +67,10 @@ function ArchModel({
 
     if (fileExtension === '.stl') {
       const loader = new STLLoader();
-      loader.load(url, loadGeometry, undefined, handleError);
+      loader.load(url, (geo) => loadGeometry(geo, false), undefined, handleError);
     } else if (fileExtension === '.ply') {
       const loader = new PLYLoader();
-      loader.load(url, loadGeometry, undefined, handleError);
+      loader.load(url, (geo) => loadGeometry(geo, true), undefined, handleError);
     }
 
     return () => {
@@ -84,7 +90,11 @@ function ArchModel({
 
   return (
     <mesh geometry={geometry} position={position} rotation={[-Math.PI / 2, 0, 0]}>
-      <meshStandardMaterial color={color} flatShading={false} />
+      <meshStandardMaterial
+        color={hasVertexColors ? undefined : color}
+        vertexColors={hasVertexColors}
+        flatShading={false}
+      />
     </mesh>
   );
 }

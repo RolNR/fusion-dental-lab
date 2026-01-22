@@ -26,6 +26,7 @@ function ModelWithLoadingState({
   onLoadingChange: (loading: boolean) => void;
 }) {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [hasVertexColors, setHasVertexColors] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +34,7 @@ function ModelWithLoadingState({
     setIsLoading(true);
     onLoadingChange(true);
     setError(null);
+    setHasVertexColors(false);
 
     if (fileExtension === '.stl') {
       const loader = new STLLoader();
@@ -58,6 +60,9 @@ function ModelWithLoadingState({
         url,
         (loadedGeometry) => {
           loadedGeometry.computeVertexNormals();
+          // Check if PLY file has vertex colors
+          const hasColors = loadedGeometry.getAttribute('color') !== undefined;
+          setHasVertexColors(hasColors);
           setGeometry(loadedGeometry);
           setIsLoading(false);
           onLoadingChange(false);
@@ -94,7 +99,11 @@ function ModelWithLoadingState({
   return (
     <Center>
       <mesh geometry={geometry} rotation={[-Math.PI / 2, 0, 0]}>
-        <meshStandardMaterial color="#9ca3af" flatShading={false} />
+        <meshStandardMaterial
+          color={hasVertexColors ? undefined : '#9ca3af'}
+          vertexColors={hasVertexColors}
+          flatShading={false}
+        />
       </mesh>
     </Center>
   );
