@@ -268,9 +268,14 @@ export function copyToothData(
 }
 
 /**
- * Upload a single file to R2 via pre-signed URL
+ * Upload a single file to R2 via pre-signed URL with progress tracking
  */
-async function uploadFileToR2(orderId: string, file: File, category: FileCategory): Promise<void> {
+async function uploadFileToR2(
+  orderId: string,
+  file: File,
+  category: FileCategory,
+  onProgress?: (progress: number) => void
+): Promise<void> {
   const mimeType = getFileMimeType(file);
 
   // Step 1: Get pre-signed URL
@@ -292,18 +297,33 @@ async function uploadFileToR2(orderId: string, file: File, category: FileCategor
 
   const { uploadUrl, storageKey } = await uploadUrlResponse.json();
 
-  // Step 2: Upload to R2
-  const uploadResponse = await fetch(uploadUrl, {
-    method: 'PUT',
-    body: file,
-    headers: {
-      'Content-Type': mimeType,
-    },
-  });
+  // Step 2: Upload to R2 using XMLHttpRequest for progress tracking
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
 
-  if (!uploadResponse.ok) {
-    throw new Error('Error al subir archivo a R2');
-  }
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable && onProgress) {
+        const percentComplete = (event.loaded / event.total) * 100;
+        onProgress(percentComplete);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        reject(new Error('Error al subir archivo a R2'));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Error de red al subir archivo'));
+    });
+
+    xhr.open('PUT', uploadUrl);
+    xhr.setRequestHeader('Content-Type', mimeType);
+    xhr.send(file);
+  });
 
   // Step 3: Process upload and save metadata
   const processResponse = await fetch(`/api/orders/${orderId}/files/process-upload`, {
@@ -325,37 +345,50 @@ async function uploadFileToR2(orderId: string, file: File, category: FileCategor
 }
 
 /**
- * Upload multiple files to an order
+ * Upload multiple files to an order with progress tracking
  */
 export async function uploadFilesToOrder(
   orderId: string,
   upperFiles: File[],
   lowerFiles: File[],
+  biteFiles: File[],
   photographFiles: File[],
-  otherFiles: File[]
+  otherFiles: File[],
+  onProgress?: (uploadedCount: number, totalCount: number, currentFileName: string, currentProgress: number) => void
 ): Promise<void> {
-  const uploads: Promise<void>[] = [];
+  // Collect all files with their categories
+  const filesToUpload: Array<{ file: File; category: FileCategory }> = [];
 
-  // Upload upper arch files
   upperFiles.forEach((file) => {
-    uploads.push(uploadFileToR2(orderId, file, FileCategory.SCAN_UPPER));
+    filesToUpload.push({ file, category: FileCategory.SCAN_UPPER });
   });
 
-  // Upload lower arch files
   lowerFiles.forEach((file) => {
-    uploads.push(uploadFileToR2(orderId, file, FileCategory.SCAN_LOWER));
+    filesToUpload.push({ file, category: FileCategory.SCAN_LOWER });
   });
 
-  // Upload photograph files
+  biteFiles.forEach((file) => {
+    filesToUpload.push({ file, category: FileCategory.SCAN_BITE });
+  });
+
   photographFiles.forEach((file) => {
-    uploads.push(uploadFileToR2(orderId, file, FileCategory.PHOTOGRAPH));
+    filesToUpload.push({ file, category: FileCategory.PHOTOGRAPH });
   });
 
-  // Upload other files
   otherFiles.forEach((file) => {
-    uploads.push(uploadFileToR2(orderId, file, FileCategory.OTHER));
+    filesToUpload.push({ file, category: FileCategory.OTHER });
   });
 
-  // Upload all files in parallel
-  await Promise.all(uploads);
+  const totalCount = filesToUpload.length;
+
+  // Upload files sequentially to track progress better
+  for (let i = 0; i < filesToUpload.length; i++) {
+    const { file, category } = filesToUpload[i];
+
+    await uploadFileToR2(orderId, file, category, (progress) => {
+      if (onProgress) {
+        onProgress(i, totalCount, file.name, progress);
+      }
+    });
+  }
 }

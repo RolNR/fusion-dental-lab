@@ -1,6 +1,7 @@
 export enum FileCategory {
   SCAN_UPPER = 'scanUpper',
   SCAN_LOWER = 'scanLower',
+  SCAN_BITE = 'scanBite',
   PHOTOGRAPH = 'photograph',
   OTHER = 'other',
 }
@@ -8,6 +9,7 @@ export enum FileCategory {
 export const FILE_CATEGORY_LABELS: Record<FileCategory, string> = {
   [FileCategory.SCAN_UPPER]: 'Escaneo Superior (STL/PLY)',
   [FileCategory.SCAN_LOWER]: 'Escaneo Inferior (STL/PLY)',
+  [FileCategory.SCAN_BITE]: 'Escaneo de Mordida (STL/PLY)',
   [FileCategory.PHOTOGRAPH]: 'Fotografía',
   [FileCategory.OTHER]: 'Otro',
 };

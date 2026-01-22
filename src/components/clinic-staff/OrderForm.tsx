@@ -36,6 +36,7 @@ import {
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
 import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
+import { FileUploadProgressModal } from '@/components/orders/FileUploadProgressModal';
 import { ValidationErrorSummary } from '@/components/orders/ValidationErrorSummary';
 import {
   parseValidationError,
@@ -87,8 +88,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // File upload state (max 3 per category)
   const [upperFiles, setUpperFiles] = useState<File[]>([]);
   const [lowerFiles, setLowerFiles] = useState<File[]>([]);
+  const [biteFiles, setBiteFiles] = useState<File[]>([]);
   const [photographFiles, setPhotographFiles] = useState<File[]>([]);
   const [otherFiles, setOtherFiles] = useState<File[]>([]);
+
+  // File upload progress state
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({
+    uploadedCount: 0,
+    totalCount: 0,
+    currentFileName: '',
+    currentProgress: 0,
+  });
 
   // Fetch current user info if doctor, or doctors list if assistant
   useEffect(() => {
@@ -370,13 +381,31 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
       // If creating a new order, upload files
       if (result) {
-        const hasFiles = upperFiles.length > 0 || lowerFiles.length > 0 || photographFiles.length > 0 || otherFiles.length > 0;
+        const hasFiles = upperFiles.length > 0 || lowerFiles.length > 0 || biteFiles.length > 0 || photographFiles.length > 0 || otherFiles.length > 0;
 
         if (hasFiles) {
           try {
-            await uploadFilesToOrder(result.id, upperFiles, lowerFiles, photographFiles, otherFiles);
+            setIsUploadingFiles(true);
+            await uploadFilesToOrder(
+              result.id,
+              upperFiles,
+              lowerFiles,
+              biteFiles,
+              photographFiles,
+              otherFiles,
+              (uploadedCount, totalCount, currentFileName, currentProgress) => {
+                setUploadProgress({
+                  uploadedCount,
+                  totalCount,
+                  currentFileName,
+                  currentProgress,
+                });
+              }
+            );
+            setIsUploadingFiles(false);
           } catch (uploadErr) {
             console.error('Error uploading files:', uploadErr);
+            setIsUploadingFiles(false);
             // Don't fail the whole operation if files fail to upload
             // User can add them later from detail page
           }
@@ -891,8 +920,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             notaModeloFisico={formData.notaModeloFisico}
             upperFiles={upperFiles}
             lowerFiles={lowerFiles}
+            biteFiles={biteFiles}
             onUpperFilesChange={setUpperFiles}
             onLowerFilesChange={setLowerFiles}
+            onBiteFilesChange={setBiteFiles}
             onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
             disabled={isLoading}
             hasErrors={getSectionErrorInfo('impression').hasErrors}
@@ -970,10 +1001,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           onApplySuggestion={handleApplySuggestion}
           upperFiles={upperFiles}
           lowerFiles={lowerFiles}
+          biteFiles={biteFiles}
           photographFiles={photographFiles}
           otherFiles={otherFiles}
           onUpperFilesChange={setUpperFiles}
           onLowerFilesChange={setLowerFiles}
+          onBiteFilesChange={setBiteFiles}
           onPhotographFilesChange={setPhotographFiles}
           onOtherFilesChange={setOtherFiles}
           onFormDataChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
@@ -982,6 +1015,21 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           onSaveAsDraft={handleSaveAsDraft}
           isSubmitting={isLoading}
           isSavingDraft={isSavingDraft}
+        />
+      )}
+
+      {/* File Upload Progress Modal */}
+      {isUploadingFiles && (
+        <FileUploadProgressModal
+          uploadedCount={uploadProgress.uploadedCount}
+          totalCount={uploadProgress.totalCount}
+          currentFileName={uploadProgress.currentFileName}
+          overallProgress={
+            uploadProgress.totalCount > 0
+              ? ((uploadProgress.uploadedCount / uploadProgress.totalCount) * 100 +
+                  (uploadProgress.currentProgress / uploadProgress.totalCount))
+              : 0
+          }
         />
       )}
     </form>

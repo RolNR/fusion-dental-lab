@@ -18,8 +18,10 @@ type ImpressionExtendedSectionProps = {
   notaModeloFisico?: string;
   upperFiles?: File[];
   lowerFiles?: File[];
+  biteFiles?: File[];
   onUpperFilesChange?: (files: File[]) => void;
   onLowerFilesChange?: (files: File[]) => void;
+  onBiteFilesChange?: (files: File[]) => void;
   onChange: (field: string, value: string | ScanType | null | undefined) => void;
   errors?: {
     scanType?: string;
@@ -45,8 +47,10 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
       notaModeloFisico,
       upperFiles = [],
       lowerFiles = [],
+      biteFiles = [],
       onUpperFilesChange,
       onLowerFilesChange,
+      onBiteFilesChange,
       onChange,
       errors,
       disabled = false,
@@ -174,6 +178,20 @@ export const ImpressionExtendedSection = forwardRef<HTMLDivElement, ImpressionEx
                   maxSizeMB={MAX_FILE_SIZE_MB}
                   files={lowerFiles}
                   onFilesChange={onLowerFilesChange}
+                  icon="upload"
+                />
+              )}
+
+              {/* File upload - Bite Scan */}
+              {onBiteFilesChange && (
+                <FilePickerSection
+                  title="Escaneo de Mordida (STL/PLY)"
+                  description="Registro de mordida - opcional (máx. 3)"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={biteFiles}
+                  onFilesChange={onBiteFilesChange}
                   icon="upload"
                 />
               )}

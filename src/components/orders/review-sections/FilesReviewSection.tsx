@@ -19,10 +19,12 @@ import {
 interface FilesReviewSectionProps {
   upperFiles: File[];
   lowerFiles: File[];
+  biteFiles: File[];
   photographFiles: File[];
   otherFiles: File[];
   onUpperFilesChange: (files: File[]) => void;
   onLowerFilesChange: (files: File[]) => void;
+  onBiteFilesChange: (files: File[]) => void;
   onPhotographFilesChange: (files: File[]) => void;
   onOtherFilesChange: (files: File[]) => void;
 }
@@ -30,14 +32,16 @@ interface FilesReviewSectionProps {
 export function FilesReviewSection({
   upperFiles,
   lowerFiles,
+  biteFiles,
   photographFiles,
   otherFiles,
   onUpperFilesChange,
   onLowerFilesChange,
+  onBiteFilesChange,
   onPhotographFilesChange,
   onOtherFilesChange,
 }: FilesReviewSectionProps) {
-  const totalFiles = upperFiles.length + lowerFiles.length + photographFiles.length + otherFiles.length;
+  const totalFiles = upperFiles.length + lowerFiles.length + biteFiles.length + photographFiles.length + otherFiles.length;
 
   // Use first file from upper and first from lower for occlusion preview
   const hasOcclusionFiles = upperFiles.length > 0 && lowerFiles.length > 0;
@@ -134,6 +138,17 @@ export function FilesReviewSection({
           maxSizeMB={MAX_FILE_SIZE_MB}
           files={lowerFiles}
           onFilesChange={onLowerFilesChange}
+          icon="upload"
+        />
+
+        <FilePickerSection
+          title="Escaneo de Mordida (STL/PLY)"
+          description="Registro de mordida (opcional)"
+          acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+          maxFiles={MAX_FILES_PER_CATEGORY}
+          maxSizeMB={MAX_FILE_SIZE_MB}
+          files={biteFiles}
+          onFilesChange={onBiteFilesChange}
           icon="upload"
         />
 

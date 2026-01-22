@@ -28,10 +28,12 @@ interface OrderReviewModalProps {
   // File upload props
   upperFiles: File[];
   lowerFiles: File[];
+  biteFiles: File[];
   photographFiles: File[];
   otherFiles: File[];
   onUpperFilesChange: (files: File[]) => void;
   onLowerFilesChange: (files: File[]) => void;
+  onBiteFilesChange: (files: File[]) => void;
   onPhotographFilesChange: (files: File[]) => void;
   onOtherFilesChange: (files: File[]) => void;
   // Form field edit handlers
@@ -57,10 +59,12 @@ export function OrderReviewModal({
   onApplySuggestion,
   upperFiles,
   lowerFiles,
+  biteFiles,
   photographFiles,
   otherFiles,
   onUpperFilesChange,
   onLowerFilesChange,
+  onBiteFilesChange,
   onPhotographFilesChange,
   onOtherFilesChange,
   onFormDataChange,
@@ -207,10 +211,12 @@ export function OrderReviewModal({
           <FilesReviewSection
             upperFiles={upperFiles}
             lowerFiles={lowerFiles}
+            biteFiles={biteFiles}
             photographFiles={photographFiles}
             otherFiles={otherFiles}
             onUpperFilesChange={onUpperFilesChange}
             onLowerFilesChange={onLowerFilesChange}
+            onBiteFilesChange={onBiteFilesChange}
             onPhotographFilesChange={onPhotographFilesChange}
             onOtherFilesChange={onOtherFilesChange}
           />
