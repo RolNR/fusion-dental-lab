@@ -131,7 +131,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             Imprimir Guía de Envío
           </Button>
           <p className="text-sm text-muted-foreground mt-2">
-            Imprime esta guía y coloque en tu caja para facilitar la recolección y entrega.
+            Imprima esta guía y coloque en su caja para facilitar la recolección y entrega.
           </p>
         </div>
 
