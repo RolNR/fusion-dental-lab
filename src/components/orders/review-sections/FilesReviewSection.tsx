@@ -41,7 +41,12 @@ export function FilesReviewSection({
   onPhotographFilesChange,
   onOtherFilesChange,
 }: FilesReviewSectionProps) {
-  const totalFiles = upperFiles.length + lowerFiles.length + biteFiles.length + photographFiles.length + otherFiles.length;
+  const totalFiles =
+    upperFiles.length +
+    lowerFiles.length +
+    biteFiles.length +
+    photographFiles.length +
+    otherFiles.length;
 
   // Use first file from upper and first from lower for occlusion preview
   const hasOcclusionFiles = upperFiles.length > 0 && lowerFiles.length > 0;
@@ -103,7 +108,11 @@ export function FilesReviewSection({
           <FilePickerSection
             title="Otros Archivos"
             description="PDFs, documentos, etc."
-            acceptedTypes={[...ALLOWED_SCAN_TYPES, ...ALLOWED_IMAGE_TYPES, ...ALLOWED_OTHER_TYPES].join(',')}
+            acceptedTypes={[
+              ...ALLOWED_SCAN_TYPES,
+              ...ALLOWED_IMAGE_TYPES,
+              ...ALLOWED_OTHER_TYPES,
+            ].join(',')}
             maxFiles={MAX_FILES_PER_CATEGORY}
             maxSizeMB={MAX_OTHER_SIZE_MB}
             files={otherFiles}
@@ -206,7 +215,11 @@ export function FilesReviewSection({
         <FilePickerSection
           title="Otros Archivos"
           description="PDFs, documentos, etc."
-          acceptedTypes={[...ALLOWED_SCAN_TYPES, ...ALLOWED_IMAGE_TYPES, ...ALLOWED_OTHER_TYPES].join(',')}
+          acceptedTypes={[
+            ...ALLOWED_SCAN_TYPES,
+            ...ALLOWED_IMAGE_TYPES,
+            ...ALLOWED_OTHER_TYPES,
+          ].join(',')}
           maxFiles={MAX_FILES_PER_CATEGORY}
           maxSizeMB={MAX_OTHER_SIZE_MB}
           files={otherFiles}

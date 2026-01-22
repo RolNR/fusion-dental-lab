@@ -58,49 +58,51 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
       <div ref={ref}>
         <CollapsibleSubsection icon="upload" title="Tipo de Entrega y Articulación">
           <div className="space-y-6">
-          {/* Submission Type */}
-          <div>
-            <FieldLabel label="Tipo de Entrega" required />
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {submissionTypes.map((type) => (
-                <ButtonCard
-                  key={type.value}
-                  icon={type.icon}
-                  title={type.label}
-                  subtitle={type.subtitle}
-                  selected={
-                    submissionType === type.value || (!submissionType && type.value === 'terminado')
-                  }
-                  onClick={() => onChange('submissionType', type.value)}
-                />
-              ))}
+            {/* Submission Type */}
+            <div>
+              <FieldLabel label="Tipo de Entrega" required />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                {submissionTypes.map((type) => (
+                  <ButtonCard
+                    key={type.value}
+                    icon={type.icon}
+                    title={type.label}
+                    subtitle={type.subtitle}
+                    selected={
+                      submissionType === type.value ||
+                      (!submissionType && type.value === 'terminado')
+                    }
+                    onClick={() => onChange('submissionType', type.value)}
+                  />
+                ))}
+              </div>
+              {errors?.submissionType && (
+                <p className="mt-2 text-sm text-danger font-medium">{errors.submissionType}</p>
+              )}
             </div>
-            {errors?.submissionType && (
-              <p className="mt-2 text-sm text-danger font-medium">{errors.submissionType}</p>
-            )}
-          </div>
 
-          {/* Articulated By */}
-          <div>
-            <FieldLabel label="Articulado Por" required />
-            <div className="grid grid-cols-2 gap-3">
-              {articulatedByOptions.map((option) => (
-                <ButtonCard
-                  key={option.value}
-                  icon={option.icon}
-                  title={option.label}
-                  subtitle={option.subtitle}
-                  selected={
-                    articulatedBy === option.value || (!articulatedBy && option.value === 'doctor')
-                  }
-                  onClick={() => onChange('articulatedBy', option.value)}
-                />
-              ))}
+            {/* Articulated By */}
+            <div>
+              <FieldLabel label="Articulado Por" required />
+              <div className="grid grid-cols-2 gap-3">
+                {articulatedByOptions.map((option) => (
+                  <ButtonCard
+                    key={option.value}
+                    icon={option.icon}
+                    title={option.label}
+                    subtitle={option.subtitle}
+                    selected={
+                      articulatedBy === option.value ||
+                      (!articulatedBy && option.value === 'doctor')
+                    }
+                    onClick={() => onChange('articulatedBy', option.value)}
+                  />
+                ))}
+              </div>
+              {errors?.articulatedBy && (
+                <p className="mt-2 text-sm text-danger font-medium">{errors.articulatedBy}</p>
+              )}
             </div>
-            {errors?.articulatedBy && (
-              <p className="mt-2 text-sm text-danger font-medium">{errors.articulatedBy}</p>
-            )}
-          </div>
           </div>
         </CollapsibleSubsection>
       </div>

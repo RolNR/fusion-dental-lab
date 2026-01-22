@@ -36,9 +36,7 @@ export function InlineImagePreviewFromUrl({
           <Icons.camera className="h-5 w-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-bold text-foreground">Vista Previa de Fotografía</h4>
-            <p className="text-xs text-primary font-medium truncate">
-              {selectedFile.originalName}
-            </p>
+            <p className="text-xs text-primary font-medium truncate">{selectedFile.originalName}</p>
           </div>
         </div>
         <Button

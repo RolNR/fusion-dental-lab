@@ -29,9 +29,7 @@ export function Inline3DPreview({
           <Icons.cube className="h-5 w-5 text-primary shrink-0" />
           <div className="flex-1 min-w-0">
             <h4 className="text-sm font-bold text-foreground">Vista Previa 3D</h4>
-            <p className="text-xs text-primary font-medium truncate">
-              {selectedFile.name}
-            </p>
+            <p className="text-xs text-primary font-medium truncate">{selectedFile.name}</p>
           </div>
         </div>
         <Button

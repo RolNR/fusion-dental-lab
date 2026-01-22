@@ -309,7 +309,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           const newData = new Map(prevData);
           newData.set(toothNumber, {
             toothNumber,
-            tipoTrabajo: 'restauracion' // Default to restauracion
+            tipoTrabajo: 'restauracion', // Default to restauracion
           });
           return newData;
         });
@@ -434,11 +434,23 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         teeth: teethArray.length > 0 ? teethArray : undefined,
       };
 
-      const result = await saveOrderUtil(orderId, role, dataToSave, submitForReview, onSuccess, router);
+      const result = await saveOrderUtil(
+        orderId,
+        role,
+        dataToSave,
+        submitForReview,
+        onSuccess,
+        router
+      );
 
       // If creating a new order, upload files
       if (result) {
-        const hasFiles = upperFiles.length > 0 || lowerFiles.length > 0 || biteFiles.length > 0 || photographFiles.length > 0 || otherFiles.length > 0;
+        const hasFiles =
+          upperFiles.length > 0 ||
+          lowerFiles.length > 0 ||
+          biteFiles.length > 0 ||
+          photographFiles.length > 0 ||
+          otherFiles.length > 0;
 
         if (hasFiles) {
           try {
@@ -770,7 +782,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                     • Dientes con información incompleta:
                     <ul className="ml-4 mt-1 space-y-0.5">
                       {preSubmitErrors.teethIncomplete.map((error, idx) => (
-                        <li key={idx} className="text-xs">- {error}</li>
+                        <li key={idx} className="text-xs">
+                          - {error}
+                        </li>
                       ))}
                     </ul>
                   </li>
@@ -1039,8 +1053,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           currentFileName={uploadProgress.currentFileName}
           overallProgress={
             uploadProgress.totalCount > 0
-              ? ((uploadProgress.uploadedCount / uploadProgress.totalCount) * 100 +
-                  (uploadProgress.currentProgress / uploadProgress.totalCount))
+              ? (uploadProgress.uploadedCount / uploadProgress.totalCount) * 100 +
+                uploadProgress.currentProgress / uploadProgress.totalCount
               : 0
           }
         />

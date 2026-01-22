@@ -202,7 +202,7 @@ export function FilePickerSection({
                           }}
                           className="text-primary hover:text-primary/80 p-1.5 h-auto"
                           aria-label="Ver vista previa"
-                          title={is3D ? "Ver vista previa 3D" : "Ver fotografía"}
+                          title={is3D ? 'Ver vista previa 3D' : 'Ver fotografía'}
                         >
                           <Icons.eye className="h-4 w-4" />
                         </Button>
@@ -249,7 +249,9 @@ export function FilePickerSection({
           <Icons.eye className="h-4 w-4 mr-2" />
           Mostrar Vista Previa 3D
           {all3DFiles.length > 1 && (
-            <span className="ml-2 text-xs text-muted-foreground">({all3DFiles.length} archivos)</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({all3DFiles.length} archivos)
+            </span>
           )}
         </Button>
       )}
@@ -277,7 +279,9 @@ export function FilePickerSection({
           <Icons.eye className="h-4 w-4 mr-2" />
           Mostrar Vista Previa de Fotografías
           {allImageFiles.length > 1 && (
-            <span className="ml-2 text-xs text-muted-foreground">({allImageFiles.length} fotografías)</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({allImageFiles.length} fotografías)
+            </span>
           )}
         </Button>
       )}
@@ -300,9 +304,7 @@ export function FilePickerSection({
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-danger/80 mt-2">
-                Tamaño máximo permitido: {maxSizeMB} MB
-              </p>
+              <p className="text-xs text-danger/80 mt-2">Tamaño máximo permitido: {maxSizeMB} MB</p>
             </div>
           </div>
         </div>

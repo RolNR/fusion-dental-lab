@@ -74,7 +74,11 @@ export async function POST(
         );
       }
     } else if (validatedData.category === FileCategory.OTHER) {
-      const allAllowedTypes = [...ALLOWED_SCAN_TYPES, ...ALLOWED_IMAGE_TYPES, ...ALLOWED_OTHER_TYPES];
+      const allAllowedTypes = [
+        ...ALLOWED_SCAN_TYPES,
+        ...ALLOWED_IMAGE_TYPES,
+        ...ALLOWED_OTHER_TYPES,
+      ];
       if (!allAllowedTypes.includes(ext)) {
         return NextResponse.json(
           {

@@ -3,11 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
-import {
-  FileCategory,
-  FILE_CATEGORY_LABELS,
-  MAX_FILES_PER_CATEGORY,
-} from '@/types/file';
+import { FileCategory, FILE_CATEGORY_LABELS, MAX_FILES_PER_CATEGORY } from '@/types/file';
 import { FilePreviewModal } from './FilePreviewModal';
 import { Inline3DPreviewFromUrl } from './Inline3DPreviewFromUrl';
 import { InlineImagePreviewFromUrl } from './InlineImagePreviewFromUrl';
@@ -175,7 +171,9 @@ export function FileList({
   const selected3DFile = all3DFiles[selected3DIndex] || null;
 
   // Get all image files (photographs)
-  const allImageFiles = files.filter((f) => isImageFile(f) && f.category === FileCategory.PHOTOGRAPH);
+  const allImageFiles = files.filter(
+    (f) => isImageFile(f) && f.category === FileCategory.PHOTOGRAPH
+  );
   const hasImageFiles = allImageFiles.length > 0;
   const selectedImageFile = allImageFiles[selectedImageIndex] || null;
 
@@ -398,7 +396,9 @@ export function FileList({
           <Icons.eye className="h-4 w-4 mr-2" />
           Mostrar Vista Previa 3D
           {all3DFiles.length > 1 && (
-            <span className="ml-2 text-xs text-muted-foreground">({all3DFiles.length} archivos)</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({all3DFiles.length} archivos)
+            </span>
           )}
         </Button>
       )}

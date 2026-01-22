@@ -36,9 +36,7 @@ export function FileUploadProgressModal({
             <p className="text-sm font-semibold text-foreground">
               Archivo {uploadedCount + 1} de {totalCount}
             </p>
-            <p className="text-xs text-muted-foreground mt-1 truncate">
-              {currentFileName}
-            </p>
+            <p className="text-xs text-muted-foreground mt-1 truncate">{currentFileName}</p>
           </div>
 
           {/* Progress Bar */}

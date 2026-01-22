@@ -186,7 +186,8 @@ export function OrderReviewModal({
           <div>
             <h2 className="text-xl font-bold text-foreground">Revisar Orden</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Verifica que toda la información sea correcta. Podrás añadir archivos después de crear la orden.
+              Verifica que toda la información sea correcta. Podrás añadir archivos después de crear
+              la orden.
             </p>
           </div>
           <button
@@ -216,7 +217,9 @@ export function OrderReviewModal({
                         • Dientes con información incompleta:
                         <ul className="ml-4 mt-1 space-y-0.5">
                           {localErrors.teethIncomplete.map((error, idx) => (
-                            <li key={idx} className="text-xs">- {error}</li>
+                            <li key={idx} className="text-xs">
+                              - {error}
+                            </li>
                           ))}
                         </ul>
                       </li>

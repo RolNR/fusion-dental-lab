@@ -69,7 +69,10 @@ export function ToothConfigurationSection({
   };
 
   // Handler for work type changes
-  const handleWorkTypeChange = (updates: { tipoTrabajo?: WorkType; tipoRestauracion?: RestorationType }) => {
+  const handleWorkTypeChange = (updates: {
+    tipoTrabajo?: WorkType;
+    tipoRestauracion?: RestorationType;
+  }) => {
     updateToothData(updates);
   };
 
@@ -84,7 +87,10 @@ export function ToothConfigurationSection({
   };
 
   // Handler for implant changes
-  const handleImplantChange = (updates: { trabajoSobreImplante?: boolean; informacionImplante?: ImplantInfo }) => {
+  const handleImplantChange = (updates: {
+    trabajoSobreImplante?: boolean;
+    informacionImplante?: ImplantInfo;
+  }) => {
     updateToothData(updates);
   };
 

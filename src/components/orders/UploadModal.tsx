@@ -112,9 +112,7 @@ export function UploadModal({ orderId, onClose }: UploadModalProps) {
         {/* Header */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-foreground">Añadir Archivos</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Máximo 3 archivos por categoría
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Máximo 3 archivos por categoría</p>
         </div>
 
         {/* Content */}
@@ -155,9 +153,7 @@ export function UploadModal({ orderId, onClose }: UploadModalProps) {
                   <div className="flex items-start">
                     <Icons.alertCircle className="h-5 w-5 text-warning mr-2 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-semibold text-warning">
-                        Límite alcanzado
-                      </p>
+                      <p className="text-sm font-semibold text-warning">Límite alcanzado</p>
                       <p className="text-sm text-warning/80 mt-1">
                         Ya has subido el máximo de {MAX_FILES_PER_CATEGORY} archivos para esta
                         categoría. Elimina algunos archivos existentes para subir nuevos.

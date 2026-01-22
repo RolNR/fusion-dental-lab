@@ -154,9 +154,7 @@ export function ScanPreview({ file, url, onClose }: ScanPreviewProps) {
           <div className="text-center">
             <Icons.spinner className="h-10 w-10 animate-spin text-primary mx-auto mb-3" />
             <p className="text-sm font-medium text-foreground">Cargando modelo 3D...</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Esto puede tomar unos segundos
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Esto puede tomar unos segundos</p>
           </div>
         </div>
       )}

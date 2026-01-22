@@ -354,7 +354,12 @@ export async function uploadFilesToOrder(
   biteFiles: File[],
   photographFiles: File[],
   otherFiles: File[],
-  onProgress?: (uploadedCount: number, totalCount: number, currentFileName: string, currentProgress: number) => void
+  onProgress?: (
+    uploadedCount: number,
+    totalCount: number,
+    currentFileName: string,
+    currentProgress: number
+  ) => void
 ): Promise<void> {
   // Collect all files with their categories
   const filesToUpload: Array<{ file: File; category: FileCategory }> = [];
