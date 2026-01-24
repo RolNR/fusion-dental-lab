@@ -90,6 +90,8 @@ export async function updateOrderStatus({
           id: true,
           name: true,
           email: true,
+          clinicName: true,
+          doctorLaboratoryId: true,
         },
       },
       createdBy: {
@@ -97,12 +99,6 @@ export async function updateOrderStatus({
           id: true,
           name: true,
           email: true,
-        },
-      },
-      clinic: {
-        select: {
-          id: true,
-          name: true,
         },
       },
       files: true,
@@ -136,26 +132,14 @@ export async function updateOrderStatus({
   // Create alerts and emit SSE events when status changes to NEEDS_INFO
   if (newStatus === OrderStatus.NEEDS_INFO) {
     try {
-      // Get doctor and assistants to notify
-      const [doctor, doctorAssistants] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: updatedOrder.doctorId },
-          select: { id: true, name: true },
-        }),
-        prisma.doctorAssistant.findMany({
-          where: { doctorId: updatedOrder.doctorId },
-          include: {
-            assistant: {
-              select: { id: true, name: true },
-            },
-          },
-        }),
-      ]);
+      // Get doctor to notify
+      const doctor = await prisma.user.findUnique({
+        where: { id: updatedOrder.doctorId },
+        select: { id: true, name: true },
+      });
 
-      // Prepare recipients (doctor + all assistants)
-      const recipients = [doctor, ...doctorAssistants.map((da) => da.assistant)].filter(
-        (r): r is NonNullable<typeof r> => !!r
-      );
+      // Prepare recipients
+      const recipients = [doctor].filter((r): r is NonNullable<typeof r> => !!r);
 
       if (recipients.length > 0) {
         const alertMessage = `Se requiere información adicional para la orden #${updatedOrder.orderNumber} del paciente ${updatedOrder.patientName}`;
@@ -225,27 +209,17 @@ export async function updateOrderStatus({
   // Emit new-order event for lab users when order is submitted (PENDING_REVIEW)
   if (newStatus === OrderStatus.PENDING_REVIEW && order.status !== OrderStatus.PENDING_REVIEW) {
     try {
-      // Get the laboratory ID for this order
-      const orderWithLab = await prisma.order.findUnique({
-        where: { id: orderId },
-        select: {
-          clinic: {
-            select: {
-              laboratoryId: true,
-            },
-          },
-        },
-      });
+      const laboratoryId = updatedOrder.doctor.doctorLaboratoryId;
 
-      if (orderWithLab?.clinic?.laboratoryId) {
+      if (laboratoryId) {
         eventBus.emit('new-order', {
           orderId: updatedOrder.id,
           orderNumber: updatedOrder.orderNumber,
           patientName: updatedOrder.patientName,
-          clinicName: updatedOrder.clinic.name,
+          clinicName: updatedOrder.doctor.clinicName || '',
           doctorName: updatedOrder.doctor.name || 'Sin nombre',
           createdAt: updatedOrder.createdAt.toISOString(),
-          laboratoryId: orderWithLab.clinic.laboratoryId,
+          laboratoryId,
         });
       }
     } catch (newOrderError) {

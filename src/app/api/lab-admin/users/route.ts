@@ -12,8 +12,13 @@ const createUserSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-  role: z.enum(['LAB_COLLABORATOR', 'CLINIC_ADMIN', 'DOCTOR', 'CLINIC_ASSISTANT']),
-  clinicId: z.string().optional(), // Required for clinic users
+  role: z.enum(['LAB_COLLABORATOR', 'DOCTOR']),
+  // Doctor profile fields
+  clinicName: z.string().optional(),
+  clinicAddress: z.string().optional(),
+  phone: z.string().optional(),
+  razonSocial: z.string().optional(),
+  fiscalAddress: z.string().optional(),
 });
 
 // GET /api/lab-admin/users - List all users in the laboratory
@@ -39,45 +44,14 @@ export async function GET(request: NextRequest) {
     // Get query params for filtering
     const { searchParams } = new URL(request.url);
     const roleFilter = searchParams.get('role');
-    const clinicIdFilter = searchParams.get('clinicId');
 
-    // Get all doctor IDs that belong to clinics in this laboratory
-    const doctorMemberships = await prisma.doctorClinic.findMany({
-      where: {
-        clinic: { laboratoryId },
-      },
-      select: { doctorId: true },
-    });
-    const allDoctorIds = doctorMemberships.map((m) => m.doctorId);
-
-    // Build where clause
+    // Build where clause - get users in this laboratory
     const where: any = {
-      OR: [
-        { labCollaboratorId: laboratoryId }, // Lab collaborators
-        { clinic: { laboratoryId } }, // Clinic admins
-        { assistantClinic: { laboratoryId } }, // Assistants
-        { id: { in: allDoctorIds } }, // Doctors (via DoctorClinic junction table)
-      ],
+      OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
     };
 
     if (roleFilter) {
       where.role = roleFilter as Role;
-    }
-
-    // Handle clinic filtering (doctors need special handling via DoctorClinic junction table)
-    if (clinicIdFilter) {
-      // Get doctor IDs that belong to this specific clinic
-      const clinicDoctorMemberships = await prisma.doctorClinic.findMany({
-        where: { clinicId: clinicIdFilter },
-        select: { doctorId: true },
-      });
-      const doctorIds = clinicDoctorMemberships.map((m) => m.doctorId);
-
-      where.OR = [
-        { clinicId: clinicIdFilter }, // CLINIC_ADMIN
-        { id: { in: doctorIds } }, // DOCTOR (via DoctorClinic)
-        { assistantClinicId: clinicIdFilter }, // CLINIC_ASSISTANT
-      ];
     }
 
     // Fetch users
@@ -89,30 +63,11 @@ export async function GET(request: NextRequest) {
         email: true,
         role: true,
         createdAt: true,
-        activeClinicId: true,
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        clinicMemberships: {
-          select: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            isPrimary: true,
-          },
-        },
-        assistantClinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        clinicName: true,
+        clinicAddress: true,
+        phone: true,
+        razonSocial: true,
+        fiscalAddress: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -159,31 +114,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Ya existe un usuario con ese email' }, { status: 409 });
     }
 
-    // Validate clinic requirement for clinic roles
-    if (['CLINIC_ADMIN', 'DOCTOR', 'CLINIC_ASSISTANT'].includes(validatedData.role)) {
-      if (!validatedData.clinicId) {
-        return NextResponse.json(
-          { error: 'clinicId es requerido para usuarios de clínica' },
-          { status: 400 }
-        );
-      }
-
-      // Verify clinic belongs to this laboratory
-      const clinic = await prisma.clinic.findFirst({
-        where: {
-          id: validatedData.clinicId,
-          laboratoryId,
-        },
-      });
-
-      if (!clinic) {
-        return NextResponse.json(
-          { error: 'Clínica no encontrada o no pertenece a este laboratorio' },
-          { status: 404 }
-        );
-      }
-    }
-
     // Hash password
     const passwordHash = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
 
@@ -198,80 +128,29 @@ export async function POST(request: NextRequest) {
     // Set appropriate foreign keys based on role
     if (validatedData.role === 'LAB_COLLABORATOR') {
       userData.labCollaboratorId = laboratoryId;
-    } else if (validatedData.role === 'CLINIC_ADMIN') {
-      userData.clinicId = validatedData.clinicId;
     } else if (validatedData.role === 'DOCTOR') {
-      userData.activeClinicId = validatedData.clinicId;
-    } else if (validatedData.role === 'CLINIC_ASSISTANT') {
-      userData.assistantClinicId = validatedData.clinicId;
+      userData.doctorLaboratoryId = laboratoryId;
+      userData.clinicName = validatedData.clinicName;
+      userData.clinicAddress = validatedData.clinicAddress;
+      userData.phone = validatedData.phone;
+      userData.razonSocial = validatedData.razonSocial;
+      userData.fiscalAddress = validatedData.fiscalAddress;
     }
 
-    // Create user (with DoctorClinic entry for doctors)
-    let user;
-    if (validatedData.role === 'DOCTOR' && validatedData.clinicId) {
-      // Use transaction to create user and DoctorClinic entry atomically
-      user = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
-          data: userData,
-        });
-
-        // Create DoctorClinic membership
-        await tx.doctorClinic.create({
-          data: {
-            doctorId: newUser.id,
-            clinicId: validatedData.clinicId!,
-            isPrimary: true,
-          },
-        });
-
-        // Fetch user with relations
-        return await tx.user.findUnique({
-          where: { id: newUser.id },
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            createdAt: true,
-            activeClinicId: true,
-            clinicMemberships: {
-              select: {
-                clinic: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-                isPrimary: true,
-              },
-            },
-          },
-        });
-      });
-    } else {
-      user = await prisma.user.create({
-        data: userData,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          createdAt: true,
-          clinic: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          assistantClinic: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-      });
-    }
+    // Create user
+    const user = await prisma.user.create({
+      data: userData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        clinicName: true,
+        clinicAddress: true,
+        phone: true,
+      },
+    });
 
     return NextResponse.json(
       {

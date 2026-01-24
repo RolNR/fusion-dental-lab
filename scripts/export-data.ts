@@ -6,27 +6,23 @@ const prisma = new PrismaClient();
 
 async function exportData() {
   try {
-    console.log('Exporting data from production database...');
+    console.log('Exporting data from database...');
 
-    // Export all data with relations
+    // Export all data
     const laboratories = await prisma.laboratory.findMany();
-    const clinics = await prisma.clinic.findMany();
     const users = await prisma.user.findMany();
-    const doctorClinics = await prisma.doctorClinic.findMany();
-    const doctorAssistants = await prisma.doctorAssistant.findMany();
     const orders = await prisma.order.findMany();
+    const teeth = await prisma.tooth.findMany();
     const files = await prisma.file.findMany();
     const alerts = await prisma.alert.findMany();
     const auditLogs = await prisma.auditLog.findMany();
     const orderComments = await prisma.orderComment.findMany();
 
-    const exportData = {
+    const data = {
       laboratories,
-      clinics,
       users,
-      doctorClinics,
-      doctorAssistants,
       orders,
+      teeth,
       files,
       alerts,
       auditLogs,
@@ -36,15 +32,13 @@ async function exportData() {
 
     // Save to file
     const exportPath = path.join(process.cwd(), 'data-backup.json');
-    fs.writeFileSync(exportPath, JSON.stringify(exportData, null, 2));
+    fs.writeFileSync(exportPath, JSON.stringify(data, null, 2));
 
-    console.log(`✅ Data exported successfully to ${exportPath}`);
+    console.log(`Data exported successfully to ${exportPath}`);
     console.log(`   - ${laboratories.length} laboratories`);
-    console.log(`   - ${clinics.length} clinics`);
     console.log(`   - ${users.length} users`);
-    console.log(`   - ${doctorClinics.length} doctor-clinic relationships`);
-    console.log(`   - ${doctorAssistants.length} doctor-assistant relationships`);
     console.log(`   - ${orders.length} orders`);
+    console.log(`   - ${teeth.length} teeth`);
     console.log(`   - ${files.length} files`);
     console.log(`   - ${alerts.length} alerts`);
     console.log(`   - ${auditLogs.length} audit logs`);

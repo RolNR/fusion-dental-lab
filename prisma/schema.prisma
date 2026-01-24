@@ -58,54 +58,6 @@ model AuditLog {
   @@index([userId])
 }
 
-model Clinic {
-  id                                  String         @id @default(cuid())
-  name                                String
-  email                               String?
-  phone                               String?
-  address                             String?
-  isActive                            Boolean        @default(true)
-  laboratoryId                        String
-  createdAt                           DateTime       @default(now())
-  updatedAt                           DateTime       @updatedAt
-  laboratory                          Laboratory     @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
-  doctorMemberships                   DoctorClinic[] @relation("ClinicDoctorMemberships")
-  orders                              Order[]
-  assistants                          User[]         @relation("ClinicAssistants")
-  clinicAdmins                        User[]         @relation("ClinicAdmins")
-
-  @@index([isActive])
-  @@index([laboratoryId])
-}
-
-model DoctorAssistant {
-  id                                     String   @id @default(cuid())
-  doctorId                               String
-  assistantId                            String
-  createdAt                              DateTime @default(now())
-  assistant                              User     @relation("AssistantAssignments", fields: [assistantId], references: [id], onDelete: Cascade)
-  doctor                                 User     @relation("DoctorAssignments", fields: [doctorId], references: [id], onDelete: Cascade)
-
-  @@unique([doctorId, assistantId])
-  @@index([assistantId])
-  @@index([doctorId])
-}
-
-model DoctorClinic {
-  id        String   @id @default(cuid())
-  doctorId  String
-  clinicId  String
-  isPrimary Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  clinic    Clinic   @relation("ClinicDoctorMemberships", fields: [clinicId], references: [id], onDelete: Cascade)
-  doctor    User     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
-  @@unique([doctorId, clinicId])
-  @@index([clinicId])
-  @@index([doctorId])
-}
-
 model File {
   id           String     @id @default(cuid())
   fileName     String
@@ -144,9 +96,9 @@ model Laboratory {
   isActive                                Boolean  @default(true)
   createdAt                               DateTime @default(now())
   updatedAt                               DateTime @updatedAt
-  clinics                                 Clinic[]
   labCollaborators                        User[]   @relation("LaboratoryCollaborators")
   labAdmins                               User[]   @relation("LaboratoryAdmins")
+  doctors                                 User[]   @relation("LaboratoryDoctors")
 
   @@index([isActive])
 }
@@ -176,7 +128,6 @@ model Order {
   articulatedBy                ArticulatedBy?   @default(doctor)
   isUrgent                     Boolean          @default(false)
   status                       OrderStatus      @default(DRAFT)
-  clinicId                     String
   createdById                  String
   doctorId                     String
   createdAt                    DateTime         @default(now())
@@ -188,12 +139,10 @@ model Order {
   auditLogs                    AuditLog[]
   files                        File[]
   teeth                        Tooth[]
-  clinic                       Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   createdBy                    User             @relation("CreatorOrders", fields: [createdById], references: [id], onDelete: Cascade)
   doctor                       User             @relation("DoctorOrders", fields: [doctorId], references: [id], onDelete: Cascade)
   comments                     OrderComment[]
 
-  @@index([clinicId])
   @@index([createdAt])
   @@index([createdById])
   @@index([doctorId])
@@ -247,29 +196,26 @@ model User {
   role                                              Role
   laboratoryId                                      String?
   labCollaboratorId                                 String?
-  clinicId                                          String?
-  activeClinicId                                    String?
-  assistantClinicId                                 String?
+  doctorLaboratoryId                                String?
+  clinicName                                        String?
+  clinicAddress                                     String?
+  phone                                             String?
+  razonSocial                                       String?
+  fiscalAddress                                     String?
   createdAt                                         DateTime          @default(now())
   updatedAt                                         DateTime          @updatedAt
   alertsReceived                                    Alert[]           @relation("AlertReceiver")
   alertsSent                                        Alert[]           @relation("AlertSender")
   auditLogs                                         AuditLog[]
-  assignedDoctors                                   DoctorAssistant[] @relation("AssistantAssignments")
-  assignedAssistants                                DoctorAssistant[] @relation("DoctorAssignments")
-  clinicMemberships                                 DoctorClinic[]
   filesUploaded                                     File[]
   ordersCreated                                     Order[]           @relation("CreatorOrders")
   ordersByDoctor                                    Order[]           @relation("DoctorOrders")
   orderComments                                     OrderComment[]
-  assistantClinic                                   Clinic?           @relation("ClinicAssistants", fields: [assistantClinicId], references: [id], onDelete: Cascade)
-  clinic                                            Clinic?           @relation("ClinicAdmins", fields: [clinicId], references: [id], onDelete: Cascade)
   labCollaborator                                   Laboratory?       @relation("LaboratoryCollaborators", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
   laboratory                                        Laboratory?       @relation("LaboratoryAdmins", fields: [laboratoryId], references: [id], onDelete: Cascade)
+  doctorLaboratory                                  Laboratory?       @relation("LaboratoryDoctors", fields: [doctorLaboratoryId], references: [id], onDelete: Cascade)
 
-  @@index([activeClinicId])
-  @@index([assistantClinicId])
-  @@index([clinicId])
+  @@index([doctorLaboratoryId])
   @@index([email])
   @@index([laboratoryId])
   @@index([role])
@@ -328,9 +274,7 @@ enum RestorationType {
 enum Role {
   LAB_ADMIN
   LAB_COLLABORATOR
-  CLINIC_ADMIN
   DOCTOR
-  CLINIC_ASSISTANT
 }
 
 enum ScanType {

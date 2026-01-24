@@ -3,15 +3,10 @@ import { CollapsibleToothList } from './CollapsibleToothCard';
 
 interface OrderDetailsProps {
   order: Order;
-  showClinicInfo?: boolean;
   showDoctorInfo?: boolean;
 }
 
-export function OrderDetails({
-  order,
-  showClinicInfo = true,
-  showDoctorInfo = false,
-}: OrderDetailsProps) {
+export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProps) {
   return (
     <div className="space-y-6">
       <div className="rounded-xl bg-background p-6 shadow-md border border-border">
@@ -272,30 +267,6 @@ export function OrderDetails({
         </div>
       )}
 
-      {showClinicInfo && order.clinic && (
-        <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-          <h2 className="text-xl font-bold text-foreground mb-4">Información de la Clínica</h2>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm font-medium text-muted-foreground">Clínica</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.clinic.name}</dd>
-            </div>
-            {order.clinic.email && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Email</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.clinic.email}</dd>
-              </div>
-            )}
-            {order.clinic.phone && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Teléfono</dt>
-                <dd className="mt-1 text-sm text-foreground">{order.clinic.phone}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
       {showDoctorInfo && order.doctor && (
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
           <h2 className="text-xl font-bold text-foreground mb-4">Información del Doctor</h2>
@@ -308,6 +279,24 @@ export function OrderDetails({
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">Email</dt>
                 <dd className="mt-1 text-sm text-foreground">{order.doctor.email}</dd>
+              </div>
+            )}
+            {order.doctor.phone && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Teléfono</dt>
+                <dd className="mt-1 text-sm text-foreground">{order.doctor.phone}</dd>
+              </div>
+            )}
+            {order.doctor.clinicName && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Consultorio</dt>
+                <dd className="mt-1 text-sm text-foreground">{order.doctor.clinicName}</dd>
+              </div>
+            )}
+            {order.doctor.clinicAddress && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Dirección</dt>
+                <dd className="mt-1 text-sm text-foreground">{order.doctor.clinicAddress}</dd>
               </div>
             )}
           </dl>

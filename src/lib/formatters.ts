@@ -46,9 +46,7 @@ export function getRoleLabel(role: string): string {
   const labels: Record<string, string> = {
     LAB_ADMIN: 'Admin Laboratorio',
     LAB_COLLABORATOR: 'Colaborador Lab',
-    CLINIC_ADMIN: 'Admin Clínica',
     DOCTOR: 'Doctor',
-    CLINIC_ASSISTANT: 'Asistente',
   };
   return labels[role] || role;
 }

@@ -50,21 +50,15 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Correo electrónico o contraseña inválidos');
         }
 
-        // Return user data for session (determine clinic/lab based on role)
+        // Determine laboratoryId based on role
         let laboratoryId = null;
-        let clinicId = null;
-        let activeClinicId = null;
 
         if (user.role === 'LAB_ADMIN') {
           laboratoryId = user.laboratoryId;
         } else if (user.role === 'LAB_COLLABORATOR') {
           laboratoryId = user.labCollaboratorId;
-        } else if (user.role === 'CLINIC_ADMIN') {
-          clinicId = user.clinicId;
         } else if (user.role === 'DOCTOR') {
-          activeClinicId = user.activeClinicId;
-        } else if (user.role === 'CLINIC_ASSISTANT') {
-          clinicId = user.assistantClinicId;
+          laboratoryId = user.doctorLaboratoryId;
         }
 
         return {
@@ -73,8 +67,6 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           laboratoryId,
-          clinicId,
-          activeClinicId,
         };
       },
     }),
@@ -90,21 +82,18 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.laboratoryId = user.laboratoryId;
-        token.clinicId = user.clinicId;
-        token.activeClinicId = user.activeClinicId;
       }
 
-      // Handle profile updates and clinic switches - fetch fresh data from database
+      // Handle profile updates - fetch fresh data from database
       if (trigger === 'update') {
         const updatedUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { name: true, email: true, activeClinicId: true },
+          select: { name: true, email: true },
         });
 
         if (updatedUser) {
           token.name = updatedUser.name;
           token.email = updatedUser.email;
-          token.activeClinicId = updatedUser.activeClinicId;
         }
       }
 
@@ -119,8 +108,6 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.laboratoryId = token.laboratoryId as string | null | undefined;
-        session.user.clinicId = token.clinicId as string | null | undefined;
-        session.user.activeClinicId = token.activeClinicId as string | null | undefined;
       }
       return session;
     },

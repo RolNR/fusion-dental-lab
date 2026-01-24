@@ -90,9 +90,10 @@ export async function PATCH(
       orderFields,
       teeth,
       include: {
-        clinic: {
+        doctor: {
           select: {
             name: true,
+            clinicName: true,
           },
         },
       },

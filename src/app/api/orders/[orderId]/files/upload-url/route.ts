@@ -44,7 +44,6 @@ export async function POST(
       userId: session.user.id,
       userRole: session.user.role,
       laboratoryId: session.user.laboratoryId,
-      clinicId: session.user.clinicId,
     });
 
     if (!result.hasAccess) {

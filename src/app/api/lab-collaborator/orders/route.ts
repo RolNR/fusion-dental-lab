@@ -69,17 +69,12 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where,
       include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         doctor: {
           select: {
             id: true,
             name: true,
             email: true,
+            clinicName: true,
           },
         },
         createdBy: {

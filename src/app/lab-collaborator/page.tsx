@@ -28,24 +28,21 @@ export default async function LabCollaboratorDashboard() {
     prisma.order.groupBy({
       by: ['status'],
       where: {
-        clinic: {
-          laboratoryId,
+        doctor: {
+          doctorLaboratoryId: laboratoryId,
         },
       },
       _count: true,
     }),
     prisma.order.findMany({
       where: {
-        clinic: {
-          laboratoryId,
+        doctor: {
+          doctorLaboratoryId: laboratoryId,
         },
       },
       include: {
-        clinic: {
-          select: { id: true, name: true },
-        },
         doctor: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, name: true, email: true, clinicName: true },
         },
         createdBy: {
           select: { id: true, name: true, role: true },

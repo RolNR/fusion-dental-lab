@@ -16,7 +16,7 @@ export default async function DoctorLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <ClinicStaffNav role="doctor" basePath="/doctor" />
+      <ClinicStaffNav basePath="/doctor" />
       <main>{children}</main>
     </div>
   );

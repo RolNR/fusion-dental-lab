@@ -6,7 +6,7 @@ const MAX_RETRIES = 3;
 
 interface CreateOrderParams {
   orderData: Omit<Prisma.OrderCreateInput, 'orderNumber'>;
-  clinicId: string;
+  doctorId: string;
   patientName: string;
 }
 
@@ -19,13 +19,13 @@ interface CreateOrderParams {
  * @throws Error if all retries fail
  */
 export async function createOrderWithRetry(params: CreateOrderParams) {
-  const { orderData, clinicId, patientName } = params;
+  const { orderData, doctorId, patientName } = params;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       // Generate order number
-      const orderNumber = await generateOrderNumber(clinicId, patientName);
+      const orderNumber = await generateOrderNumber(doctorId, patientName);
 
       // Attempt to create the order
       const order = await prisma.order.create({

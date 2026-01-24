@@ -1,117 +1,67 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Icons } from '@/components/ui/Icons';
-import { Modal } from '@/components/ui/Modal';
-import { ClinicForm } from '@/components/lab-admin/ClinicForm';
 import { Role } from '@prisma/client';
-import { featureFlags } from '@/lib/featureFlags';
 
 interface UserFormProps {
   initialData?: {
     name?: string;
     email?: string;
     role?: Role;
+    phone?: string;
+    clinicName?: string;
+    clinicAddress?: string;
+    razonSocial?: string;
+    fiscalAddress?: string;
   };
   userId?: string;
   roleFixed?: boolean;
-  initialClinicId?: string;
   onSuccess?: () => void;
 }
-
-type Clinic = {
-  id: string;
-  name: string;
-};
 
 interface CreateUserPayload {
   name: string;
   email: string;
   password: string;
   role: Role;
-  clinicId?: string;
+  phone?: string;
+  clinicName?: string;
+  clinicAddress?: string;
+  razonSocial?: string;
+  fiscalAddress?: string;
 }
 
 interface UpdateUserPayload {
   name: string;
   email: string;
   password?: string;
+  phone?: string;
+  clinicName?: string;
+  clinicAddress?: string;
+  razonSocial?: string;
+  fiscalAddress?: string;
 }
 
-export function UserForm({
-  initialData,
-  userId,
-  roleFixed = false,
-  initialClinicId,
-  onSuccess,
-}: UserFormProps) {
+export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: UserFormProps) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     email: initialData?.email || '',
     password: '',
     role: initialData?.role || ('' as Role | ''),
-    clinicId: initialClinicId || '',
+    phone: initialData?.phone || '',
+    clinicName: initialData?.clinicName || '',
+    clinicAddress: initialData?.clinicAddress || '',
+    razonSocial: initialData?.razonSocial || '',
+    fiscalAddress: initialData?.fiscalAddress || '',
   });
-  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isCreateClinicModalOpen, setIsCreateClinicModalOpen] = useState(false);
-
-  // Fetch clinics for dropdown
-  const fetchClinics = useCallback(async () => {
-    try {
-      const response = await fetch('/api/lab-admin/clinics');
-      if (response.ok) {
-        const data = await response.json();
-        setClinics(data.clinics);
-        return data.clinics;
-      }
-    } catch (error) {
-      console.error('Error fetching clinics:', error);
-    }
-    return [];
-  }, []);
-
-  useEffect(() => {
-    fetchClinics();
-  }, [fetchClinics]);
-
-  const requiresClinic = (role: Role | '') => {
-    return role === 'CLINIC_ADMIN' || role === 'DOCTOR' || role === 'CLINIC_ASSISTANT';
-  };
-
-  const getRoleDisplayName = (role: Role | ''): string => {
-    switch (role) {
-      case 'DOCTOR':
-        return 'doctor';
-      case 'CLINIC_ADMIN':
-        return 'administrador de clínica';
-      case 'CLINIC_ASSISTANT':
-        return 'asistente';
-      default:
-        return 'usuario';
-    }
-  };
-
-  const handleClinicCreated = useCallback(
-    async (createdClinicId?: string) => {
-      setIsCreateClinicModalOpen(false);
-      // Refrescar lista de clínicas
-      await fetchClinics();
-      // Auto-seleccionar la clínica recién creada usando su ID
-      if (createdClinicId) {
-        setFormData((prevFormData) => ({ ...prevFormData, clinicId: createdClinicId }));
-      }
-    },
-    [fetchClinics]
-  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +75,6 @@ export function UserForm({
       let payload: CreateUserPayload | UpdateUserPayload;
 
       if (!userId) {
-        // Creating a new user
         const createPayload: CreateUserPayload = {
           name: formData.name,
           email: formData.email,
@@ -133,13 +82,16 @@ export function UserForm({
           role: formData.role as Role,
         };
 
-        if (requiresClinic(formData.role)) {
-          createPayload.clinicId = formData.clinicId;
+        if (formData.role === 'DOCTOR') {
+          createPayload.phone = formData.phone || undefined;
+          createPayload.clinicName = formData.clinicName || undefined;
+          createPayload.clinicAddress = formData.clinicAddress || undefined;
+          createPayload.razonSocial = formData.razonSocial || undefined;
+          createPayload.fiscalAddress = formData.fiscalAddress || undefined;
         }
 
         payload = createPayload;
       } else {
-        // Updating existing user
         const updatePayload: UpdateUserPayload = {
           name: formData.name,
           email: formData.email,
@@ -147,6 +99,14 @@ export function UserForm({
 
         if (formData.password) {
           updatePayload.password = formData.password;
+        }
+
+        if (initialData?.role === 'DOCTOR') {
+          updatePayload.phone = formData.phone || undefined;
+          updatePayload.clinicName = formData.clinicName || undefined;
+          updatePayload.clinicAddress = formData.clinicAddress || undefined;
+          updatePayload.razonSocial = formData.razonSocial || undefined;
+          updatePayload.fiscalAddress = formData.fiscalAddress || undefined;
         }
 
         payload = updatePayload;
@@ -185,6 +145,8 @@ export function UserForm({
       setIsLoading(false);
     }
   };
+
+  const isDoctor = formData.role === 'DOCTOR' || initialData?.role === 'DOCTOR';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -225,78 +187,16 @@ export function UserForm({
         >
           <option value="">Selecciona un rol</option>
           <option value="LAB_COLLABORATOR">Colaborador del Laboratorio</option>
-          <option value="CLINIC_ADMIN">Administrador de Clínica</option>
           <option value="DOCTOR">Doctor</option>
-          <option value="CLINIC_ASSISTANT">Asistente de Clínica</option>
         </Select>
       )}
 
       {!userId && roleFixed && formData.role && (
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
-          <p className="text-sm text-muted-foreground">Colaborador del Laboratorio</p>
-        </div>
-      )}
-
-      {!userId && requiresClinic(formData.role) && (
-        <div className="space-y-3">
-          {clinics.length === 0 ? (
-            <div className="rounded-lg border-2 border-dashed border-warning bg-warning/5 p-6">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0">
-                  <Icons.alertCircle className="h-6 w-6 text-warning" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-foreground mb-1">
-                    No hay clínicas disponibles
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Para agregar un {getRoleDisplayName(formData.role)}, primero necesitas crear una
-                    clínica.
-                  </p>
-                  {featureFlags.enableCreateClinicInUserForm && (
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setIsCreateClinicModalOpen(true)}
-                    >
-                      Crear Clínica
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <Select
-                label="Clínica"
-                name="clinicId"
-                value={formData.clinicId}
-                onChange={(e) => setFormData({ ...formData, clinicId: e.target.value })}
-                error={errors.clinicId}
-                required
-              >
-                <option value="">Selecciona una clínica</option>
-                {clinics.map((clinic) => (
-                  <option key={clinic.id} value={clinic.id}>
-                    {clinic.name}
-                  </option>
-                ))}
-              </Select>
-              {featureFlags.enableCreateClinicInUserForm && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsCreateClinicModalOpen(true)}
-                  className="w-full"
-                >
-                  + Crear nueva clínica
-                </Button>
-              )}
-            </>
-          )}
+          <p className="text-sm text-muted-foreground">
+            {formData.role === 'DOCTOR' ? 'Doctor' : 'Colaborador del Laboratorio'}
+          </p>
         </div>
       )}
 
@@ -309,6 +209,58 @@ export function UserForm({
         required={!userId}
         placeholder="Mínimo 8 caracteres"
       />
+
+      {/* Doctor Profile Fields */}
+      {isDoctor && (
+        <div className="space-y-4 border-t border-border pt-6">
+          <h3 className="text-lg font-semibold text-foreground">Información del Consultorio</h3>
+
+          <Input
+            label="Teléfono"
+            name="phone"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            error={errors.phone}
+            placeholder="(123) 456-7890"
+          />
+
+          <Input
+            label="Nombre del Consultorio"
+            name="clinicName"
+            value={formData.clinicName}
+            onChange={(e) => setFormData({ ...formData, clinicName: e.target.value })}
+            error={errors.clinicName}
+            placeholder="Consultorio Dental Pérez"
+          />
+
+          <Input
+            label="Dirección del Consultorio"
+            name="clinicAddress"
+            value={formData.clinicAddress}
+            onChange={(e) => setFormData({ ...formData, clinicAddress: e.target.value })}
+            error={errors.clinicAddress}
+            placeholder="Av. Principal 123, Col. Centro"
+          />
+
+          <Input
+            label="Razón Social"
+            name="razonSocial"
+            value={formData.razonSocial}
+            onChange={(e) => setFormData({ ...formData, razonSocial: e.target.value })}
+            error={errors.razonSocial}
+            placeholder="Razón social para facturación"
+          />
+
+          <Input
+            label="Dirección Fiscal"
+            name="fiscalAddress"
+            value={formData.fiscalAddress}
+            onChange={(e) => setFormData({ ...formData, fiscalAddress: e.target.value })}
+            error={errors.fiscalAddress}
+            placeholder="Dirección fiscal para facturación"
+          />
+        </div>
+      )}
 
       <div className="flex gap-4 justify-end">
         <Button
@@ -323,19 +275,6 @@ export function UserForm({
           {isLoading ? 'Guardando...' : userId ? 'Actualizar Usuario' : 'Crear Usuario'}
         </Button>
       </div>
-
-      <Modal
-        isOpen={isCreateClinicModalOpen}
-        onClose={() => setIsCreateClinicModalOpen(false)}
-        title="Nueva Clínica"
-        size="md"
-      >
-        <ClinicForm
-          asModal={true}
-          onSuccess={handleClinicCreated}
-          onCancel={() => setIsCreateClinicModalOpen(false)}
-        />
-      </Modal>
     </form>
   );
 }

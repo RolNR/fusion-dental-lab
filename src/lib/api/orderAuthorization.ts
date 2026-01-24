@@ -13,44 +13,30 @@ interface CheckOrderAccessParams {
   userId: string;
   userRole: Role;
   laboratoryId?: string | null;
-  clinicId?: string | null;
 }
 
 /**
  * Checks if a user has access to view/modify an order
  *
  * Access rules:
- * - Lab users: Can access orders from clinics in their laboratory
+ * - Lab users: Can access orders from doctors in their laboratory
  * - Doctors: Can access their own orders
- * - Clinic assistants/admins: Can access orders from their clinic
- *
- * @param params - Access check parameters
- * @returns Result with hasAccess flag, error message, and order data
- *
- * @example
- * const result = await checkOrderAccess({
- *   orderId: '123',
- *   userId: 'user-id',
- *   userRole: Role.DOCTOR,
- *   clinicId: 'clinic-id',
- * });
- *
- * if (!result.hasAccess) {
- *   return NextResponse.json({ error: result.error }, { status: result.statusCode });
- * }
  */
 export async function checkOrderAccess({
   orderId,
   userId,
   userRole,
   laboratoryId,
-  clinicId,
 }: CheckOrderAccessParams): Promise<OrderAccessResult> {
-  // Fetch order with clinic relationship
+  // Fetch order with doctor relationship
   const order = await prisma.order.findUnique({
     where: { id: orderId },
     include: {
-      clinic: true,
+      doctor: {
+        select: {
+          doctorLaboratoryId: true,
+        },
+      },
     },
   });
 
@@ -64,35 +50,19 @@ export async function checkOrderAccess({
 
   // Determine user type and check access
   const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
-  const isClinicUser =
-    userRole === Role.DOCTOR ||
-    userRole === Role.CLINIC_ASSISTANT ||
-    userRole === Role.CLINIC_ADMIN;
 
   if (isLabUser) {
-    // Lab users can only access orders from clinics in their laboratory
-    if (order.clinic.laboratoryId !== laboratoryId) {
+    // Lab users can only access orders from doctors in their laboratory
+    if (order.doctor.doctorLaboratoryId !== laboratoryId) {
       return {
         hasAccess: false,
         error: 'No tienes acceso a esta orden',
         statusCode: 403,
       };
     }
-  } else if (isClinicUser) {
+  } else if (userRole === Role.DOCTOR) {
     // Doctors can only access their own orders
-    if (userRole === Role.DOCTOR && order.doctorId !== userId) {
-      return {
-        hasAccess: false,
-        error: 'No tienes acceso a esta orden',
-        statusCode: 403,
-      };
-    }
-
-    // Clinic assistants and admins can access orders from their clinic
-    if (
-      (userRole === Role.CLINIC_ASSISTANT || userRole === Role.CLINIC_ADMIN) &&
-      order.clinicId !== clinicId
-    ) {
+    if (order.doctorId !== userId) {
       return {
         hasAccess: false,
         error: 'No tienes acceso a esta orden',

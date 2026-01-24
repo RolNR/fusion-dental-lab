@@ -9,12 +9,8 @@ export function getRoleBasedRedirect(role: Role): string {
       return '/lab-admin';
     case 'LAB_COLLABORATOR':
       return '/lab-collaborator';
-    case 'CLINIC_ADMIN':
-      return '/clinic-admin';
     case 'DOCTOR':
       return '/doctor';
-    case 'CLINIC_ASSISTANT':
-      return '/assistant';
     default:
       return '/unauthorized';
   }

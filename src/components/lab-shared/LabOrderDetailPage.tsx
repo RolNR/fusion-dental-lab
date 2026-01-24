@@ -373,23 +373,15 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             />
           )}
 
-          {/* Clinic Info */}
-          <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-            <h2 className="mb-4 text-xl font-semibold text-foreground">Clínica</h2>
-            <dl className="space-y-3">
-              <CopyableField label="Nombre" value={order.clinic.name} />
-              <CopyableField label="Email" value={order.clinic.email} />
-              <CopyableField label="Teléfono" value={order.clinic.phone} />
-              <CopyableField label="Dirección" value={order.clinic.address} />
-            </dl>
-          </div>
-
           {/* Doctor Info */}
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">Doctor</h2>
             <dl className="space-y-3">
               <CopyableField label="Nombre" value={order.doctor.name} />
               <CopyableField label="Email" value={order.doctor.email} />
+              <CopyableField label="Teléfono" value={order.doctor.phone} />
+              <CopyableField label="Consultorio" value={order.doctor.clinicName} />
+              <CopyableField label="Dirección" value={order.doctor.clinicAddress} />
             </dl>
           </div>
 

@@ -4,16 +4,17 @@
 
 /**
  * Standard include configuration for fetching order details with all related data
- * Used across doctor and assistant order API endpoints
+ * Used across doctor order API endpoints
  */
 export const orderDetailInclude = {
-  clinic: {
+  doctor: {
     select: {
       name: true,
       email: true,
       phone: true,
-      address: true,
-      laboratory: {
+      clinicName: true,
+      clinicAddress: true,
+      doctorLaboratory: {
         select: {
           name: true,
           email: true,
@@ -21,12 +22,6 @@ export const orderDetailInclude = {
           address: true,
         },
       },
-    },
-  },
-  doctor: {
-    select: {
-      name: true,
-      email: true,
     },
   },
   createdBy: {

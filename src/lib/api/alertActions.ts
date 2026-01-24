@@ -4,7 +4,7 @@ import { Role } from '@prisma/client';
 interface DeleteAlertParams {
   alertId: string;
   userId: string;
-  userRole: typeof Role.DOCTOR | typeof Role.CLINIC_ASSISTANT;
+  userRole: typeof Role.DOCTOR;
 }
 
 interface DeleteAlertResult {

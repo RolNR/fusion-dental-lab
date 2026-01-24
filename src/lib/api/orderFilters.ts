@@ -3,10 +3,8 @@ import { Prisma, OrderStatus } from '@prisma/client';
 export interface OrderFilterParams {
   search?: string | null;
   status?: OrderStatus | null;
-  clinicId?: string | null;
   laboratoryId?: string | null;
   doctorId?: string | null;
-  doctorIds?: string[] | null;
 }
 
 /**
@@ -15,25 +13,17 @@ export interface OrderFilterParams {
  * @returns Prisma where clause for Order.findMany
  */
 export function buildOrderWhereClause(params: OrderFilterParams): Prisma.OrderWhereInput {
-  const { search, status, clinicId, laboratoryId, doctorId, doctorIds } = params;
+  const { search, status, laboratoryId, doctorId } = params;
 
   const where: Prisma.OrderWhereInput = {};
 
-  // Role-specific constraints
+  // Lab users: filter by doctor's laboratory membership
   if (laboratoryId) {
-    where.clinic = { laboratoryId };
-  }
-
-  if (clinicId) {
-    where.clinicId = clinicId;
+    where.doctor = { doctorLaboratoryId: laboratoryId };
   }
 
   if (doctorId) {
     where.doctorId = doctorId;
-  }
-
-  if (doctorIds && doctorIds.length > 0) {
-    where.doctorId = { in: doctorIds };
   }
 
   // Status filter
@@ -52,13 +42,6 @@ export function buildOrderWhereClause(params: OrderFilterParams): Prisma.OrderWh
     if (!doctorId) {
       searchConditions.push({
         doctor: { name: { contains: search.trim(), mode: 'insensitive' } },
-      });
-    }
-
-    // Include clinic name in search for lab roles
-    if (laboratoryId && !clinicId) {
-      searchConditions.push({
-        clinic: { name: { contains: search.trim(), mode: 'insensitive' } },
       });
     }
 

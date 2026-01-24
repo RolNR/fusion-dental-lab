@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { UserMenu } from '@/components/ui/UserMenu';
-import { ClinicSelector } from '@/components/ui/ClinicSelector';
 import { Icons } from '@/components/ui/Icons';
 
 interface NavItem {
@@ -86,9 +85,8 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
             })}
           </div>
 
-          {/* Desktop Clinic Selector & User Menu - Hidden on mobile */}
+          {/* Desktop User Menu - Hidden on mobile */}
           <div className="hidden md:flex items-center gap-2">
-            <ClinicSelector />
             <UserMenu basePath={basePath} />
           </div>
 
@@ -145,7 +143,6 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
                 );
               })}
               <div className="pt-2 border-t border-border mt-2 space-y-2">
-                <ClinicSelector isMobile={true} onClose={() => setMobileMenuOpen(false)} />
                 <UserMenu
                   basePath={basePath}
                   isMobile={true}

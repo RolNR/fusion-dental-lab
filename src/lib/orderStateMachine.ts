@@ -48,26 +48,6 @@ const ROLE_TRANSITIONS: Record<Role, Record<OrderStatus, OrderStatus[]>> = {
     [OrderStatus.COMPLETED]: [],
     [OrderStatus.CANCELLED]: [],
   },
-  // Clinic assistants can submit drafts and respond to info requests
-  [Role.CLINIC_ASSISTANT]: {
-    [OrderStatus.DRAFT]: [OrderStatus.PENDING_REVIEW, OrderStatus.CANCELLED],
-    [OrderStatus.PENDING_REVIEW]: [],
-    [OrderStatus.MATERIALS_SENT]: [],
-    [OrderStatus.NEEDS_INFO]: [OrderStatus.PENDING_REVIEW],
-    [OrderStatus.IN_PROGRESS]: [],
-    [OrderStatus.COMPLETED]: [],
-    [OrderStatus.CANCELLED]: [],
-  },
-  // Clinic admins have same permissions as assistants
-  [Role.CLINIC_ADMIN]: {
-    [OrderStatus.DRAFT]: [OrderStatus.PENDING_REVIEW, OrderStatus.CANCELLED],
-    [OrderStatus.PENDING_REVIEW]: [],
-    [OrderStatus.MATERIALS_SENT]: [],
-    [OrderStatus.NEEDS_INFO]: [OrderStatus.PENDING_REVIEW],
-    [OrderStatus.IN_PROGRESS]: [],
-    [OrderStatus.COMPLETED]: [],
-    [OrderStatus.CANCELLED]: [],
-  },
   // Lab admins can do all transitions
   [Role.LAB_ADMIN]: {
     [OrderStatus.DRAFT]: [],

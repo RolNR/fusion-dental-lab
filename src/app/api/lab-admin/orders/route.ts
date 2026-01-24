@@ -9,7 +9,6 @@ import { buildOrderWhereClause } from '@/lib/api/orderFilters';
 const queryParamsSchema = z.object({
   search: z.string().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
-  clinicId: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(10),
 });
@@ -39,7 +38,6 @@ export async function GET(request: NextRequest) {
     const result = queryParamsSchema.safeParse({
       search: searchParams.get('search') || undefined,
       status: searchParams.get('status') || undefined,
-      clinicId: searchParams.get('clinicId') || undefined,
       page: searchParams.get('page') || undefined,
       limit: searchParams.get('limit') || undefined,
     });
@@ -51,13 +49,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { search, status, clinicId, page, limit } = result.data;
+    const { search, status, page, limit } = result.data;
 
     // Build where clause using shared utility
     const where = buildOrderWhereClause({
       search,
       status,
-      clinicId,
       laboratoryId,
     });
 
@@ -71,17 +68,12 @@ export async function GET(request: NextRequest) {
     const orders = await prisma.order.findMany({
       where,
       include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         doctor: {
           select: {
             id: true,
             name: true,
             email: true,
+            clinicName: true,
           },
         },
         createdBy: {

@@ -27,28 +27,29 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
       <div className="p-3 bg-white">
         {/* From/To Section */}
         <div className="grid grid-cols-2 gap-3 mb-3">
-          {/* From - Clinic */}
+          {/* From - Doctor/Consultorio */}
           <div className="border-2 border-gray-700 p-3 rounded-lg shadow-sm">
             <div className="bg-black text-white px-3 py-1 mb-3 inline-block font-bold rounded">
               DE
             </div>
             <div className="space-y-1">
-              {order.clinic && (
-                <>
-                  <p className="font-bold text-lg">{order.clinic.name}</p>
-                  {order.clinic.address && <p className="text-sm">{order.clinic.address}</p>}
-                  {order.clinic.phone && <p className="text-sm">Tel: {order.clinic.phone}</p>}
-                  {order.clinic.email && <p className="text-sm">Email: {order.clinic.email}</p>}
-                </>
-              )}
               {order.doctor && (
-                <div className="mt-3 pt-3 border-t border-gray-300">
-                  <p className="text-sm font-semibold">Doctor:</p>
-                  <p className="text-sm">{order.doctor.name}</p>
-                  {order.doctor.email && (
-                    <p className="text-xs text-gray-600">{order.doctor.email}</p>
+                <>
+                  {order.doctor.clinicName && (
+                    <p className="font-bold text-lg">{order.doctor.clinicName}</p>
                   )}
-                </div>
+                  {order.doctor.clinicAddress && (
+                    <p className="text-sm">{order.doctor.clinicAddress}</p>
+                  )}
+                  {order.doctor.phone && <p className="text-sm">Tel: {order.doctor.phone}</p>}
+                  <div className="mt-3 pt-3 border-t border-gray-300">
+                    <p className="text-sm font-semibold">Doctor:</p>
+                    <p className="text-sm">{order.doctor.name}</p>
+                    {order.doctor.email && (
+                      <p className="text-xs text-gray-600">{order.doctor.email}</p>
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -59,17 +60,17 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
               PARA
             </div>
             <div className="space-y-1">
-              {order.clinic?.laboratory ? (
+              {order.doctor?.doctorLaboratory ? (
                 <>
-                  <p className="font-bold text-lg">{order.clinic.laboratory.name}</p>
-                  {order.clinic.laboratory.address && (
-                    <p className="text-sm">{order.clinic.laboratory.address}</p>
+                  <p className="font-bold text-lg">{order.doctor.doctorLaboratory.name}</p>
+                  {order.doctor.doctorLaboratory.address && (
+                    <p className="text-sm">{order.doctor.doctorLaboratory.address}</p>
                   )}
-                  {order.clinic.laboratory.phone && (
-                    <p className="text-sm">Tel: {order.clinic.laboratory.phone}</p>
+                  {order.doctor.doctorLaboratory.phone && (
+                    <p className="text-sm">Tel: {order.doctor.doctorLaboratory.phone}</p>
                   )}
-                  {order.clinic.laboratory.email && (
-                    <p className="text-sm">Email: {order.clinic.laboratory.email}</p>
+                  {order.doctor.doctorLaboratory.email && (
+                    <p className="text-sm">Email: {order.doctor.doctorLaboratory.email}</p>
                   )}
                 </>
               ) : (

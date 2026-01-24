@@ -42,7 +42,7 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
         orderId,
         userId,
         userRole,
-        clinicId: session.user.clinicId,
+        laboratoryId: session.user.laboratoryId,
       });
 
       if (!accessCheck.hasAccess) {

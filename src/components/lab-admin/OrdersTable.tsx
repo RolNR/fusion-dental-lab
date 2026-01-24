@@ -43,16 +43,19 @@ export function OrdersTable({
         </div>
       ),
     },
-    {
-      header: 'Clínica',
-      accessor: (order) => <span className="text-sm text-foreground">{order.clinic.name}</span>,
-    },
     ...(showDoctorColumn
       ? [
           {
             header: 'Doctor',
             accessor: (order: OrderWithRelations) => (
-              <span className="text-sm text-foreground">{order.doctor?.name || '-'}</span>
+              <div>
+                <div className="text-sm font-medium text-foreground">
+                  {order.doctor?.name || '-'}
+                </div>
+                {order.doctor?.clinicName && (
+                  <div className="text-xs text-muted-foreground">{order.doctor.clinicName}</div>
+                )}
+              </div>
             ),
           },
         ]

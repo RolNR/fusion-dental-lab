@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { UserForm } from '@/components/lab-admin/UserForm';
-import { DoctorClinicAssignments } from '@/components/lab-admin/DoctorClinicAssignments';
 import { Role } from '@prisma/client';
 
 type UserData = {
@@ -12,13 +11,11 @@ type UserData = {
   name: string;
   email: string;
   role: Role;
-  clinicMemberships?: Array<{
-    clinic: {
-      id: string;
-      name: string;
-    };
-    isPrimary: boolean;
-  }>;
+  phone?: string | null;
+  clinicName?: string | null;
+  clinicAddress?: string | null;
+  razonSocial?: string | null;
+  fiscalAddress?: string | null;
 };
 
 export default function EditUserPage() {
@@ -88,19 +85,14 @@ export default function EditUserPage() {
             name: user.name,
             email: user.email,
             role: user.role,
+            phone: user.phone || undefined,
+            clinicName: user.clinicName || undefined,
+            clinicAddress: user.clinicAddress || undefined,
+            razonSocial: user.razonSocial || undefined,
+            fiscalAddress: user.fiscalAddress || undefined,
           }}
         />
       </div>
-
-      {/* Doctor Clinic Assignments */}
-      {user.role === Role.DOCTOR && (
-        <div className="mt-8">
-          <DoctorClinicAssignments
-            doctorId={user.id}
-            initialMemberships={user.clinicMemberships || []}
-          />
-        </div>
-      )}
     </div>
   );
 }

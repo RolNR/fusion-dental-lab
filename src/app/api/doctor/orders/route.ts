@@ -2,92 +2,57 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-import { OrderStatus } from '@prisma/client';
-import { orderCreateSchema } from '@/types/order';
+import { Role } from '@prisma/client';
+import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
-import { buildOrderWhereClause } from '@/lib/api/orderFilters';
-
-const queryParamsSchema = z.object({
-  search: z.string().optional(),
-  status: z.nativeEnum(OrderStatus).optional(),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(10),
-});
+import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'DOCTOR') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    // Check authentication
+    if (!session?.user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    // Validate query parameters
-    const { searchParams } = new URL(request.url);
-    const result = queryParamsSchema.safeParse({
-      search: searchParams.get('search') || undefined,
-      status: searchParams.get('status') || undefined,
-      page: searchParams.get('page') || undefined,
-      limit: searchParams.get('limit') || undefined,
-    });
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Parámetros inválidos', details: result.error.issues },
-        { status: 400 }
-      );
+    // Check authorization
+    if (session.user.role !== Role.DOCTOR) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    const { search, status, page, limit } = result.data;
-
-    // Build where clause using shared utility
-    const where = buildOrderWhereClause({
-      search,
-      status,
-      doctorId: session.user.id,
-    });
-
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get total count for pagination
-    const totalCount = await prisma.order.count({ where });
-
+    // Fetch orders for this doctor
     const orders = await prisma.order.findMany({
-      where,
+      where: {
+        doctorId: session.user.id,
+      },
       include: {
-        clinic: {
+        doctor: {
           select: {
+            id: true,
             name: true,
+            email: true,
+            clinicName: true,
           },
         },
         createdBy: {
           select: {
+            id: true,
             name: true,
+            role: true,
           },
         },
       },
       orderBy: {
         createdAt: 'desc',
       },
-      skip,
-      take: limit,
     });
 
-    return NextResponse.json({
-      orders,
-      pagination: {
-        page,
-        limit,
-        totalCount,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    });
+    return NextResponse.json({ orders }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching doctor orders:', error);
-    return NextResponse.json({ error: 'Error al cargar órdenes' }, { status: 500 });
+    console.error('Error fetching orders:', error);
+    return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
   }
 }
 
@@ -96,97 +61,75 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'DOCTOR') {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    // Check authentication
+    if (!session?.user) {
+      return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const validatedData = orderCreateSchema.parse(body);
+    // Check authorization
+    if (session.user.role !== Role.DOCTOR) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
 
-    // Get doctor's active clinic
-    const doctor = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { activeClinicId: true },
+    const doctorId = session.user.id;
+
+    // Parse and validate request body
+    const body = await request.json();
+
+    // Determine if draft or full order
+    const isDraft = body.patientName === undefined || body.patientName === '';
+    const schema = isDraft ? orderDraftSchema : orderCreateSchema;
+    const validatedData = schema.parse(body);
+
+    // Extract teeth data before creating order
+    const { teeth, ...orderFields } = validatedData;
+    const patientName = orderFields.patientName || '';
+
+    // Create order with retry logic for order number conflicts
+    const order = await createOrderWithRetry({
+      orderData: {
+        ...orderFields,
+        patientName,
+        doctor: { connect: { id: doctorId } },
+        createdBy: { connect: { id: doctorId } },
+        status: 'DRAFT',
+        ...(teeth && teeth.length > 0
+          ? {
+              teeth: {
+                create: teeth.map((tooth) => ({
+                  toothNumber: tooth.toothNumber,
+                  material: tooth.material,
+                  materialBrand: tooth.materialBrand,
+                  colorInfo: tooth.colorInfo,
+                  tipoTrabajo: tooth.tipoTrabajo,
+                  tipoRestauracion: tooth.tipoRestauracion,
+                  trabajoSobreImplante: tooth.trabajoSobreImplante,
+                  informacionImplante: tooth.informacionImplante,
+                })),
+              },
+            }
+          : {}),
+      },
+      doctorId,
+      patientName: validatedData.patientName || 'borrador',
     });
 
-    if (!doctor?.activeClinicId) {
+    return NextResponse.json({ message: 'Orden creada exitosamente', order }, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Debes seleccionar una clínica para crear órdenes' },
+        {
+          error: 'Validación fallida',
+          details: error.issues.map((err) => ({
+            field: err.path.join('.'),
+            message: err.message,
+          })),
+        },
         { status: 400 }
       );
     }
 
-    // Verify doctor belongs to the active clinic
-    const membership = await prisma.doctorClinic.findUnique({
-      where: {
-        doctorId_clinicId: {
-          doctorId: session.user.id,
-          clinicId: doctor.activeClinicId,
-        },
-      },
-    });
-
-    if (!membership) {
-      return NextResponse.json({ error: 'No tienes acceso a la clínica activa' }, { status: 403 });
-    }
-
-    // Extract teeth data
-    const { teeth, ...orderFields } = validatedData;
-
-    // Create order with retry logic for race conditions
-    const order = await createOrderWithRetry({
-      orderData: {
-        ...orderFields,
-        clinic: {
-          connect: { id: doctor.activeClinicId },
-        },
-        doctor: {
-          connect: { id: session.user.id },
-        },
-        createdBy: {
-          connect: { id: session.user.id },
-        },
-        status: 'DRAFT',
-        // Create teeth if provided
-        ...(teeth &&
-          teeth.length > 0 && {
-            teeth: {
-              create: teeth.map((tooth) => ({
-                toothNumber: tooth.toothNumber,
-                material: tooth.material,
-                materialBrand: tooth.materialBrand,
-                colorInfo: tooth.colorInfo,
-                tipoTrabajo: tooth.tipoTrabajo,
-                tipoRestauracion: tooth.tipoRestauracion,
-                trabajoSobreImplante: tooth.trabajoSobreImplante,
-                informacionImplante: tooth.informacionImplante,
-              })),
-            },
-          }),
-      },
-      clinicId: doctor.activeClinicId,
-      patientName: validatedData.patientName,
-    });
-
-    // Fetch the created order with clinic info
-    const orderWithClinic = await prisma.order.findUnique({
-      where: { id: order.id },
-      include: {
-        clinic: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json({ order: orderWithClinic }, { status: 201 });
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
-    }
-
-    console.error('Error creating order:', err);
+    console.error('Error creating order:', error);
     return NextResponse.json({ error: 'Error al crear orden' }, { status: 500 });
   }
 }

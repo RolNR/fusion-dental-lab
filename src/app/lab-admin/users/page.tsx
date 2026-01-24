@@ -10,45 +10,18 @@ import { Role } from '@prisma/client';
 import { getRoleLabel } from '@/lib/formatters';
 import { Icons } from '@/components/ui/Icons';
 
-type UserWithClinic = {
+type UserItem = {
   id: string;
   name: string;
   email: string;
   role: Role;
   createdAt: string;
-  clinic?: {
-    id: string;
-    name: string;
-  } | null;
-  clinicMemberships?: Array<{
-    clinic: {
-      id: string;
-      name: string;
-    };
-    isPrimary: boolean;
-  }>;
-  assistantClinic?: {
-    id: string;
-    name: string;
-  } | null;
-};
-
-const getClinicName = (user: UserWithClinic) => {
-  // For doctors: show primary clinic or first clinic
-  if (user.role === Role.DOCTOR && user.clinicMemberships) {
-    const primaryClinic = user.clinicMemberships.find((m) => m.isPrimary);
-    const clinic = primaryClinic || user.clinicMemberships[0];
-    if (clinic) {
-      return clinic.clinic.name;
-    }
-  }
-
-  // For other roles
-  return user.clinic?.name || user.assistantClinic?.name || '-';
+  clinicName?: string | null;
+  phone?: string | null;
 };
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<UserWithClinic[]>([]);
+  const [users, setUsers] = useState<UserItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<string>('');
@@ -91,7 +64,7 @@ export default function UsersPage() {
     );
   }
 
-  const columns: TableColumn<UserWithClinic>[] = [
+  const columns: TableColumn<UserItem>[] = [
     {
       header: 'Usuario',
       accessor: (user) => (
@@ -110,36 +83,8 @@ export default function UsersPage() {
       ),
     },
     {
-      header: 'Clínica',
-      accessor: (user) => {
-        // For doctors: show all clinics with primary badge
-        if (
-          user.role === Role.DOCTOR &&
-          user.clinicMemberships &&
-          user.clinicMemberships.length > 0
-        ) {
-          return (
-            <div className="flex flex-wrap gap-1">
-              {user.clinicMemberships.map((membership) => (
-                <span
-                  key={membership.clinic.id}
-                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                    membership.isPrimary
-                      ? 'bg-primary/20 text-primary'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {membership.clinic.name}
-                  {membership.isPrimary && <span className="text-[10px]">★</span>}
-                </span>
-              ))}
-            </div>
-          );
-        }
-
-        // For other roles: show single clinic
-        return <span className="text-sm text-foreground">{getClinicName(user)}</span>;
-      },
+      header: 'Consultorio',
+      accessor: (user) => <span className="text-sm text-foreground">{user.clinicName || '-'}</span>,
     },
     {
       header: 'Fecha de Registro',
@@ -181,7 +126,7 @@ export default function UsersPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
       <PageHeader
         title="Usuarios"
-        description="Gestiona todos los usuarios del laboratorio y clínicas"
+        description="Gestiona los colaboradores y doctores del laboratorio"
         action={{
           label: 'Nuevo Usuario',
           href: '/lab-admin/users/new',
@@ -198,9 +143,7 @@ export default function UsersPage() {
         >
           <option value="">Todos los roles</option>
           <option value="LAB_COLLABORATOR">Colaborador Lab</option>
-          <option value="CLINIC_ADMIN">Admin Clínica</option>
           <option value="DOCTOR">Doctor</option>
-          <option value="CLINIC_ASSISTANT">Asistente</option>
         </Select>
       </div>
 

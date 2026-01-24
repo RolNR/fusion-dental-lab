@@ -58,21 +58,18 @@ export interface Order {
   // Per-tooth configuration
   teeth?: Tooth[];
 
-  clinic?: {
+  doctor?: {
     name: string;
     email?: string;
     phone?: string;
-    address?: string;
-    laboratory?: {
+    clinicName?: string;
+    clinicAddress?: string;
+    doctorLaboratory?: {
       name: string;
       email?: string;
       phone?: string;
       address?: string;
     };
-  };
-  doctor?: {
-    name: string;
-    email?: string;
   };
   createdBy?: {
     name: string;
@@ -97,14 +94,11 @@ export interface OrderWithRelations {
   status: OrderStatus;
   createdAt: string;
   isUrgent: boolean;
-  clinic: {
-    id: string;
-    name: string;
-  };
   doctor?: {
     id: string;
     name: string;
     email: string;
+    clinicName?: string | null;
   };
   createdBy: {
     id: string;
@@ -160,17 +154,13 @@ export interface OrderDetail {
   // Per-tooth configuration
   teeth: Tooth[];
 
-  clinic: {
-    id: string;
-    name: string;
-    email: string | null;
-    phone: string | null;
-    address: string | null;
-  };
   doctor: {
     id: string;
     name: string;
     email: string;
+    phone: string | null;
+    clinicName: string | null;
+    clinicAddress: string | null;
   };
   createdBy: {
     id: string;
@@ -352,21 +342,6 @@ const toothSubmitSchema = z.object({
 // Schema for submitting orders for review (stricter validation on teeth)
 export const orderSubmitSchema = orderCreateSchema.extend({
   teeth: z.array(toothSubmitSchema).min(1, 'Al menos un diente debe ser configurado'),
-});
-
-// Schema for assistants creating draft orders (includes doctorId, patientName optional)
-export const assistantOrderDraftSchema = orderDraftSchema.extend({
-  doctorId: z.string().min(1, 'El doctor es requerido'),
-});
-
-// Schema for assistants creating orders (includes doctorId)
-export const assistantOrderCreateSchema = orderCreateSchema.extend({
-  doctorId: z.string().min(1, 'El doctor es requerido'),
-});
-
-// Schema for assistants submitting orders for review (includes doctorId + stricter teeth validation)
-export const assistantOrderSubmitSchema = orderSubmitSchema.extend({
-  doctorId: z.string().min(1, 'El doctor es requerido'),
 });
 
 // Schema for updating orders

@@ -20,56 +20,18 @@ export default async function LabAdminDashboard() {
   }
 
   // Fetch statistics
-  const [laboratory, clinicsCount, usersStats] = await Promise.all([
+  const [laboratory, doctorsCount, collaboratorsCount] = await Promise.all([
     prisma.laboratory.findUnique({
       where: { id: laboratoryId },
       select: { name: true, email: true, phone: true, createdAt: true },
     }),
-    prisma.clinic.count({
-      where: { laboratoryId, isActive: true },
+    prisma.user.count({
+      where: { doctorLaboratoryId: laboratoryId },
     }),
-    prisma.user.groupBy({
-      by: ['role'],
-      where: {
-        OR: [
-          { labCollaboratorId: laboratoryId },
-          { clinic: { laboratoryId } },
-          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
-          { assistantClinic: { laboratoryId } },
-        ],
-      },
-      _count: true,
+    prisma.user.count({
+      where: { labCollaboratorId: laboratoryId },
     }),
   ]);
-
-  // Calculate user counts by role
-  const userCounts = {
-    labCollaborators: 0,
-    clinicAdmins: 0,
-    doctors: 0,
-    assistants: 0,
-    total: 0,
-  };
-
-  usersStats.forEach((stat) => {
-    const count = stat._count;
-    userCounts.total += count;
-
-    switch (stat.role) {
-      case 'LAB_COLLABORATOR':
-        userCounts.labCollaborators = count;
-        break;
-      case 'CLINIC_ADMIN':
-        userCounts.clinicAdmins = count;
-        break;
-      case 'DOCTOR':
-        userCounts.doctors = count;
-        break;
-      case 'CLINIC_ASSISTANT':
-        userCounts.assistants = count;
-        break;
-    }
-  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
@@ -112,30 +74,24 @@ export default async function LabAdminDashboard() {
       </div>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-        <StatsCard
-          title="Clínicas Activas"
-          value={clinicsCount}
-          icon="🏥"
-          description="Clínicas en el sistema"
-        />
-        <StatsCard
-          title="Total Usuarios"
-          value={userCounts.total}
-          icon="👥"
-          description="Todos los usuarios"
-        />
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 mb-6 sm:mb-8">
         <StatsCard
           title="Doctores"
-          value={userCounts.doctors}
+          value={doctorsCount}
           icon="👨‍⚕️"
-          description="Doctores activos"
+          description="Doctores registrados"
         />
         <StatsCard
           title="Colaboradores Lab"
-          value={userCounts.labCollaborators}
+          value={collaboratorsCount}
           icon="🔬"
           description="Personal del laboratorio"
+        />
+        <StatsCard
+          title="Total Usuarios"
+          value={doctorsCount + collaboratorsCount}
+          icon="👥"
+          description="Todos los usuarios"
         />
       </div>
 
@@ -145,19 +101,19 @@ export default async function LabAdminDashboard() {
           Acciones Rápidas
         </h2>
         <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-3">
-          <Link href="/lab-admin/clinics">
-            <Button variant="primary" className="w-full">
-              Nueva Clínica
-            </Button>
-          </Link>
-          <Link href="/lab-admin/users">
+          <Link href="/lab-admin/users/new">
             <Button variant="primary" className="w-full">
               Nuevo Usuario
             </Button>
           </Link>
-          <Link href="/lab-admin/clinics">
+          <Link href="/lab-admin/users">
             <Button variant="secondary" className="w-full">
-              Ver Clínicas
+              Ver Usuarios
+            </Button>
+          </Link>
+          <Link href="/lab-admin/orders">
+            <Button variant="secondary" className="w-full">
+              Ver Órdenes
             </Button>
           </Link>
         </div>

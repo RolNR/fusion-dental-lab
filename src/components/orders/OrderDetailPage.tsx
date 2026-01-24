@@ -15,7 +15,7 @@ import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { useSubmitOrder } from '@/hooks/useSubmitOrder';
 
 interface OrderDetailPageProps {
-  role: 'assistant' | 'doctor';
+  role: 'doctor';
   showDoctorInfo?: boolean;
 }
 
@@ -101,11 +101,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           <OrderComments comments={order.comments} />
         )}
 
-        <OrderDetails
-          order={order}
-          showClinicInfo={!showDoctorInfo}
-          showDoctorInfo={showDoctorInfo}
-        />
+        <OrderDetails order={order} showDoctorInfo={showDoctorInfo} />
 
         {/* Files Section */}
         <div className="mt-6 rounded-xl bg-background p-6 shadow-md border border-border">

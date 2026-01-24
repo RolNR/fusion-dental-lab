@@ -12,6 +12,11 @@ const updateUserSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').optional(),
   email: z.string().email('Email inválido').optional(),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').optional(),
+  phone: z.string().optional(),
+  clinicName: z.string().optional(),
+  clinicAddress: z.string().optional(),
+  razonSocial: z.string().optional(),
+  fiscalAddress: z.string().optional(),
 });
 
 // GET /api/lab-admin/users/[userId] - Get specific user details
@@ -38,24 +43,11 @@ export async function GET(
       return NextResponse.json({ error: 'Usuario no asociado a un laboratorio' }, { status: 400 });
     }
 
-    // Fetch user
-    // Check if user is a doctor in any clinic of this laboratory
-    const doctorInLab = await prisma.doctorClinic.findFirst({
-      where: {
-        doctorId: userId,
-        clinic: { laboratoryId },
-      },
-    });
-
+    // Fetch user belonging to this laboratory
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [
-          { labCollaboratorId: laboratoryId },
-          { clinic: { laboratoryId } },
-          ...(doctorInLab ? [{ id: userId }] : []),
-          { assistantClinic: { laboratoryId } },
-        ],
+        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
       },
       select: {
         id: true,
@@ -64,40 +56,11 @@ export async function GET(
         role: true,
         createdAt: true,
         updatedAt: true,
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        clinicMemberships: {
-          select: {
-            clinic: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            isPrimary: true,
-          },
-        },
-        assistantClinic: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        assignedDoctors: {
-          select: {
-            doctor: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
+        phone: true,
+        clinicName: true,
+        clinicAddress: true,
+        razonSocial: true,
+        fiscalAddress: true,
       },
     });
 
@@ -140,12 +103,7 @@ export async function PATCH(
     const existingUser = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [
-          { labCollaboratorId: laboratoryId },
-          { clinic: { laboratoryId } },
-          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
-          { assistantClinic: { laboratoryId } },
-        ],
+        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
       },
     });
 
@@ -182,6 +140,19 @@ export async function PATCH(
     if (validatedData.email) updateData.email = validatedData.email;
     if (validatedData.password) {
       updateData.passwordHash = await bcrypt.hash(validatedData.password, BCRYPT_SALT_ROUNDS);
+    }
+
+    // Update doctor profile fields if applicable
+    if (existingUser.role === Role.DOCTOR) {
+      if (validatedData.phone !== undefined) updateData.phone = validatedData.phone || null;
+      if (validatedData.clinicName !== undefined)
+        updateData.clinicName = validatedData.clinicName || null;
+      if (validatedData.clinicAddress !== undefined)
+        updateData.clinicAddress = validatedData.clinicAddress || null;
+      if (validatedData.razonSocial !== undefined)
+        updateData.razonSocial = validatedData.razonSocial || null;
+      if (validatedData.fiscalAddress !== undefined)
+        updateData.fiscalAddress = validatedData.fiscalAddress || null;
     }
 
     // Update user
@@ -252,12 +223,7 @@ export async function DELETE(
     const existingUser = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [
-          { labCollaboratorId: laboratoryId },
-          { clinic: { laboratoryId } },
-          { clinicMemberships: { some: { clinic: { laboratoryId } } } },
-          { assistantClinic: { laboratoryId } },
-        ],
+        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
       },
     });
 

@@ -50,20 +50,14 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        clinic: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            address: true,
-          },
-        },
         doctor: {
           select: {
             id: true,
             name: true,
             email: true,
+            phone: true,
+            clinicName: true,
+            clinicAddress: true,
           },
         },
         createdBy: {

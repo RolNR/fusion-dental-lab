@@ -7,7 +7,7 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Role-based access control for new multi-tenant structure
+    // Role-based access control
     if (path.startsWith('/lab-admin') && token?.role !== Role.LAB_ADMIN) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
@@ -16,30 +16,7 @@ export default withAuth(
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    if (path.startsWith('/clinic-admin') && token?.role !== Role.CLINIC_ADMIN) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
     if (path.startsWith('/doctor') && token?.role !== Role.DOCTOR) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
-    // Redirect doctors without active clinic to clinic selection page
-    if (
-      token?.role === Role.DOCTOR &&
-      !token?.activeClinicId &&
-      path.startsWith('/doctor') &&
-      path !== '/doctor/select-clinic'
-    ) {
-      return NextResponse.redirect(new URL('/doctor/select-clinic', req.url));
-    }
-
-    // Redirect doctors with active clinic away from clinic selection page
-    if (token?.role === Role.DOCTOR && token?.activeClinicId && path === '/doctor/select-clinic') {
-      return NextResponse.redirect(new URL('/doctor', req.url));
-    }
-
-    if (path.startsWith('/assistant') && token?.role !== Role.CLINIC_ASSISTANT) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 

@@ -6,7 +6,6 @@ import { Role } from '@prisma/client';
 
 export default function NewUserPage() {
   const searchParams = useSearchParams();
-  const clinicId = searchParams.get('clinicId');
   const role = searchParams.get('role') as Role | null;
 
   return (
@@ -14,7 +13,7 @@ export default function NewUserPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Nuevo Usuario</h1>
         <p className="mt-2 text-muted-foreground">
-          Crea un nuevo usuario para el laboratorio o una clínica
+          Crea un nuevo colaborador o doctor para el laboratorio
         </p>
       </div>
 
@@ -23,7 +22,6 @@ export default function NewUserPage() {
           initialData={{
             role: role || undefined,
           }}
-          initialClinicId={clinicId || undefined}
         />
       </div>
     </div>

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Role } from '@prisma/client';
-import { DoctorClinicAssignments } from '@/components/lab-admin/DoctorClinicAssignments';
+import { getRoleLabel } from '@/lib/formatters';
 
 type UserDetail = {
   id: string;
@@ -13,40 +13,11 @@ type UserDetail = {
   email: string;
   role: Role;
   createdAt: string;
-  clinic?: {
-    id: string;
-    name: string;
-  } | null;
-  doctorClinic?: {
-    id: string;
-    name: string;
-  } | null;
-  assistantClinic?: {
-    id: string;
-    name: string;
-  } | null;
-  clinicMemberships?: Array<{
-    clinic: {
-      id: string;
-      name: string;
-    };
-    isPrimary: boolean;
-  }>;
-};
-
-const getRoleLabel = (role: Role) => {
-  const labels: Record<Role, string> = {
-    LAB_ADMIN: 'Admin Laboratorio',
-    LAB_COLLABORATOR: 'Colaborador Lab',
-    CLINIC_ADMIN: 'Admin Clínica',
-    DOCTOR: 'Doctor',
-    CLINIC_ASSISTANT: 'Asistente',
-  };
-  return labels[role];
-};
-
-const getClinicName = (user: UserDetail) => {
-  return user.clinic?.name || user.doctorClinic?.name || user.assistantClinic?.name || null;
+  clinicName?: string | null;
+  clinicAddress?: string | null;
+  phone?: string | null;
+  razonSocial?: string | null;
+  fiscalAddress?: string | null;
 };
 
 export default function UserDetailPage() {
@@ -94,8 +65,6 @@ export default function UserDetailPage() {
     );
   }
 
-  const clinicName = getClinicName(user);
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
       {/* Header */}
@@ -137,10 +106,10 @@ export default function UserDetailPage() {
             <dt className="text-sm font-medium text-muted-foreground">Rol</dt>
             <dd className="mt-1 text-sm text-foreground">{getRoleLabel(user.role)}</dd>
           </div>
-          {clinicName && (
+          {user.phone && (
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Clínica</dt>
-              <dd className="mt-1 text-sm text-foreground">{clinicName}</dd>
+              <dt className="text-sm font-medium text-muted-foreground">Teléfono</dt>
+              <dd className="mt-1 text-sm text-foreground">{user.phone}</dd>
             </div>
           )}
           <div>
@@ -156,13 +125,42 @@ export default function UserDetailPage() {
         </dl>
       </div>
 
-      {/* Doctor Clinic Assignments */}
+      {/* Doctor Profile */}
       {user.role === Role.DOCTOR && (
-        <div className="mt-8">
-          <DoctorClinicAssignments
-            doctorId={user.id}
-            initialMemberships={user.clinicMemberships || []}
-          />
+        <div className="mt-8 rounded-xl bg-background p-6 shadow-md border border-border">
+          <h2 className="mb-6 text-xl font-semibold text-foreground">
+            Información del Consultorio
+          </h2>
+          <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {user.clinicName && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">
+                  Nombre del Consultorio
+                </dt>
+                <dd className="mt-1 text-sm text-foreground">{user.clinicName}</dd>
+              </div>
+            )}
+            {user.clinicAddress && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">
+                  Dirección del Consultorio
+                </dt>
+                <dd className="mt-1 text-sm text-foreground">{user.clinicAddress}</dd>
+              </div>
+            )}
+            {user.razonSocial && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Razón Social</dt>
+                <dd className="mt-1 text-sm text-foreground">{user.razonSocial}</dd>
+              </div>
+            )}
+            {user.fiscalAddress && (
+              <div>
+                <dt className="text-sm font-medium text-muted-foreground">Dirección Fiscal</dt>
+                <dd className="mt-1 text-sm text-foreground">{user.fiscalAddress}</dd>
+              </div>
+            )}
+          </dl>
         </div>
       )}
     </div>

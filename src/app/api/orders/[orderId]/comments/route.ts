@@ -28,7 +28,6 @@ export async function POST(
       userId,
       userRole,
       laboratoryId: session.user.laboratoryId,
-      clinicId: session.user.clinicId,
     });
 
     if (!accessCheck.hasAccess) {
@@ -125,7 +124,6 @@ export async function GET(
       userId,
       userRole,
       laboratoryId: session.user.laboratoryId,
-      clinicId: session.user.clinicId,
     });
 
     if (!accessCheck.hasAccess) {
@@ -133,10 +131,7 @@ export async function GET(
     }
 
     const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
-    const isClinicUser =
-      userRole === Role.DOCTOR ||
-      userRole === Role.CLINIC_ASSISTANT ||
-      userRole === Role.CLINIC_ADMIN;
+    const isClinicUser = userRole === Role.DOCTOR;
 
     // Fetch comments - exclude internal comments for clinic users
     const comments = await prisma.orderComment.findMany({
