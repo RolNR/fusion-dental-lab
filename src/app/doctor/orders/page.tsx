@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
 import { OrderWithRelations } from '@/types/order';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -21,7 +22,7 @@ export default function DoctorOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: DEFAULT_PAGE_SIZE,
     totalCount: 0,
     totalPages: 0,
   });
@@ -33,7 +34,7 @@ export default function DoctorOrdersPage() {
       if (searchQuery) params.append('search', searchQuery);
       if (statusFilter) params.append('status', statusFilter);
       params.append('page', currentPage.toString());
-      params.append('limit', '10');
+      params.append('limit', String(DEFAULT_PAGE_SIZE));
 
       const url = `/api/doctor/orders${params.toString() ? `?${params.toString()}` : ''}`;
       const response = await fetch(url);
@@ -41,7 +42,14 @@ export default function DoctorOrdersPage() {
 
       const data = await response.json();
       setOrders(data.orders || []);
-      setPagination(data.pagination);
+      setPagination(
+        data.pagination || {
+          page: 1,
+          limit: DEFAULT_PAGE_SIZE,
+          totalCount: 0,
+          totalPages: 0,
+        }
+      );
       setLoading(false);
     } catch (error) {
       console.error('Error fetching orders:', error);

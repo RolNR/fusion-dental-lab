@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Role } from '@prisma/client';
+import { Role, Prisma, OrderStatus } from '@prisma/client';
 import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
 import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -22,11 +23,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
-    // Fetch orders for this doctor
+    // Parse query params
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+    const statusParam = searchParams.get('status') || '';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_SIZE), 10);
+
+    // Validate status filter against OrderStatus enum
+    const validStatus =
+      statusParam && Object.values(OrderStatus).includes(statusParam as OrderStatus)
+        ? (statusParam as OrderStatus)
+        : undefined;
+
+    // Build where clause
+    const where: Prisma.OrderWhereInput = {
+      doctorId: session.user.id,
+      ...(search && {
+        OR: [
+          { patientName: { contains: search, mode: 'insensitive' } },
+          { orderNumber: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+      ...(validStatus && { status: validStatus }),
+    };
+
+    // Get total count for pagination
+    const totalCount = await prisma.order.count({ where });
+
+    // Fetch orders for this doctor with pagination
     const orders = await prisma.order.findMany({
-      where: {
-        doctorId: session.user.id,
-      },
+      where,
       include: {
         doctor: {
           select: {
@@ -47,9 +74,24 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
+      skip: (page - 1) * limit,
+      take: limit,
     });
 
-    return NextResponse.json({ orders }, { status: 200 });
+    const totalPages = Math.ceil(totalCount / limit);
+
+    return NextResponse.json(
+      {
+        orders,
+        pagination: {
+          page,
+          limit,
+          totalCount,
+          totalPages,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error fetching orders:', error);
     return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
