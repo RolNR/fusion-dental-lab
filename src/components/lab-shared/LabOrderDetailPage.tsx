@@ -205,9 +205,7 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
-              {order.isDigitalScan && (
-                <CopyableField label="Escaneo Digital" value="Sí" />
-              )}
+              {order.isDigitalScan && <CopyableField label="Escaneo Digital" value="Sí" />}
             </dl>
             {order.aiPrompt && (
               <div className="mt-4">

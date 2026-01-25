@@ -253,7 +253,10 @@ export function OrderReviewModal({
             onNotesChange={onFormDataChange ? handleNotesChange : undefined}
           />
 
-          <DentalDetailsSection teethNumbers={formData.teethNumbers} isDigitalScan={formData.isDigitalScan} />
+          <DentalDetailsSection
+            teethNumbers={formData.teethNumbers}
+            isDigitalScan={formData.isDigitalScan}
+          />
 
           <ToothConfigSection teeth={formData.teeth} />
 

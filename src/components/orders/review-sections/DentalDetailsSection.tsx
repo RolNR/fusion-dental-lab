@@ -5,10 +5,7 @@ interface DentalDetailsSectionProps {
   isDigitalScan?: boolean;
 }
 
-export function DentalDetailsSection({
-  teethNumbers,
-  isDigitalScan,
-}: DentalDetailsSectionProps) {
+export function DentalDetailsSection({ teethNumbers, isDigitalScan }: DentalDetailsSectionProps) {
   return (
     <>
       <SectionTitle>Detalles Dentales</SectionTitle>
