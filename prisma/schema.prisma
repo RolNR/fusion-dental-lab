@@ -156,9 +156,7 @@ model Tooth {
   orderId                 String
   toothNumber             String
   material                String?
-  materialBrand           String?
   colorInfo               Json?
-  tipoTrabajo             WorkType?
   tipoRestauracion        RestorationType?
   trabajoSobreImplante    Boolean?            @default(false)
   informacionImplante     Json?
@@ -301,7 +299,3 @@ enum SubmissionType {
   terminado
 }
 
-enum WorkType {
-  restauracion
-  otro
-}

@@ -143,20 +143,6 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
                     <dd className="mt-1 text-sm text-foreground">{tooth.material}</dd>
                   </div>
                 )}
-                {tooth.materialBrand && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">
-                      Marca del Material
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground">{tooth.materialBrand}</dd>
-                  </div>
-                )}
-                {tooth.tipoTrabajo && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Tipo de Trabajo</dt>
-                    <dd className="mt-1 text-sm text-foreground capitalize">{tooth.tipoTrabajo}</dd>
-                  </div>
-                )}
                 {tooth.tipoRestauracion && (
                   <div>
                     <dt className="text-sm font-medium text-muted-foreground">

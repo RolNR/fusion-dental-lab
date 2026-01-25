@@ -21,7 +21,6 @@ type ImplantSectionProps = {
     tipoRestauracion?: string;
     tipoAditamento?: string;
     perfilEmergencia?: string;
-    condicionTejidoBlando?: string;
   };
 };
 
@@ -51,7 +50,6 @@ export function ImplantSection({
       tipoRestauracion: informacionImplante?.tipoRestauracion ?? 'individual',
       tipoAditamento: informacionImplante?.tipoAditamento ?? 'estandar',
       perfilEmergencia: informacionImplante?.perfilEmergencia ?? 'recto',
-      condicionTejidoBlando: informacionImplante?.condicionTejidoBlando ?? 'sano',
       radiografiaPeriapical: informacionImplante?.radiografiaPeriapical ?? '',
       cbct: informacionImplante?.cbct ?? '',
       ...informacionImplante,
@@ -166,23 +164,6 @@ export function ImplantSection({
                 <option value="convexo">Convexo</option>
               </Select>
             </div>
-
-            <Select
-              label="Condición del Tejido Blando"
-              value={informacionImplante?.condicionTejidoBlando || 'sano'}
-              onChange={(e) =>
-                handleImplantFieldChange(
-                  'condicionTejidoBlando',
-                  e.target.value as ImplantInfo['condicionTejidoBlando']
-                )
-              }
-              required
-              error={errors?.condicionTejidoBlando}
-            >
-              <option value="sano">Sano</option>
-              <option value="inflamado">Inflamado</option>
-              <option value="retraido">Retraído</option>
-            </Select>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input

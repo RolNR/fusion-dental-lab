@@ -2,7 +2,6 @@ import {
   ScanType,
   OrderStatus,
   CaseType,
-  WorkType,
   RestorationType,
   ScannerType,
   SiliconType,
@@ -188,7 +187,6 @@ export const implantInfoSchema = z.object({
   tipoRestauracion: z.enum(['individual', 'ferulizada', 'hibrida']).optional(),
   tipoAditamento: z.enum(['estandar', 'personalizado', 'multi_unit']).optional(),
   perfilEmergencia: z.enum(['recto', 'concavo', 'convexo']).optional(),
-  condicionTejidoBlando: z.enum(['sano', 'inflamado', 'retraido']).optional(),
   radiografiaPeriapical: z.string().optional(),
   cbct: z.string().optional(),
 });
@@ -224,13 +222,6 @@ export const colorInfoSchema = z.object({
   colorimeter: z.string().optional(),
   texture: z.array(z.string()).optional(),
   gloss: z.array(z.string()).optional(),
-  mamelones: z.enum(['si', 'no']).optional(),
-  translucency: z
-    .object({
-      level: z.number().min(1).max(10),
-      description: z.string(),
-    })
-    .optional(),
 });
 
 // TypeScript types for the schemas
@@ -292,12 +283,10 @@ export const orderDraftSchema = z.object({
       z.object({
         toothNumber: z.string().min(1),
         material: z.string().optional(),
-        materialBrand: z.string().optional(),
         colorInfo: z
           .union([colorInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
-        tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
         tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
         trabajoSobreImplante: z.boolean().optional(),
         informacionImplante: z
@@ -321,14 +310,10 @@ const toothSubmitSchema = z.object({
   material: z.any().refine((val) => typeof val === 'string' && val.length > 0, {
     message: 'Material requerido',
   }),
-  materialBrand: z.string().nullable().optional(),
   colorInfo: z
     .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
-  tipoTrabajo: z.any().refine((val) => Object.values(WorkType).includes(val), {
-    message: 'Tipo de trabajo requerido',
-  }),
   tipoRestauracion: z.any().refine((val) => Object.values(RestorationType).includes(val), {
     message: 'Tipo de restauración requerido',
   }),
@@ -368,12 +353,10 @@ export const orderUpdateSchema = z.object({
       z.object({
         toothNumber: z.string().min(1),
         material: z.string().optional(),
-        materialBrand: z.string().optional(),
         colorInfo: z
           .union([colorInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
-        tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
         tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
         trabajoSobreImplante: z.boolean().optional(),
         informacionImplante: z

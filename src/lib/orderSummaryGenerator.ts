@@ -10,11 +10,6 @@ const CASE_TYPE_LABELS: Record<string, string> = {
   garantia: 'un caso de garantía',
 };
 
-const WORK_TYPE_LABELS: Record<string, string> = {
-  restauracion: 'restauración',
-  otro: 'otro trabajo',
-};
-
 const RESTORATION_TYPE_LABELS: Record<string, string> = {
   corona: 'corona',
   puente: 'puente',
@@ -70,9 +65,6 @@ export function generateCaseSummary(order: OrderDetail): string {
     );
 
     sortedTeeth.forEach((tooth) => {
-      const workType = tooth.tipoTrabajo
-        ? WORK_TYPE_LABELS[tooth.tipoTrabajo] || tooth.tipoTrabajo
-        : '';
       const restType = tooth.tipoRestauracion
         ? RESTORATION_TYPE_LABELS[tooth.tipoRestauracion] || tooth.tipoRestauracion
         : '';
@@ -80,19 +72,12 @@ export function generateCaseSummary(order: OrderDetail): string {
 
       let toothDesc = `Diente ${tooth.toothNumber}: `;
 
-      if (restType && workType) {
-        toothDesc += `${restType} (${workType})`;
-      } else if (restType) {
+      if (restType) {
         toothDesc += restType;
-      } else if (workType) {
-        toothDesc += workType;
       }
 
       if (material) {
-        toothDesc += ` en ${material}`;
-        if (tooth.materialBrand) {
-          toothDesc += ` (${tooth.materialBrand})`;
-        }
+        toothDesc += restType ? ` en ${material}` : material;
       }
 
       // Color information

@@ -309,7 +309,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           const newData = new Map(prevData);
           newData.set(toothNumber, {
             toothNumber,
-            tipoTrabajo: 'restauracion', // Default to restauracion
           });
           return newData;
         });
@@ -358,7 +357,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       for (const tooth of teethArray) {
         const missingFields: string[] = [];
         if (!tooth.material) missingFields.push('material');
-        if (!tooth.tipoTrabajo) missingFields.push('tipo de trabajo');
         if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
 
         if (missingFields.length > 0) {

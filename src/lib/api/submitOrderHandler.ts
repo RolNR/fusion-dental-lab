@@ -57,9 +57,7 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
             select: {
               toothNumber: true,
               material: true,
-              materialBrand: true,
               colorInfo: true,
-              tipoTrabajo: true,
               tipoRestauracion: true,
               trabajoSobreImplante: true,
               informacionImplante: true,

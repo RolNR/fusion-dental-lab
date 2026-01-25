@@ -105,7 +105,6 @@ export function OrderReviewModal({
       for (const tooth of formData.teeth) {
         const missingFields: string[] = [];
         if (!tooth.material) missingFields.push('material');
-        if (!tooth.tipoTrabajo) missingFields.push('tipo de trabajo');
         if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
 
         if (missingFields.length > 0) {

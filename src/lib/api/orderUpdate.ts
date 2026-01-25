@@ -1,12 +1,10 @@
 import { prisma } from '@/lib/prisma';
-import { Prisma, WorkType, RestorationType } from '@prisma/client';
+import { Prisma, RestorationType } from '@prisma/client';
 
 interface ToothData {
   toothNumber: string;
   material?: string;
-  materialBrand?: string;
   colorInfo?: Prisma.InputJsonValue;
-  tipoTrabajo?: WorkType | null;
   tipoRestauracion?: RestorationType | null;
   trabajoSobreImplante?: boolean;
   informacionImplante?: Prisma.InputJsonValue;
@@ -62,9 +60,7 @@ export async function updateOrderWithTeeth(params: UpdateOrderWithTeethParams) {
           },
           update: {
             material: tooth.material,
-            materialBrand: tooth.materialBrand,
             colorInfo: tooth.colorInfo,
-            tipoTrabajo: tooth.tipoTrabajo,
             tipoRestauracion: tooth.tipoRestauracion,
             trabajoSobreImplante: tooth.trabajoSobreImplante,
             informacionImplante: tooth.informacionImplante,
@@ -73,9 +69,7 @@ export async function updateOrderWithTeeth(params: UpdateOrderWithTeethParams) {
             orderId,
             toothNumber: tooth.toothNumber,
             material: tooth.material,
-            materialBrand: tooth.materialBrand,
             colorInfo: tooth.colorInfo,
-            tipoTrabajo: tooth.tipoTrabajo,
             tipoRestauracion: tooth.tipoRestauracion,
             trabajoSobreImplante: tooth.trabajoSobreImplante,
             informacionImplante: tooth.informacionImplante,

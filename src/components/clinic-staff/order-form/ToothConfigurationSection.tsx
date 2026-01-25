@@ -9,7 +9,7 @@ import { Icons } from '@/components/ui/Icons';
 import { WorkTypeSection } from './WorkTypeSection';
 import { MaterialAndColorSection } from './MaterialAndColorSection';
 import { ImplantSection } from './ImplantSection';
-import { WorkType, RestorationType } from '@prisma/client';
+import { RestorationType } from '@prisma/client';
 import { ColorInfo, ImplantInfo } from '@/types/order';
 
 interface ToothConfigurationSectionProps {
@@ -41,7 +41,7 @@ export function ToothConfigurationSection({
   // Determine which teeth have data configured
   const teethWithData = new Set(
     Array.from(teethData.entries())
-      .filter(([_, data]) => data.material || data.tipoTrabajo || data.trabajoSobreImplante)
+      .filter(([_, data]) => data.material || data.tipoRestauracion || data.trabajoSobreImplante)
       .map(([toothNumber]) => toothNumber)
   );
 
@@ -69,16 +69,13 @@ export function ToothConfigurationSection({
   };
 
   // Handler for work type changes
-  const handleWorkTypeChange = (updates: {
-    tipoTrabajo?: WorkType;
-    tipoRestauracion?: RestorationType;
-  }) => {
+  const handleWorkTypeChange = (updates: { tipoRestauracion?: RestorationType }) => {
     updateToothData(updates);
   };
 
   // Handler for material changes
-  const handleMaterialChange = (field: 'material' | 'materialBrand', value: string) => {
-    updateToothData({ [field]: value });
+  const handleMaterialChange = (value: string) => {
+    updateToothData({ material: value });
   };
 
   // Handler for color info changes
@@ -159,7 +156,6 @@ export function ToothConfigurationSection({
 
           {/* Work Type Section */}
           <WorkTypeSection
-            tipoTrabajo={currentToothData?.tipoTrabajo ?? undefined}
             tipoRestauracion={currentToothData?.tipoRestauracion ?? undefined}
             onChange={handleWorkTypeChange}
           />
@@ -167,7 +163,6 @@ export function ToothConfigurationSection({
           {/* Material and Color Section */}
           <MaterialAndColorSection
             material={currentToothData?.material ?? ''}
-            materialBrand={currentToothData?.materialBrand ?? ''}
             colorInfo={currentToothData?.colorInfo ?? undefined}
             onMaterialChange={handleMaterialChange}
             onColorInfoChange={handleColorInfoChange}

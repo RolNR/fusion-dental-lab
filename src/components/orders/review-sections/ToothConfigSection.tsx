@@ -12,12 +12,6 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
 
   const renderToothDetails = (tooth: ToothData) => (
     <dl className="space-y-1">
-      {tooth.tipoTrabajo && (
-        <DetailRow
-          label="Tipo de Trabajo"
-          value={tooth.tipoTrabajo === 'restauracion' ? 'Restauración' : 'Otro'}
-        />
-      )}
       {tooth.tipoRestauracion && (
         <DetailRow
           label="Tipo de Restauración"
@@ -37,7 +31,6 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
         />
       )}
       {tooth.material && <DetailRow label="Material" value={tooth.material} />}
-      {tooth.materialBrand && <DetailRow label="Marca del Material" value={tooth.materialBrand} />}
       {tooth.colorInfo && typeof tooth.colorInfo === 'object' && (
         <>
           {(tooth.colorInfo as any).shadeCode && (
@@ -90,7 +83,7 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
           teethWithData={
             new Set(
               teeth
-                .filter((t) => t.material || t.tipoTrabajo || t.trabajoSobreImplante)
+                .filter((t) => t.material || t.tipoRestauracion || t.trabajoSobreImplante)
                 .map((t) => t.toothNumber)
             )
           }

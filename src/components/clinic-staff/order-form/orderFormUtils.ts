@@ -211,9 +211,7 @@ export function initializeTeethData(
     teethMap.set(toothNumber, {
       toothNumber,
       material: undefined,
-      materialBrand: undefined,
       colorInfo: null,
-      tipoTrabajo: null,
       tipoRestauracion: null,
       trabajoSobreImplante: false,
       informacionImplante: null,

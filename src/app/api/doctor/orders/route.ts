@@ -141,9 +141,7 @@ export async function POST(request: NextRequest) {
                 create: teeth.map((tooth) => ({
                   toothNumber: tooth.toothNumber,
                   material: tooth.material,
-                  materialBrand: tooth.materialBrand,
                   colorInfo: tooth.colorInfo,
-                  tipoTrabajo: tooth.tipoTrabajo,
                   tipoRestauracion: tooth.tipoRestauracion,
                   trabajoSobreImplante: tooth.trabajoSobreImplante,
                   informacionImplante: tooth.informacionImplante,

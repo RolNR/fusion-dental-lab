@@ -1,4 +1,4 @@
-import { WorkType, RestorationType } from '@prisma/client';
+import { RestorationType } from '@prisma/client';
 import { z } from 'zod';
 import { implantInfoSchema, colorInfoSchema, ImplantInfo, ColorInfo } from './order';
 
@@ -9,9 +9,7 @@ export interface Tooth {
   toothNumber: string;
 
   material?: string;
-  materialBrand?: string;
   colorInfo?: ColorInfo;
-  tipoTrabajo?: WorkType;
   tipoRestauracion?: RestorationType;
   trabajoSobreImplante?: boolean;
   informacionImplante?: ImplantInfo;
@@ -24,9 +22,7 @@ export interface Tooth {
 export const toothDataSchema = z.object({
   toothNumber: z.string().min(1, 'Número de diente requerido'),
   material: z.string().optional(),
-  materialBrand: z.string().optional(),
   colorInfo: z.union([colorInfoSchema, z.null()]).optional(),
-  tipoTrabajo: z.nativeEnum(WorkType).nullable().optional(),
   tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
   trabajoSobreImplante: z.boolean().optional(),
   informacionImplante: z.union([implantInfoSchema, z.null()]).optional(),

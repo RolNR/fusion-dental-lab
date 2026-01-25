@@ -247,28 +247,6 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
                         </dd>
                       </div>
                     )}
-                    {tooth.materialBrand && (
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">
-                          Marca del Material
-                        </dt>
-                        <dd className="text-sm text-foreground flex items-center">
-                          {tooth.materialBrand}
-                          <CopyButton value={tooth.materialBrand} label="marca del material" />
-                        </dd>
-                      </div>
-                    )}
-                    {tooth.tipoTrabajo && (
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">
-                          Tipo de Trabajo
-                        </dt>
-                        <dd className="text-sm text-foreground capitalize flex items-center">
-                          {tooth.tipoTrabajo}
-                          <CopyButton value={tooth.tipoTrabajo} label="tipo de trabajo" />
-                        </dd>
-                      </div>
-                    )}
                     {tooth.tipoRestauracion && (
                       <div>
                         <dt className="text-sm font-medium text-muted-foreground">

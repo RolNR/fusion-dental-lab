@@ -48,7 +48,6 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "teeth": [
     {
       "toothNumber": "Número de diente (ej: 11, 12, 21)",
-      "tipoTrabajo": "restauracion" u "otro",
       "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
       "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
       "trabajoSobreImplante": true o false,
@@ -59,7 +58,6 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
         "tipoRestauracion": "individual", "ferulizada", o "hibrida",
         "tipoAditamento": "estandar", "personalizado", o "multi_unit",
         "perfilEmergencia": "recto", "concavo", o "convexo",
-        "condicionTejidoBlando": "sano", "inflamado", o "retraido",
         "radiografiaPeriapical": "Descripción o ubicación de la radiografía",
         "cbct": "Descripción o ubicación del CBCT"
       },
@@ -68,12 +66,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
         "shadeCode": "Código(s) de color EXACTAMENTE como los menciona el usuario. Puede ser un solo código (ej: 'A2') o múltiples códigos (ej: 'A2 B2', 'cervical A3 body A2', 'A2/A3'). NO extraigas solo el primer valor - incluye TODOS los códigos mencionados tal cual.",
         "colorimeter": "Nombre del colorímetro (opcional)",
         "texture": ["lisa"] o ["rugosa"] o ["natural"] o cualquier combinación - DEBE SER UN ARRAY,
-        "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY,
-        "mamelones": EXACTAMENTE "si" o "no",
-        "translucency": {
-          "level": número del 1 al 10,
-          "description": "descripción de translucidez"
-        }
+        "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY
       }
     }
   ],
@@ -92,12 +85,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
     "shadeCode": "Código(s) de color EXACTAMENTE como los menciona el usuario. Puede ser un solo código (ej: 'A2') o múltiples (ej: 'A2 B2', 'cervical A3 body A2'). Incluye TODOS los códigos mencionados, no solo el primero.",
     "colorimeter": "Nombre del colorímetro (opcional)",
     "texture": ["lisa"] o ["rugosa"] o ["natural"] o cualquier combinación - DEBE SER UN ARRAY,
-    "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY,
-    "mamelones": EXACTAMENTE "si" o "no",
-    "translucency": {
-      "level": número del 1 al 10,
-      "description": "descripción de translucidez"
-    }
+    "gloss": ["brillante"] o ["mate"] o ["satinado"] o cualquier combinación - DEBE SER UN ARRAY
   },
 
   "materialSent": {
@@ -149,7 +137,6 @@ IMPORTANTE - Array "teeth" (Configuración por Diente):
 IMPORTANTE - Formato de valores:
 - Para "tipoOclusion": USA SOLO los valores EXACTOS permitidos. Si mencionan "mordida profunda", mapea a "mordida_cruzada" o "clase_ii" según el contexto.
 - Para "texture" y "gloss" (dentro de colorInfo): SIEMPRE devuelve un ARRAY, aunque sea de un solo elemento: ["lisa"] NO "lisa"
-- Para "translucency" (dentro de colorInfo): SIEMPRE incluye "description" aunque sea genérica como "translucidez media"
 - Para enums de implantes: usa EXACTAMENTE los valores especificados en minúsculas con guiones bajos
 
 IMPORTANTE - materialSent (Materiales Enviados):
@@ -211,7 +198,6 @@ PRIORIDAD 1 - Campos requeridos faltantes:
 PRIORIDAD 2 - Campos contextuales importantes:
 - Usuario menciona "color A2" pero no especifica guía → sugiere field: "colorInfo.shadeType", value: "VITAPAN_CLASSICAL", label: "Guía de Color", reason: "El color A2 pertenece a la guía VITAPAN Classical", confidence: 90
 - Usuario menciona "escáner intraoral" sin especificar marca → sugiere field: "escanerUtilizado", value: "iTero", label: "Escáner Utilizado", reason: "iTero es el escáner más común", confidence: 85
-- Usuario especifica dientes sin tipo de trabajo → sugiere field: "tipoTrabajo", value: "restauracion", category: "tooth", toothNumber: "11", label: "Tipo de Trabajo", reason: "Restauración es el tipo más común", confidence: 85
 - Usuario no especifica fecha de entrega → sugiere field: "fechaEntregaDeseada", value: "[fecha +7 días]", label: "Fecha de Entrega", reason: "Tiempo estándar para este tipo de trabajo", confidence: 80
 
 PRIORIDAD 3 - Campos opcionales útiles:
@@ -220,10 +206,10 @@ PRIORIDAD 3 - Campos opcionales útiles:
 IMPORTANTE - Rutas de campos:
 - Para campos a nivel orden: usa nombres simples como "escanerUtilizado", "fechaEntregaDeseada", "scanType"
 - Para campos anidados en orden: usa rutas con puntos como "colorInfo.shadeType", "colorInfo.shadeCode", "oclusionDiseno.tipoOclusion"
-- Para campos de diente: usa nombres simples o rutas como "material", "tipoTrabajo", "colorInfo.shadeType" con category: "tooth"
+- Para campos de diente: usa nombres simples o rutas como "material", "tipoRestauracion", "colorInfo.shadeType" con category: "tooth"
 - Ejemplos de rutas válidas:
   * Order-level: "scanType", "escanerUtilizado", "colorInfo.shadeType", "oclusionDiseno.tipoOclusion"
-  * Tooth-level: "material", "tipoTrabajo", "colorInfo.shadeType", "trabajoSobreImplante"
+  * Tooth-level: "material", "tipoRestauracion", "colorInfo.shadeType", "trabajoSobreImplante"
 
 Ejemplos de cuándo NO sugerir:
 - Usuario ya especificó el campo explícitamente
