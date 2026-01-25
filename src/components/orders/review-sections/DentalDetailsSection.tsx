@@ -1,22 +1,20 @@
 import { DetailRow, SectionTitle } from './ReviewSectionComponents';
-import { getScanTypeLabel } from '@/lib/scanTypeUtils';
-import { ScanType } from '@prisma/client';
 
 interface DentalDetailsSectionProps {
   teethNumbers?: string;
-  scanType?: ScanType | null;
+  isDigitalScan?: boolean;
 }
 
-export function DentalDetailsSection({ teethNumbers, scanType }: DentalDetailsSectionProps) {
+export function DentalDetailsSection({
+  teethNumbers,
+  isDigitalScan,
+}: DentalDetailsSectionProps) {
   return (
     <>
       <SectionTitle>Detalles Dentales</SectionTitle>
       <dl className="space-y-1">
         <DetailRow label="Números de Dientes" value={teethNumbers} />
-        <DetailRow
-          label="Tipo de Escaneo"
-          value={scanType ? getScanTypeLabel(scanType) : undefined}
-        />
+        {isDigitalScan && <DetailRow label="Escaneo Digital" value="Sí" />}
       </dl>
     </>
   );

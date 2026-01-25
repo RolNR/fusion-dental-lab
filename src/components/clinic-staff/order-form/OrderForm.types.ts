@@ -1,11 +1,4 @@
-import {
-  ScanType,
-  CaseType,
-  ScannerType,
-  SiliconType,
-  SubmissionType,
-  ArticulatedBy,
-} from '@prisma/client';
+import { CaseType, ScannerType, SubmissionType, ArticulatedBy } from '@prisma/client';
 import { OcclusionInfo } from '@/types/order';
 import { ToothData } from '@/types/tooth';
 
@@ -24,7 +17,7 @@ export interface OrderFormData {
   fechaEntregaDeseada?: string; // ISO date string
   aiPrompt?: string;
   teethNumbers?: string;
-  scanType?: ScanType | null;
+  isDigitalScan?: boolean;
   doctorId?: string;
   status?: string;
 
@@ -33,11 +26,9 @@ export interface OrderFormData {
   motivoGarantia?: string;
   seDevuelveTrabajoOriginal?: boolean;
 
-  // Impression fields
+  // Digital scan fields
   escanerUtilizado?: ScannerType | null;
   otroEscaner?: string;
-  tipoSilicon?: SiliconType | null;
-  notaModeloFisico?: string;
 
   // Order-level fields (shared)
   materialSent?: Record<string, boolean>;
@@ -60,7 +51,7 @@ export interface OrderFormState {
   fechaEntregaDeseada: string;
   aiPrompt: string;
   teethNumbers: string;
-  scanType: ScanType | null;
+  isDigitalScan: boolean;
   doctorId: string;
 
   // Case type fields
@@ -68,11 +59,9 @@ export interface OrderFormState {
   motivoGarantia: string;
   seDevuelveTrabajoOriginal: boolean;
 
-  // Impression fields
+  // Digital scan fields
   escanerUtilizado: ScannerType | null;
   otroEscaner: string;
-  tipoSilicon: SiliconType | null;
-  notaModeloFisico: string;
 
   // Order-level fields (shared)
   materialSent?: Record<string, boolean>;

@@ -14,7 +14,7 @@ import { loadDashboardAIData } from '@/lib/dashboardAIDataLoader';
 import { OrderInfoSection } from './order-form/OrderInfoSection';
 import { MouthPhotosSection } from './order-form/MouthPhotosSection';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
-import { ImpressionExtendedSection } from './order-form/ImpressionExtendedSection';
+import { DigitalScanSection } from './order-form/DigitalScanSection';
 import { OcclusionSection } from './order-form/OcclusionSection';
 import { MaterialSentSection } from './order-form/MaterialSentSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
@@ -368,8 +368,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       }
     }
 
-    // Validate digital scan files - require upper AND lower when scan type is DIGITAL_SCAN
-    if (formData.scanType === 'DIGITAL_SCAN') {
+    // Validate digital scan files - require upper AND lower when isDigitalScan is true
+    if (formData.isDigitalScan) {
       const missingFiles: string[] = [];
       if (upperFiles.length === 0) missingFiles.push('arcada superior');
       if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
@@ -380,7 +380,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
 
     return errors;
-  }, [formData.patientName, formData.scanType, teethData, upperFiles, lowerFiles]);
+  }, [formData.patientName, formData.isDigitalScan, teethData, upperFiles, lowerFiles]);
 
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -511,9 +511,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       // Check if it's a file validation error (client-side)
       if (err.message.includes('archivos STL/PLY obligatorios')) {
         const grouped = new Map();
-        grouped.set('impression', [
+        grouped.set('digitalScan', [
           {
-            field: 'scanType',
+            field: 'isDigitalScan',
             message: err.message,
           },
         ]);
@@ -667,7 +667,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         const fieldPath = suggestion.field.split('.');
 
         if (fieldPath.length === 1) {
-          // Simple field (e.g., "scanType")
+          // Simple field (e.g., "isDigitalScan")
           return {
             ...prev,
             [suggestion.field]: suggestion.value,
@@ -901,24 +901,19 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             />
           </div>
 
-          {/* Impression Extended Section */}
-          <ImpressionExtendedSection
-            ref={(el) => registerSectionRef('impression', el)}
-            scanType={formData.scanType ?? undefined}
+          {/* Digital Scan Section */}
+          <DigitalScanSection
+            isDigitalScan={formData.isDigitalScan}
             escanerUtilizado={formData.escanerUtilizado ?? undefined}
             otroEscaner={formData.otroEscaner}
-            tipoSilicon={formData.tipoSilicon ?? undefined}
-            notaModeloFisico={formData.notaModeloFisico}
             upperFiles={upperFiles}
             lowerFiles={lowerFiles}
             biteFiles={biteFiles}
             onUpperFilesChange={setUpperFiles}
             onLowerFilesChange={setLowerFiles}
             onBiteFilesChange={setBiteFiles}
-            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+            onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
             disabled={isLoading}
-            hasErrors={getSectionErrorInfo('impression').hasErrors}
-            errorCount={getSectionErrorInfo('impression').errorCount}
           />
 
           {/* Occlusion Section */}

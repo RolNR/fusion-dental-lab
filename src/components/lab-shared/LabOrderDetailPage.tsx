@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Role } from '@prisma/client';
 import { OrderDetail } from '@/types/order';
 import { getStatusLabel, getStatusColor } from '@/lib/orderStatusUtils';
-import { getScanTypeLabel } from '@/lib/scanTypeUtils';
 import { formatFileSize, formatDate } from '@/lib/formatters';
 import { StatusChangeControl } from '@/components/orders/StatusChangeControl';
 import { CopyableField } from '@/components/ui/CopyableField';
@@ -206,10 +205,9 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
-              <CopyableField
-                label="Tipo de Escaneo"
-                value={order.scanType ? getScanTypeLabel(order.scanType) : null}
-              />
+              {order.isDigitalScan && (
+                <CopyableField label="Escaneo Digital" value="Sí" />
+              )}
             </dl>
             {order.aiPrompt && (
               <div className="mt-4">

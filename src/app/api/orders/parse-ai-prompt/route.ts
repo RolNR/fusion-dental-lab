@@ -39,11 +39,9 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "motivoGarantia": "Razón de la garantía (solo si tipoCaso es 'garantia')",
   "seDevuelveTrabajoOriginal": true o false (si devuelven el trabajo original en garantía),
 
-  "scanType": "DIGITAL_SCAN" o "ANALOG_MOLD",
-  "escanerUtilizado": "iTero", "Medit", "ThreeShape", "Carestream", u "Otro",
+  "isDigitalScan": true si el usuario menciona escaneo digital, archivos STL, o envío de archivos digitales,
+  "escanerUtilizado": "iTero", "Medit", "ThreeShape", "Carestream", u "Otro" (solo si isDigitalScan es true),
   "otroEscaner": "Nombre del escáner si es 'Otro'",
-  "tipoSilicon": "adicion" o "condensacion" (solo para moldes análogos),
-  "notaModeloFisico": "Observaciones sobre el modelo físico (solo para moldes análogos)",
 
   "teeth": [
     {
@@ -169,8 +167,8 @@ Reglas para las sugerencias:
 CAMPOS REQUERIDOS que DEBES sugerir si faltan:
 - patientName: Si no se proporciona nombre del paciente, sugiere recordatorio
 - teethNumbers: Si no se especifican dientes, sugiere que los indique
-- scanType: Si no se especifica tipo de impresión, sugiere "DIGITAL_SCAN" (más común en órdenes modernas)
-- Para scanType="DIGITAL_SCAN": SIEMPRE sugiere un recordatorio sobre subir archivos STL (Superior e Inferior) - usa field="_fileUploadReminder"
+- isDigitalScan: Si menciona escaneo digital o archivos STL, sugiere true
+- Para isDigitalScan=true: SIEMPRE sugiere un recordatorio sobre subir archivos STL (Superior e Inferior) - usa field="_fileUploadReminder"
 
 RECORDATORIOS ESPECIALES (no son campos aplicables, solo informativos):
 - Para recordar subir archivos STL: usa field="_fileUploadReminder", value con mensaje descriptivo, confidence=100
@@ -192,8 +190,8 @@ Ejemplos de cuándo SUGERIR (PRIORIDAD DE ARRIBA HACIA ABAJO):
 PRIORIDAD 1 - Campos requeridos faltantes:
 - No hay nombre de paciente → sugiere field: "patientName", value: null, label: "Nombre del Paciente", reason: "Campo requerido: especifica el nombre del paciente", confidence: 100
 - No hay dientes especificados → sugiere field: "teethNumbers", value: null, label: "Dientes a Trabajar", reason: "Campo requerido: indica qué dientes se trabajarán", confidence: 100
-- No hay scanType pero menciona escaneo → sugiere field: "scanType", value: "DIGITAL_SCAN", label: "Tipo de Impresión", reason: "Mencionaste escaneo digital", confidence: 95
-- scanType es DIGITAL_SCAN → sugiere field: "_fileUploadReminder", value: "Recuerda subir los archivos STL (Arcada Superior e Inferior) en la sección de Archivos", label: "Archivos STL Requeridos", reason: "Los archivos STL son obligatorios para escaneo digital", confidence: 100
+- Menciona escaneo digital pero no está marcado → sugiere field: "isDigitalScan", value: true, label: "Escaneo Digital", reason: "Mencionaste escaneo digital", confidence: 95
+- isDigitalScan es true → sugiere field: "_fileUploadReminder", value: "Recuerda subir los archivos STL (Arcada Superior e Inferior) en la sección de Archivos", label: "Archivos STL Requeridos", reason: "Los archivos STL son obligatorios para escaneo digital", confidence: 100
 
 PRIORIDAD 2 - Campos contextuales importantes:
 - Usuario menciona "color A2" pero no especifica guía → sugiere field: "colorInfo.shadeType", value: "VITAPAN_CLASSICAL", label: "Guía de Color", reason: "El color A2 pertenece a la guía VITAPAN Classical", confidence: 90
@@ -204,11 +202,11 @@ PRIORIDAD 3 - Campos opcionales útiles:
 - Usuario especifica "corona" sin material → sugiere field: "material", value: "Zirconia", category: "tooth", label: "Material", reason: "Zirconia es el material más común para coronas", confidence: 85
 
 IMPORTANTE - Rutas de campos:
-- Para campos a nivel orden: usa nombres simples como "escanerUtilizado", "fechaEntregaDeseada", "scanType"
+- Para campos a nivel orden: usa nombres simples como "escanerUtilizado", "fechaEntregaDeseada", "isDigitalScan"
 - Para campos anidados en orden: usa rutas con puntos como "colorInfo.shadeType", "colorInfo.shadeCode", "oclusionDiseno.tipoOclusion"
 - Para campos de diente: usa nombres simples o rutas como "material", "tipoRestauracion", "colorInfo.shadeType" con category: "tooth"
 - Ejemplos de rutas válidas:
-  * Order-level: "scanType", "escanerUtilizado", "colorInfo.shadeType", "oclusionDiseno.tipoOclusion"
+  * Order-level: "isDigitalScan", "escanerUtilizado", "colorInfo.shadeType", "oclusionDiseno.tipoOclusion"
   * Tooth-level: "material", "tipoRestauracion", "colorInfo.shadeType", "trabajoSobreImplante"
 
 Ejemplos de cuándo NO sugerir:

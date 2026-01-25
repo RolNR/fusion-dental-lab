@@ -116,8 +116,8 @@ export function OrderReviewModal({
       }
     }
 
-    // Validate digital scan files - require upper AND lower when scan type is DIGITAL_SCAN
-    if (formData.scanType === 'DIGITAL_SCAN') {
+    // Validate digital scan files - require upper AND lower when isDigitalScan is true
+    if (formData.isDigitalScan) {
       const missingFiles: string[] = [];
       if (upperFiles.length === 0) missingFiles.push('arcada superior');
       if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
@@ -128,7 +128,7 @@ export function OrderReviewModal({
     }
 
     setLocalErrors(errors);
-  }, [formData.patientName, formData.teeth, formData.scanType, upperFiles, lowerFiles]);
+  }, [formData.patientName, formData.teeth, formData.isDigitalScan, upperFiles, lowerFiles]);
 
   // Check if form is valid for submission
   const hasValidationErrors = Object.keys(localErrors).length > 0;
@@ -253,7 +253,7 @@ export function OrderReviewModal({
             onNotesChange={onFormDataChange ? handleNotesChange : undefined}
           />
 
-          <DentalDetailsSection teethNumbers={formData.teethNumbers} scanType={formData.scanType} />
+          <DentalDetailsSection teethNumbers={formData.teethNumbers} isDigitalScan={formData.isDigitalScan} />
 
           <ToothConfigSection teeth={formData.teeth} />
 

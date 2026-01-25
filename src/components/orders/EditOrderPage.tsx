@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { ScanType, OrderStatus } from '@prisma/client';
+import { OrderStatus } from '@prisma/client';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { OrderForm } from '@/components/clinic-staff/OrderForm';
 import { isOrderEditable } from '@/lib/orderStatusUtils';
@@ -68,7 +68,7 @@ export function EditOrderPage({ role }: EditOrderPageProps) {
             description: order.description || '',
             notes: order.notes || '',
             teethNumbers: order.teethNumbers || '',
-            scanType: order.scanType as ScanType | null,
+            isDigitalScan: order.isDigitalScan,
             doctorId: order.doctorId,
             status: order.status,
             teeth: order.teeth || [],

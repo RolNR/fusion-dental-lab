@@ -1,7 +1,7 @@
 import type { ToothData } from '@/types/tooth';
 import type { OrderFormState } from '@/components/clinic-staff/order-form/OrderForm.types';
 import type { OcclusionInfo } from '@/types/order';
-import type { ScanType, CaseType, SubmissionType } from '@prisma/client';
+import type { CaseType, SubmissionType } from '@prisma/client';
 import type { AISuggestion } from '@/types/ai-suggestions';
 
 interface ParsedAIData {
@@ -11,7 +11,7 @@ interface ParsedAIData {
   description?: string;
   notes?: string;
   teethNumbers?: string;
-  scanType?: ScanType | null;
+  isDigitalScan?: boolean;
   fechaEntregaDeseada?: string;
   tipoCaso?: CaseType;
   motivoGarantia?: string;

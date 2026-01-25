@@ -114,14 +114,12 @@ model Order {
   aiPrompt                     String?
   teethNumbers                 String?
   color                        String?
-  scanType                     ScanType?
+  isDigitalScan                Boolean          @default(false)
   tipoCaso                     CaseType?        @default(nuevo)
   motivoGarantia               String?
   seDevuelveTrabajoOriginal    Boolean?
   escanerUtilizado             ScannerType?
   otroEscaner                  String?
-  tipoSilicon                  SiliconType?
-  notaModeloFisico             String?
   materialSent                 Json?
   submissionType               SubmissionType?  @default(terminado)
   oclusionDiseno               Json?
@@ -275,22 +273,12 @@ enum Role {
   DOCTOR
 }
 
-enum ScanType {
-  DIGITAL_SCAN
-  ANALOG_MOLD
-}
-
 enum ScannerType {
   iTero
   Medit
   ThreeShape
   Carestream
   Otro
-}
-
-enum SiliconType {
-  adicion
-  condensacion
 }
 
 enum SubmissionType {

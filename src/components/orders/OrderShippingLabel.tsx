@@ -106,12 +106,12 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
               <p className="text-xs text-gray-600 font-semibold">Dientes:</p>
               <p className="font-semibold">{order.teethNumbers || 'N/A'}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-600 font-semibold">Tipo de Impresión:</p>
-              <p className="font-semibold">
-                {order.scanType === 'DIGITAL_SCAN' ? 'Escaneo Digital' : 'Modelo Análogo'}
-              </p>
-            </div>
+            {order.isDigitalScan && (
+              <div>
+                <p className="text-xs text-gray-600 font-semibold">Tipo de Impresión:</p>
+                <p className="font-semibold">Escaneo Digital</p>
+              </div>
+            )}
             <div>
               <p className="text-xs text-gray-600 font-semibold">Fecha de Creación:</p>
               <p className="font-semibold">{formatDate(order.createdAt, false)}</p>

@@ -19,11 +19,6 @@ const RESTORATION_TYPE_LABELS: Record<string, string> = {
   provisional: 'provisional',
 };
 
-const SCAN_TYPE_LABELS: Record<string, string> = {
-  DIGITAL_SCAN: 'escaneo digital',
-  ANALOG_MOLD: 'modelo análogo',
-};
-
 const ARTICULATED_BY_LABELS: Record<string, string> = {
   doctor: 'doctor',
   laboratorio: 'laboratorio',
@@ -110,24 +105,13 @@ export function generateCaseSummary(order: OrderDetail): string {
     sections.push(...toothSummaries);
   }
 
-  // Scan/Impression type
-  if (order.scanType) {
-    const scanLabel = SCAN_TYPE_LABELS[order.scanType] || order.scanType;
-    sections.push(`Tipo de impresión: ${scanLabel}.`);
-
-    if (order.scanType === 'DIGITAL_SCAN' && order.escanerUtilizado) {
+  // Digital scan details
+  if (order.isDigitalScan) {
+    sections.push('Tipo de impresión: escaneo digital.');
+    if (order.escanerUtilizado) {
       sections.push(`Escáner utilizado: ${order.escanerUtilizado}.`);
       if (order.otroEscaner) {
         sections.push(`Detalle del escáner: ${order.otroEscaner}.`);
-      }
-    }
-
-    if (order.scanType === 'ANALOG_MOLD') {
-      if (order.tipoSilicon) {
-        sections.push(`Tipo de silicón: ${order.tipoSilicon}.`);
-      }
-      if (order.notaModeloFisico) {
-        sections.push(`Nota del modelo: ${order.notaModeloFisico}.`);
       }
     }
   }

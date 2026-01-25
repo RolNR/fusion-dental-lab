@@ -1,4 +1,3 @@
-import { ScanType } from '@prisma/client';
 import { OrderFormState, OrderFormData } from './OrderForm.types';
 import {
   createOrder,
@@ -158,14 +157,12 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     fechaEntregaDeseada: initialData?.fechaEntregaDeseada || '',
     aiPrompt: initialData?.aiPrompt || '',
     teethNumbers: initialData?.teethNumbers || '',
-    scanType: initialData?.scanType || null,
+    isDigitalScan: initialData?.isDigitalScan || false,
     tipoCaso: initialData?.tipoCaso || null,
     motivoGarantia: initialData?.motivoGarantia || '',
     seDevuelveTrabajoOriginal: initialData?.seDevuelveTrabajoOriginal || false,
     escanerUtilizado: initialData?.escanerUtilizado || null,
     otroEscaner: initialData?.otroEscaner || '',
-    tipoSilicon: initialData?.tipoSilicon || null,
-    notaModeloFisico: initialData?.notaModeloFisico || '',
     materialSent: initialData?.materialSent || {},
     submissionType: initialData?.submissionType || null,
     oclusionDiseno: initialData?.oclusionDiseno,

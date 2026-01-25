@@ -1,10 +1,8 @@
 import {
-  ScanType,
   OrderStatus,
   CaseType,
   RestorationType,
   ScannerType,
-  SiliconType,
   SubmissionType,
   ArticulatedBy,
   Prisma,
@@ -23,7 +21,7 @@ export interface Order {
   fechaEntregaDeseada?: string;
   aiPrompt?: string;
   teethNumbers?: string;
-  scanType?: string;
+  isDigitalScan?: boolean;
   status: OrderStatus;
   doctorId: string;
   createdAt: string;
@@ -33,11 +31,9 @@ export interface Order {
   motivoGarantia?: string;
   seDevuelveTrabajoOriginal?: boolean;
 
-  // POC fields - Impression details
+  // POC fields - Digital scan details
   escanerUtilizado?: ScannerType;
   otroEscaner?: string;
-  tipoSilicon?: SiliconType;
-  notaModeloFisico?: string;
 
   // POC fields - Material sent
   materialSent?: Record<string, boolean>;
@@ -117,7 +113,7 @@ export interface OrderDetail {
   fechaEntregaDeseada: string | null;
   aiPrompt: string | null;
   teethNumbers: string | null;
-  scanType: ScanType | null;
+  isDigitalScan: boolean;
   status: OrderStatus;
   createdAt: string;
   updatedAt: string;
@@ -129,11 +125,9 @@ export interface OrderDetail {
   motivoGarantia: string | null;
   seDevuelveTrabajoOriginal: boolean | null;
 
-  // POC fields - Impression details
+  // POC fields - Digital scan details
   escanerUtilizado: ScannerType | null;
   otroEscaner: string | null;
-  tipoSilicon: SiliconType | null;
-  notaModeloFisico: string | null;
 
   // POC fields - Material sent
   materialSent: Record<string, boolean> | null;
@@ -243,18 +237,16 @@ export const orderDraftSchema = z.object({
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
-  scanType: z.nativeEnum(ScanType).nullable().optional(),
+  isDigitalScan: z.boolean().optional(),
 
   // Case type
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
 
-  // Impression details
+  // Digital scan details
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
-  tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
-  notaModeloFisico: z.string().optional(),
 
   // Material sent
   materialSent: z
@@ -340,10 +332,10 @@ export const orderUpdateSchema = z.object({
     .optional()
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   teethNumbers: z.string().optional(),
-  scanType: z.nativeEnum(ScanType).nullable().optional(),
+  isDigitalScan: z.boolean().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
 
-  // New fields
+  // Case type fields
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
   motivoGarantia: z.string().optional(),
 
@@ -369,8 +361,6 @@ export const orderUpdateSchema = z.object({
   seDevuelveTrabajoOriginal: z.boolean().optional(),
   escanerUtilizado: z.nativeEnum(ScannerType).nullable().optional(),
   otroEscaner: z.string().optional(),
-  tipoSilicon: z.nativeEnum(SiliconType).nullable().optional(),
-  notaModeloFisico: z.string().optional(),
   materialSent: z
     .union([z.record(z.string(), z.boolean()), z.null()])
     .optional()

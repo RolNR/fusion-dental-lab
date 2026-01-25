@@ -52,10 +52,10 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
               </dd>
             </div>
           )}
-          {order.scanType && (
+          {order.isDigitalScan && (
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Escaneo</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.scanType}</dd>
+              <dt className="text-sm font-medium text-muted-foreground">Escaneo Digital</dt>
+              <dd className="mt-1 text-sm text-foreground">Sí</dd>
             </div>
           )}
           {order.submissionType && (
@@ -96,10 +96,10 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
         )}
       </div>
 
-      {/* Impression/Scanning Details */}
-      {(order.escanerUtilizado || order.tipoSilicon || order.notaModeloFisico) && (
+      {/* Digital Scan Details */}
+      {(order.escanerUtilizado || order.otroEscaner) && (
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-          <h2 className="text-xl font-bold text-foreground mb-4">Detalles de Impresión</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">Detalles de Escaneo Digital</h2>
           <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {order.escanerUtilizado && (
               <div>
@@ -113,19 +113,7 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
                 <dd className="mt-1 text-sm text-foreground">{order.otroEscaner}</dd>
               </div>
             )}
-            {order.tipoSilicon && (
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Tipo de Silicona</dt>
-                <dd className="mt-1 text-sm text-foreground capitalize">{order.tipoSilicon}</dd>
-              </div>
-            )}
           </dl>
-          {order.notaModeloFisico && (
-            <div className="mt-4">
-              <dt className="text-sm font-medium text-muted-foreground">Nota de Modelo Físico</dt>
-              <dd className="mt-1 text-sm text-foreground">{order.notaModeloFisico}</dd>
-            </div>
-          )}
         </div>
       )}
 

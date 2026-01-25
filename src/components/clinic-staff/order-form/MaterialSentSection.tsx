@@ -35,6 +35,7 @@ const CATEGORIES: Category[] = [
     label: 'Impresiones',
     icon: 'layers',
     options: [
+      { key: 'molde_analogo', label: 'Molde análogo (impresión tradicional)' },
       { key: 'antagonista', label: 'Antagonista' },
       {
         key: 'arcada_completa',
