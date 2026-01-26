@@ -2,7 +2,12 @@
 
 import { forwardRef, useEffect, useMemo } from 'react';
 import { SubmissionType, ArticulatedBy } from '@prisma/client';
-import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
+import {
+  CollapsibleSubsection,
+  FieldLabel,
+  ToggleButtonGroup,
+  ToggleOption,
+} from '@/components/ui/form';
 import { Icons } from '@/components/ui/Icons';
 
 type SubmissionTypeSectionProps = {
@@ -65,7 +70,7 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
             )}
 
             {/* Submission Type - inline layout */}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <FieldLabel label="Tipo de Entrega" required className="mb-0 shrink-0" />
               <ToggleButtonGroup
                 options={submissionTypeOptions}
@@ -78,7 +83,7 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
             )}
 
             {/* Articulated By - inline layout */}
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <FieldLabel label="Articulado Por" required className="mb-0 shrink-0" />
               <ToggleButtonGroup
                 options={ARTICULATED_BY_OPTIONS}

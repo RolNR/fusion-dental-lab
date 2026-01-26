@@ -406,10 +406,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   };
 
   // Compute pre-submission validation errors
-  // Check if any tooth has implant work
+  // Check if any tooth has implant work (either marked in Step 1 or assigned in Step 2)
   const hasImplant = useMemo(() => {
-    return Array.from(teethData.values()).some((tooth) => tooth.trabajoSobreImplante);
-  }, [teethData]);
+    // Check teethData for trabajoSobreImplante (work assigned to implant)
+    const hasImplantWork = Array.from(teethData.values()).some((tooth) => tooth.trabajoSobreImplante);
+
+    // Check initialToothStates for teeth marked as IMPLANTE in Step 1
+    const hasImplantState = formData.initialToothStates
+      ? Object.values(formData.initialToothStates).some((state) => state === 'IMPLANTE')
+      : false;
+
+    return hasImplantWork || hasImplantState;
+  }, [teethData, formData.initialToothStates]);
 
   const computePreSubmitValidation = useCallback(() => {
     const errors: typeof preSubmitErrors = {};
