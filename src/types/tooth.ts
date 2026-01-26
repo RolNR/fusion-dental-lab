@@ -2,6 +2,18 @@ import { RestorationType } from '@prisma/client';
 import { z } from 'zod';
 import { implantInfoSchema, colorInfoSchema, ImplantInfo, ColorInfo } from './order';
 
+/**
+ * Bridge definition for tracking bridge work spanning multiple teeth.
+ */
+export interface BridgeDefinition {
+  id: string;
+  startTooth: string;
+  endTooth: string;
+  pontics: string[]; // AUSENTE teeth in range (replacement teeth)
+  material?: string;
+  colorInfo?: ColorInfo;
+}
+
 // Tooth interface
 export interface Tooth {
   id: string;

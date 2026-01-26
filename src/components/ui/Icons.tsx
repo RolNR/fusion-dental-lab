@@ -800,4 +800,28 @@ export const Icons = {
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </svg>
   ),
+
+  implant: ({ size = 24, ...props }: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {/* Abutment (crown connection) */}
+      <path d="M10 2h4l1 4h-6l1-4z" />
+      {/* Implant body (threaded screw shape) */}
+      <path d="M9 6h6l-1 3h-4l-1-3z" />
+      <path d="M9.5 9h5l-.5 3h-4l-.5-3z" />
+      <path d="M10 12h4l-.5 3h-3l-.5-3z" />
+      <path d="M10.5 15h3l-.5 3h-2l-.5-3z" />
+      <path d="M11 18h2l-.5 4h-1l-.5-4z" />
+    </svg>
+  ),
 };

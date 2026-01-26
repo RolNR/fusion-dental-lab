@@ -1,4 +1,4 @@
-export type ToothInitialState = 'NORMAL' | 'AUSENTE' | 'PILAR';
+export type ToothInitialState = 'NORMAL' | 'AUSENTE' | 'PILAR' | 'IMPLANTE';
 
 export type InitialToothStatesMap = Record<string, ToothInitialState>;
 
@@ -42,6 +42,7 @@ export function getInitialStatesSummary(states: InitialToothStatesMap | undefine
 
   const ausenteCount = countTeethWithState(states, 'AUSENTE');
   const pilarCount = countTeethWithState(states, 'PILAR');
+  const implanteCount = countTeethWithState(states, 'IMPLANTE');
 
   const parts: string[] = [];
   if (ausenteCount > 0) {
@@ -49,6 +50,9 @@ export function getInitialStatesSummary(states: InitialToothStatesMap | undefine
   }
   if (pilarCount > 0) {
     parts.push(`${pilarCount} pilar${pilarCount > 1 ? 'es' : ''}`);
+  }
+  if (implanteCount > 0) {
+    parts.push(`${implanteCount} implante${implanteCount > 1 ? 's' : ''}`);
   }
 
   return parts.join(', ');

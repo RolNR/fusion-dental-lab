@@ -40,8 +40,8 @@ import {
   ValidationErrorDetail,
   enrichErrorsWithToothNumbers,
 } from '@/types/validation';
-import { ToothData } from '@/types/tooth';
-import { ToothConfigurationSection } from './order-form/ToothConfigurationSection';
+import { ToothData, BridgeDefinition } from '@/types/tooth';
+import { OdontogramWizard } from './order-form/wizard';
 import { AIPromptInput } from './order-form/AIPromptInput';
 import type { AISuggestion } from '@/types/ai-suggestions';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
@@ -79,6 +79,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [teethData, setTeethData] = useState<Map<string, ToothData>>(new Map());
   const [teethNumbers, setTeethNumbers] = useState<string[]>([]); // All teeth in the order
   const [selectedForConfig, setSelectedForConfig] = useState<string[]>([]); // Teeth currently selected for bulk config
+  const [bridges, setBridges] = useState<BridgeDefinition[]>([]); // Bridge definitions
 
   // AI suggestions state
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
@@ -955,23 +956,19 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('patient').errorCount}
           />
 
-          {/* 3. Tooth Configuration Section (Odontogram + per-tooth config + initial states) */}
+          {/* 3. Tooth Configuration Section (Odontogram Wizard - 2 steps) */}
           <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
-            <ToothConfigurationSection
-              teethInOrder={teethNumbers}
-              selectedForConfig={selectedForConfig}
-              onToothToggle={handleToothToggle}
-              onToothRemove={handleToothRemove}
-              onToothSelectIndividual={handleToothSelectIndividual}
+            <OdontogramWizard
+              initialStates={formData.initialToothStates}
               teethData={teethData}
-              onTeethDataChange={setTeethData}
-              teethWithErrors={teethWithErrors}
-              validationErrors={validationErrors}
-              disabled={isLoading}
-              initialToothStates={formData.initialToothStates}
+              bridges={bridges}
               onInitialStatesChange={(states) =>
                 setFormData((prev) => ({ ...prev, initialToothStates: states }))
               }
+              onTeethDataChange={(data) => setTeethData(data)}
+              onBridgesChange={setBridges}
+              onTeethInOrderChange={setTeethNumbers}
+              disabled={isLoading}
             />
           </div>
 

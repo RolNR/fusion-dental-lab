@@ -1,0 +1,407 @@
+'use client';
+
+import { useState, useCallback, useMemo } from 'react';
+import { RestorationType } from '@prisma/client';
+import { WizardStepIndicator } from './WizardStepIndicator';
+import { Step1InitialStates } from './Step1InitialStates';
+import { Step2AssignWork } from './Step2AssignWork';
+import { InitialStateTool } from './InitialStateToolbar';
+import { ToothData, BridgeDefinition } from '@/types/tooth';
+import {
+  InitialToothStatesMap,
+  ToothInitialState,
+  getToothInitialState,
+} from '@/types/initial-tooth-state';
+
+interface OdontogramWizardProps {
+  initialStates?: InitialToothStatesMap;
+  teethData?: Map<string, ToothData>;
+  bridges?: BridgeDefinition[];
+  onInitialStatesChange: (states: InitialToothStatesMap) => void;
+  onTeethDataChange: (data: Map<string, ToothData>) => void;
+  onBridgesChange: (bridges: BridgeDefinition[]) => void;
+  onTeethInOrderChange: (teeth: string[]) => void;
+  disabled?: boolean;
+}
+
+// Generate unique ID for bridges
+function generateBridgeId(): string {
+  return `bridge_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Get teeth numbers in a range (same quadrant/arch)
+function getTeethInRange(
+  start: string,
+  end: string,
+  initialStates: InitialToothStatesMap
+): string[] {
+  const startNum = parseInt(start, 10);
+  const endNum = parseInt(end, 10);
+
+  // Determine arch and quadrant
+  const startQuadrant = Math.floor(startNum / 10);
+  const endQuadrant = Math.floor(endNum / 10);
+
+  // Must be in same arch (upper: 1,2 or lower: 3,4)
+  const startIsUpper = startQuadrant <= 2;
+  const endIsUpper = endQuadrant <= 2;
+  if (startIsUpper !== endIsUpper) {
+    return []; // Can't span arches
+  }
+
+  // Get all teeth in range
+  const teeth: string[] = [];
+
+  if (startIsUpper) {
+    // Upper arch: quadrants 1 and 2
+    // Q1: 18,17,16,15,14,13,12,11 (right to midline)
+    // Q2: 21,22,23,24,25,26,27,28 (midline to left)
+    const q1Teeth = [18, 17, 16, 15, 14, 13, 12, 11];
+    const q2Teeth = [21, 22, 23, 24, 25, 26, 27, 28];
+    const upperOrder = [...q1Teeth, ...q2Teeth];
+
+    const startIdx = upperOrder.indexOf(startNum);
+    const endIdx = upperOrder.indexOf(endNum);
+
+    if (startIdx === -1 || endIdx === -1) return [];
+
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+
+    for (let i = minIdx; i <= maxIdx; i++) {
+      teeth.push(upperOrder[i].toString());
+    }
+  } else {
+    // Lower arch: quadrants 4 and 3
+    // Q4: 48,47,46,45,44,43,42,41 (right to midline)
+    // Q3: 31,32,33,34,35,36,37,38 (midline to left)
+    const q4Teeth = [48, 47, 46, 45, 44, 43, 42, 41];
+    const q3Teeth = [31, 32, 33, 34, 35, 36, 37, 38];
+    const lowerOrder = [...q4Teeth, ...q3Teeth];
+
+    const startIdx = lowerOrder.indexOf(startNum);
+    const endIdx = lowerOrder.indexOf(endNum);
+
+    if (startIdx === -1 || endIdx === -1) return [];
+
+    const minIdx = Math.min(startIdx, endIdx);
+    const maxIdx = Math.max(startIdx, endIdx);
+
+    for (let i = minIdx; i <= maxIdx; i++) {
+      teeth.push(lowerOrder[i].toString());
+    }
+  }
+
+  return teeth;
+}
+
+export function OdontogramWizard({
+  initialStates = {},
+  teethData: externalTeethData,
+  bridges: externalBridges,
+  onInitialStatesChange,
+  onTeethDataChange,
+  onBridgesChange,
+  onTeethInOrderChange,
+  disabled = false,
+}: OdontogramWizardProps) {
+  // State
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const [step1Tool, setStep1Tool] = useState<InitialStateTool>(null);
+  const [step2Tool, setStep2Tool] = useState<RestorationType | null>(null);
+  const [bridgeStart, setBridgeStart] = useState<string | null>(null);
+
+  // Use external state if provided, otherwise use internal
+  const [internalTeethData, setInternalTeethData] = useState<Map<string, ToothData>>(new Map());
+  const [internalBridges, setInternalBridges] = useState<BridgeDefinition[]>([]);
+
+  const teethData = externalTeethData ?? internalTeethData;
+  const bridges = externalBridges ?? internalBridges;
+
+  const setTeethData = useCallback(
+    (updater: Map<string, ToothData> | ((prev: Map<string, ToothData>) => Map<string, ToothData>)) => {
+      if (typeof updater === 'function') {
+        const newData = updater(teethData);
+        if (externalTeethData) {
+          onTeethDataChange(newData);
+        } else {
+          setInternalTeethData(newData);
+        }
+      } else {
+        if (externalTeethData) {
+          onTeethDataChange(updater);
+        } else {
+          setInternalTeethData(updater);
+        }
+      }
+    },
+    [teethData, externalTeethData, onTeethDataChange]
+  );
+
+  const setBridges = useCallback(
+    (updater: BridgeDefinition[] | ((prev: BridgeDefinition[]) => BridgeDefinition[])) => {
+      if (typeof updater === 'function') {
+        const newBridges = updater(bridges);
+        if (externalBridges) {
+          onBridgesChange(newBridges);
+        } else {
+          setInternalBridges(newBridges);
+        }
+      } else {
+        if (externalBridges) {
+          onBridgesChange(updater);
+        } else {
+          setInternalBridges(updater);
+        }
+      }
+    },
+    [bridges, externalBridges, onBridgesChange]
+  );
+
+  // Update teethInOrder whenever teeth data changes
+  const updateTeethInOrder = useCallback(() => {
+    const teeth: string[] = [];
+    for (const [toothNumber, data] of teethData) {
+      if (data.tipoRestauracion) {
+        teeth.push(toothNumber);
+      }
+    }
+    // Add bridge teeth
+    bridges.forEach((bridge) => {
+      if (!teeth.includes(bridge.startTooth)) teeth.push(bridge.startTooth);
+      if (!teeth.includes(bridge.endTooth)) teeth.push(bridge.endTooth);
+      bridge.pontics.forEach((p) => {
+        if (!teeth.includes(p)) teeth.push(p);
+      });
+    });
+    onTeethInOrderChange(teeth.sort((a, b) => parseInt(a, 10) - parseInt(b, 10)));
+  }, [teethData, bridges, onTeethInOrderChange]);
+
+  // Step 1: Handle initial state toggle
+  const handleInitialStateToggle = useCallback(
+    (toothNumber: string) => {
+      if (!step1Tool) return;
+
+      const currentState = getToothInitialState(initialStates, toothNumber);
+      const newStates = { ...initialStates };
+
+      // Map tool to state
+      const targetState: ToothInitialState =
+        step1Tool === 'ausente' ? 'AUSENTE' :
+        step1Tool === 'pilar' ? 'PILAR' : 'IMPLANTE';
+
+      if (currentState === targetState) {
+        // Remove state (back to NORMAL)
+        delete newStates[toothNumber];
+      } else {
+        // Set new state
+        newStates[toothNumber] = targetState;
+      }
+
+      onInitialStatesChange(newStates);
+    },
+    [step1Tool, initialStates, onInitialStatesChange]
+  );
+
+  // Step 2: Handle tooth click for work assignment
+  const handleStep2ToothClick = useCallback(
+    (toothNumber: string) => {
+      if (!step2Tool) return;
+
+      const state = getToothInitialState(initialStates, toothNumber);
+
+      if (step2Tool === 'puente') {
+        // Bridge mode
+        if (!bridgeStart) {
+          // First click - set start
+          setBridgeStart(toothNumber);
+        } else {
+          // Second click - complete bridge
+          const teethInRange = getTeethInRange(bridgeStart, toothNumber, initialStates);
+
+          if (teethInRange.length < 2) {
+            // Invalid bridge (must span at least 2 teeth)
+            setBridgeStart(null);
+            return;
+          }
+
+          // Find pontics (AUSENTE teeth in range)
+          const pontics = teethInRange.filter(
+            (t) => t !== bridgeStart && t !== toothNumber && getToothInitialState(initialStates, t) === 'AUSENTE'
+          );
+
+          // Create bridge
+          const bridge: BridgeDefinition = {
+            id: generateBridgeId(),
+            startTooth: bridgeStart,
+            endTooth: toothNumber,
+            pontics,
+          };
+
+          setBridges((prev) => [...prev, bridge]);
+
+          // Add all bridge teeth to teethData
+          const newTeethData = new Map(teethData);
+          teethInRange.forEach((tooth) => {
+            const isImplante = getToothInitialState(initialStates, tooth) === 'IMPLANTE';
+            newTeethData.set(tooth, {
+              toothNumber: tooth,
+              tipoRestauracion: 'puente',
+              trabajoSobreImplante: isImplante || undefined,
+            });
+          });
+          setTeethData(newTeethData);
+
+          setBridgeStart(null);
+          updateTeethInOrder();
+        }
+      } else {
+        // Non-bridge work type
+        if (state === 'AUSENTE') {
+          return; // Can't assign work directly to missing teeth
+        }
+
+        const currentData = teethData.get(toothNumber);
+        const newTeethData = new Map(teethData);
+
+        if (currentData?.tipoRestauracion === step2Tool) {
+          // Toggle off - remove work assignment
+          newTeethData.delete(toothNumber);
+        } else {
+          // Toggle on - assign work
+          const isImplante = state === 'IMPLANTE';
+          newTeethData.set(toothNumber, {
+            toothNumber,
+            tipoRestauracion: step2Tool,
+            trabajoSobreImplante: isImplante || undefined,
+            ...currentData,
+          });
+        }
+
+        setTeethData(newTeethData);
+        updateTeethInOrder();
+      }
+    },
+    [step2Tool, bridgeStart, initialStates, teethData, setTeethData, setBridges, updateTeethInOrder]
+  );
+
+  // Handle tooth data update
+  const handleToothUpdate = useCallback(
+    (toothNumber: string, updates: Partial<ToothData>) => {
+      const newTeethData = new Map(teethData);
+      const currentData = newTeethData.get(toothNumber) || { toothNumber };
+      newTeethData.set(toothNumber, { ...currentData, ...updates });
+      setTeethData(newTeethData);
+    },
+    [teethData, setTeethData]
+  );
+
+  // Handle tooth remove
+  const handleToothRemove = useCallback(
+    (toothNumber: string) => {
+      const newTeethData = new Map(teethData);
+      newTeethData.delete(toothNumber);
+      setTeethData(newTeethData);
+      updateTeethInOrder();
+    },
+    [teethData, setTeethData, updateTeethInOrder]
+  );
+
+  // Handle bridge update
+  const handleBridgeUpdate = useCallback(
+    (bridgeId: string, updates: Partial<BridgeDefinition>) => {
+      setBridges((prev) =>
+        prev.map((b) => (b.id === bridgeId ? { ...b, ...updates } : b))
+      );
+    },
+    [setBridges]
+  );
+
+  // Handle bridge remove
+  const handleBridgeRemove = useCallback(
+    (bridgeId: string) => {
+      const bridge = bridges.find((b) => b.id === bridgeId);
+      if (!bridge) return;
+
+      // Remove all bridge teeth from teethData
+      const newTeethData = new Map(teethData);
+      const teethToRemove = [bridge.startTooth, bridge.endTooth, ...bridge.pontics];
+      teethToRemove.forEach((t) => newTeethData.delete(t));
+      setTeethData(newTeethData);
+
+      // Remove bridge
+      setBridges((prev) => prev.filter((b) => b.id !== bridgeId));
+      updateTeethInOrder();
+    },
+    [bridges, teethData, setTeethData, setBridges, updateTeethInOrder]
+  );
+
+  // Navigation
+  const handleNext = useCallback(() => {
+    setStep1Tool(null);
+    setCurrentStep(2);
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setStep2Tool(null);
+    setBridgeStart(null);
+    setCurrentStep(1);
+  }, []);
+
+  const handleStepClick = useCallback((step: 1 | 2) => {
+    if (step === 1) {
+      setStep2Tool(null);
+      setBridgeStart(null);
+    } else {
+      setStep1Tool(null);
+    }
+    setCurrentStep(step);
+  }, []);
+
+  // Handle tool changes with automatic bridge start reset
+  const handleStep2ToolChange = useCallback((tool: RestorationType | null) => {
+    setStep2Tool(tool);
+    if (tool !== 'puente') {
+      setBridgeStart(null);
+    }
+  }, []);
+
+  return (
+    <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+      {/* Step Indicator */}
+      <WizardStepIndicator
+        currentStep={currentStep}
+        onStepClick={handleStepClick}
+        disabled={disabled}
+      />
+
+      {/* Step Content */}
+      {currentStep === 1 ? (
+        <Step1InitialStates
+          initialStates={initialStates}
+          activeTool={step1Tool}
+          onToolChange={setStep1Tool}
+          onInitialStateToggle={handleInitialStateToggle}
+          onNext={handleNext}
+          disabled={disabled}
+        />
+      ) : (
+        <Step2AssignWork
+          initialStates={initialStates}
+          teethData={teethData}
+          bridges={bridges}
+          activeTool={step2Tool}
+          bridgeStart={bridgeStart}
+          onToolChange={handleStep2ToolChange}
+          onToothClick={handleStep2ToothClick}
+          onToothUpdate={handleToothUpdate}
+          onToothRemove={handleToothRemove}
+          onBridgeUpdate={handleBridgeUpdate}
+          onBridgeRemove={handleBridgeRemove}
+          onBack={handleBack}
+          disabled={disabled}
+        />
+      )}
+    </div>
+  );
+}

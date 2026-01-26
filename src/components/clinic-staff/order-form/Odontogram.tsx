@@ -101,6 +101,12 @@ export function Odontogram({
               </div>
               <span>Pilar</span>
             </div>
+            <div className="flex items-center gap-2">
+              <div className="relative h-4 w-4 rounded border-2 border-success">
+                <Icons.implant className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-3 w-3 text-success" />
+              </div>
+              <span>Implante</span>
+            </div>
           </>
         )}
       </div>
@@ -181,8 +187,14 @@ export function Odontogram({
       )}
       {!readOnly && editMode === 'pilar' && (
         <p className="text-xs text-primary text-center font-medium">
-          <strong>Modo Pilares:</strong> Haz clic en los dientes con implante para marcarlos como
-          pilares. Haz clic de nuevo para desmarcarlos.
+          <strong>Modo Pilares:</strong> Haz clic en los dientes pilares (dientes naturales que
+          soportan un puente). Haz clic de nuevo para desmarcarlos.
+        </p>
+      )}
+      {!readOnly && editMode === 'implante' && (
+        <p className="text-xs text-success text-center font-medium">
+          <strong>Modo Implantes:</strong> Haz clic en los dientes con implante. Haz clic de nuevo
+          para desmarcarlos.
         </p>
       )}
     </div>

@@ -5,7 +5,7 @@ import { Icons } from '@/components/ui/Icons';
 import { ToothInitialState } from '@/types/initial-tooth-state';
 import { ToothConfigStatus } from '@/types/tooth';
 
-export type ToothEditMode = 'selection' | 'ausente' | 'pilar';
+export type ToothEditMode = 'selection' | 'ausente' | 'pilar' | 'implante';
 
 interface ToothProps {
   toothNumber: string; // FDI notation (11, 12, etc.)
@@ -42,12 +42,13 @@ export function Tooth({
 
   const isAusente = initialState === 'AUSENTE';
   const isPilar = initialState === 'PILAR';
+  const isImplante = initialState === 'IMPLANTE';
 
   const handleClick = () => {
     if (readOnly) return;
 
     // Handle edit modes for initial state
-    if (editMode === 'ausente' || editMode === 'pilar') {
+    if (editMode === 'ausente' || editMode === 'pilar' || editMode === 'implante') {
       onInitialStateToggle?.();
       return;
     }
@@ -94,8 +95,10 @@ export function Tooth({
     // Highlight in edit modes
     editMode === 'ausente' && !isAusente && 'ring-2 ring-muted ring-dashed rounded-lg',
     editMode === 'pilar' && !isPilar && 'ring-2 ring-muted ring-dashed rounded-lg',
+    editMode === 'implante' && !isImplante && 'ring-2 ring-muted ring-dashed rounded-lg',
     editMode === 'ausente' && isAusente && 'ring-2 ring-warning rounded-lg',
     editMode === 'pilar' && isPilar && 'ring-2 ring-primary rounded-lg',
+    editMode === 'implante' && isImplante && 'ring-2 ring-success rounded-lg',
   ]
     .filter(Boolean)
     .join(' ');
@@ -164,7 +167,7 @@ export function Tooth({
       onDoubleClick={handleDoubleClick}
       onKeyDown={handleKeyDown}
       role="button"
-      aria-label={`Diente ${toothNumber}, ${toothName}${isAusente ? ', ausente' : ''}${isPilar ? ', pilar' : ''}${isInOrder ? ', en orden' : ''}${isSelectedForConfig ? ', configurando' : ''}`}
+      aria-label={`Diente ${toothNumber}, ${toothName}${isAusente ? ', ausente' : ''}${isPilar ? ', pilar' : ''}${isImplante ? ', implante' : ''}${isInOrder ? ', en orden' : ''}${isSelectedForConfig ? ', configurando' : ''}`}
       aria-pressed={isInOrder}
       aria-current={isSelectedForConfig ? 'true' : undefined}
       tabIndex={0}
@@ -238,6 +241,13 @@ export function Tooth({
         {isPilar && (
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
             <Icons.screw className="h-5 w-5 text-primary" />
+          </div>
+        )}
+
+        {/* IMPLANTE indicator - implant icon below the tooth */}
+        {isImplante && (
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
+            <Icons.implant className="h-5 w-5 text-success" />
           </div>
         )}
 

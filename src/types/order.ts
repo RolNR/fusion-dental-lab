@@ -241,7 +241,7 @@ export const orderDraftSchema = z.object({
   aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
   initialToothStates: z
-    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR']))
+    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR', 'IMPLANTE']))
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   isDigitalScan: z.boolean().optional(),
@@ -340,7 +340,7 @@ export const orderUpdateSchema = z.object({
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   teethNumbers: z.string().optional(),
   initialToothStates: z
-    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR']))
+    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR', 'IMPLANTE']))
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
   isDigitalScan: z.boolean().optional(),
