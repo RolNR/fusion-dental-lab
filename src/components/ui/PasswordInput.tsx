@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, InputHTMLAttributes, useState } from 'react';
+import { Button } from './Button';
 import { Icons } from './Icons';
 
 export interface PasswordInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
@@ -32,10 +33,12 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             } disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground ${className}`}
             {...props}
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground"
+            className="absolute inset-y-0 right-0 !px-3 !text-muted-foreground hover:!text-foreground hover:!bg-transparent"
             tabIndex={-1}
           >
             {showPassword ? (
@@ -43,7 +46,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             ) : (
               <Icons.eye size={20} className="mt-1" />
             )}
-          </button>
+          </Button>
         </div>
         {error && <p className="mt-1 text-sm text-danger">{error}</p>}
         {helperText && !error && <p className="mt-1 text-sm text-muted-foreground">{helperText}</p>}

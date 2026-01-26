@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 
 interface ButtonCardProps {
@@ -23,19 +23,19 @@ export function ButtonCard({
   const IconComponent = icon ? Icons[icon] : null;
 
   return (
-    <button
+    <Button
       type="button"
+      variant="secondary"
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative flex min-h-[100px] w-full flex-col items-center justify-center gap-2
-        rounded-lg border-2 p-4 transition-all
+        !h-auto !min-h-[100px] !w-full !flex-col !items-center !justify-center !gap-2
+        !rounded-lg !border-2 !p-4
         ${
           selected
-            ? 'border-primary bg-primary/5'
-            : 'border-border bg-background hover:border-primary/50'
+            ? '!border-primary !bg-primary/5'
+            : '!border-border !bg-background hover:!border-primary/50'
         }
-        ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
       `}
     >
       {selected && (
@@ -54,6 +54,6 @@ export function ButtonCard({
         </div>
         {subtitle && <div className="mt-1 text-xs text-muted-foreground">{subtitle}</div>}
       </div>
-    </button>
+    </Button>
   );
 }

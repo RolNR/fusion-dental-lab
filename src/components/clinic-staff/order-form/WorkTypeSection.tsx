@@ -1,7 +1,12 @@
 'use client';
 
 import { RestorationType } from '@prisma/client';
-import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
+import {
+  CollapsibleSubsection,
+  FieldLabel,
+  ToggleButtonGroup,
+  ToggleOption,
+} from '@/components/ui/form';
 
 type WorkTypeSectionProps = {
   tipoRestauracion?: RestorationType;

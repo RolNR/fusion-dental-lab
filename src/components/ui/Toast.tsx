@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { DEFAULT_TOAST_DURATION } from '@/lib/constants';
 
@@ -56,13 +57,16 @@ export function Toast({
       <div className="flex-1">
         <p className="text-sm font-medium">{message}</p>
       </div>
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => onClose(id)}
-        className="text-white/80 hover:text-white transition-colors flex-shrink-0"
+        className="!p-1 !text-white/80 hover:!text-white hover:!bg-white/10 flex-shrink-0"
         aria-label="Cerrar notificación"
       >
         <Icons.x size={20} />
-      </button>
+      </Button>
     </div>
   );
 }

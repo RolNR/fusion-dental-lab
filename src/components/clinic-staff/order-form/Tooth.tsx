@@ -1,6 +1,7 @@
 'use client';
 
 import { TOOTH_SHAPES, getToothTypeFromNumber, getToothName } from './tooth-shapes';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { ToothInitialState } from '@/types/initial-tooth-state';
 import { ToothConfigStatus } from '@/types/tooth';
@@ -213,14 +214,16 @@ export function Tooth({
 
             {/* Remove button for teeth in order (hidden in readOnly mode) */}
             {!readOnly && editMode === 'selection' && (
-              <button
-                onClick={handleRemoveClick}
-                className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
-                title="Quitar diente de la orden"
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveClick}
+                className="!p-0 !h-5 !w-5 !min-w-0 !rounded-full !bg-muted hover:!bg-danger !text-foreground hover:!text-danger-foreground"
+                title="Quitar diente de la orden"
               >
-                <Icons.x className="h-3.5 w-3.5 text-foreground hover:text-danger-foreground" />
-              </button>
+                <Icons.x className="h-3.5 w-3.5" />
+              </Button>
             )}
           </div>
         )}

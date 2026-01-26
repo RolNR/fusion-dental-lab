@@ -409,7 +409,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // Check if any tooth has implant work (either marked in Step 1 or assigned in Step 2)
   const hasImplant = useMemo(() => {
     // Check teethData for trabajoSobreImplante (work assigned to implant)
-    const hasImplantWork = Array.from(teethData.values()).some((tooth) => tooth.trabajoSobreImplante);
+    const hasImplantWork = Array.from(teethData.values()).some(
+      (tooth) => tooth.trabajoSobreImplante
+    );
 
     // Check initialToothStates for teeth marked as IMPLANTE in Step 1
     const hasImplantState = formData.initialToothStates
@@ -839,14 +841,16 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-danger">Información Requerida para Enviar</h3>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setPreSubmitErrors({})}
-                  className="text-danger/60 hover:text-danger transition-colors"
+                  className="!p-1 !text-danger/60 hover:!text-danger hover:!bg-transparent"
                   aria-label="Cerrar"
                 >
                   <Icons.x className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
               <p className="text-sm text-danger/80 mt-1 mb-2">
                 Completa los siguientes campos antes de enviar la orden para revisión:

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
 import { CollapsibleSubsection } from '@/components/ui/form';
@@ -120,16 +121,17 @@ function CategoryChip({
   const Icon = Icons[category.icon];
 
   return (
-    <button
+    <Button
       type="button"
+      variant={isActive ? 'primary' : 'secondary'}
+      size="sm"
       onClick={onClick}
       className={`
-        flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-sm
-        transition-all duration-200 border-2
+        !rounded-full !border-2 !px-4 !py-2.5
         ${
           isActive
-            ? 'bg-primary text-primary-foreground border-primary shadow-md'
-            : 'bg-muted/50 text-foreground border-border hover:border-primary/50 hover:bg-muted'
+            ? '!border-primary !shadow-md'
+            : '!bg-muted/50 !text-foreground !border-border hover:!border-primary/50 hover:!bg-muted'
         }
       `}
     >
@@ -145,7 +147,7 @@ function CategoryChip({
           {selectedCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -180,16 +182,18 @@ function MaterialOptionItem({
         `}
       >
         {hasSubOptions ? (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={handleParentToggle}
-            className="flex items-center gap-2 flex-1 text-left"
+            className="!p-0 !h-auto !justify-start flex-1 !text-left"
           >
             <Icons.chevronRight
               className={`h-4 w-4 text-muted-foreground transition-transform ${showSubOptions ? 'rotate-90' : ''}`}
             />
             <span className="text-sm font-medium text-foreground">{option.label}</span>
-          </button>
+          </Button>
         ) : (
           <Checkbox
             label={option.label}

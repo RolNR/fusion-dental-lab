@@ -63,7 +63,7 @@ export function BridgeWorkItem({
           onChange={(e) => handleMaterialChange(e.target.value)}
           disabled={disabled}
           placeholder="Material"
-          className="text-sm h-8"
+          className="text-sm !h-8 !py-1"
         />
       </div>
 
@@ -73,7 +73,7 @@ export function BridgeWorkItem({
           value={bridge.colorInfo?.shadeType || ''}
           onChange={(e) => handleColorSystemChange(e.target.value)}
           disabled={disabled}
-          className="text-sm h-8"
+          className="text-sm !h-8 !py-1"
         >
           <option value="">Sistema</option>
           {SHADE_SYSTEMS.map((system) => (
@@ -91,7 +91,7 @@ export function BridgeWorkItem({
           onChange={(e) => handleShadeChange(e.target.value)}
           disabled={disabled}
           placeholder="Color"
-          className="text-sm h-8"
+          className="text-sm !h-8 !py-1"
         />
       </div>
 

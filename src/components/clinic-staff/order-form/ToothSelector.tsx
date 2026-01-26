@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 
 interface ToothSelectorProps {
@@ -37,18 +38,15 @@ export function ToothSelector({
           const hasError = teethWithErrors.has(toothNumber);
 
           return (
-            <button
+            <Button
               key={toothNumber}
               type="button"
+              variant={isSelected ? 'primary' : 'secondary'}
+              size="sm"
               onClick={() => onToothSelect(toothNumber)}
               className={`
-                relative px-4 py-2 rounded-md font-medium text-sm transition-all
-                ${
-                  isSelected
-                    ? 'bg-primary text-primary-foreground ring-2 ring-primary'
-                    : 'bg-background text-foreground hover:bg-muted border border-border'
-                }
-                ${hasError ? 'ring-2 ring-danger' : ''}
+                ${isSelected ? '!ring-2 !ring-primary' : '!bg-background !border !border-border hover:!bg-muted'}
+                ${hasError ? '!ring-2 !ring-danger' : ''}
               `}
             >
               <span className="flex items-center gap-1.5">
@@ -56,7 +54,7 @@ export function ToothSelector({
                 {hasData && !hasError && <Icons.check className="h-3 w-3 text-success" />}
                 {hasError && <Icons.alertCircle className="h-3 w-3 text-danger" />}
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>

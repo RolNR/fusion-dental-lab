@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import type { ToothData } from '@/types/tooth';
 
@@ -19,10 +20,11 @@ export function CollapsibleToothCard({
 }: CollapsibleToothCardProps) {
   return (
     <div className="rounded-lg border-l-4 border-primary bg-muted/20 overflow-hidden">
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={onToggle}
-        className="w-full flex items-center justify-between pl-4 pr-4 py-3 hover:bg-muted/30 transition-colors"
+        className="!w-full !justify-between !pl-4 !pr-4 !py-3 !rounded-none hover:!bg-muted/30"
       >
         <h3 className="font-semibold text-lg text-foreground">Diente {tooth.toothNumber}</h3>
         <Icons.chevronDown
@@ -30,7 +32,7 @@ export function CollapsibleToothCard({
             isExpanded ? 'rotate-180' : ''
           }`}
         />
-      </button>
+      </Button>
 
       {isExpanded && <div className="pl-4 pr-4 pb-3">{children}</div>}
     </div>

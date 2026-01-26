@@ -183,8 +183,10 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
         <div className="space-y-4 border-t border-border pt-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">Cambiar Contraseña</h2>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setIsChangingPassword(!isChangingPassword);
                 if (isChangingPassword) {
@@ -198,10 +200,10 @@ export function ProfileSettingsForm({ user }: ProfileSettingsFormProps) {
                   setErrors({});
                 }
               }}
-              className="text-sm text-primary hover:underline"
+              className="!text-primary hover:!underline !p-0"
             >
               {isChangingPassword ? 'Cancelar' : 'Cambiar contraseña'}
-            </button>
+            </Button>
           </div>
 
           {isChangingPassword && (

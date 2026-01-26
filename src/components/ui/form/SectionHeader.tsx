@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 
 interface SectionHeaderProps {
@@ -49,17 +49,19 @@ export function SectionHeader({
           </span>
         )}
         {onToggleCollapse && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={onToggleCollapse}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 transition-colors hover:bg-white/30"
+            className="!h-8 !w-8 !p-0 !rounded-lg !bg-white/20 hover:!bg-white/30"
             aria-label={isCollapsed ? 'Expandir sección' : 'Contraer sección'}
           >
             <Icons.chevronDown
               size={20}
               className={`text-white transition-transform ${isCollapsed ? '-rotate-90' : 'rotate-0'}`}
             />
-          </button>
+          </Button>
         )}
       </div>
     </div>

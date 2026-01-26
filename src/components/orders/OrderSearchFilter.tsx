@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Icons } from '@/components/ui/Icons';
@@ -32,13 +33,16 @@ export function OrderSearchFilter({
             className="pr-10"
           />
           {searchQuery && (
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => onSearchChange('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 !p-1 !text-muted-foreground hover:!text-foreground"
               aria-label="Limpiar búsqueda"
             >
               <Icons.x className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

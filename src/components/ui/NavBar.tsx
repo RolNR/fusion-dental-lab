@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
 import { UserMenu } from '@/components/ui/UserMenu';
 import { Icons } from '@/components/ui/Icons';
 
@@ -91,13 +92,16 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
           </div>
 
           {/* Mobile Menu Button - Hidden on desktop */}
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden rounded-lg p-2 text-foreground hover:bg-muted transition-colors"
+            className="md:hidden !p-2 !rounded-lg"
             aria-label="Toggle mobile menu"
           >
             {mobileMenuOpen ? <Icons.x className="h-6 w-6" /> : <Icons.menu className="h-6 w-6" />}
-          </button>
+          </Button>
         </div>
       </div>
 

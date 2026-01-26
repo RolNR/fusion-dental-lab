@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { LogoutButton } from '@/components/ui/LogoutButton';
 
@@ -93,9 +94,12 @@ export function UserMenu({ basePath, isMobile = false, onClose }: UserMenuProps)
   return (
     <div className="relative" ref={menuRef}>
       {/* Avatar Button */}
-      <button
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full p-1 hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        className="!p-1 !rounded-full focus:!ring-2 focus:!ring-primary focus:!ring-offset-2"
         aria-label="Menú de usuario"
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -109,7 +113,7 @@ export function UserMenu({ basePath, isMobile = false, onClose }: UserMenuProps)
             isOpen ? 'rotate-180' : ''
           }`}
         />
-      </button>
+      </Button>
 
       {/* Dropdown Menu */}
       {isOpen && (

@@ -170,12 +170,7 @@ export function Step1InitialStates({
 
       {/* Next Button */}
       <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="primary"
-          onClick={onNext}
-          disabled={disabled || !canProceed}
-        >
+        <Button type="button" variant="primary" onClick={onNext} disabled={disabled || !canProceed}>
           Siguiente
           <Icons.chevronRight className="h-4 w-4 ml-1" />
         </Button>

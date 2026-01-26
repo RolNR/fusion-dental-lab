@@ -309,12 +309,15 @@ export function OcclusionPreview({
 
       {/* Close button */}
       {onClose && (
-        <button
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
           onClick={onClose}
-          className="absolute top-3 left-3 bg-background/90 backdrop-blur-sm hover:bg-background px-3 py-1.5 rounded-lg border border-border text-sm font-medium text-foreground transition-colors"
+          className="absolute top-3 left-3 !bg-background/90 !backdrop-blur-sm hover:!bg-background !border-border"
         >
           Cerrar Vista Previa
-        </button>
+        </Button>
       )}
     </div>
   );

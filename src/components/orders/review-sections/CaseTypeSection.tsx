@@ -21,9 +21,7 @@ export function CaseTypeSection({ tipoCaso, motivoGarantia }: CaseTypeSectionPro
       <SectionTitle>Tipo de Caso</SectionTitle>
       <dl className="space-y-1">
         <DetailRow label="Tipo de Caso" value={CASE_TYPE_LABELS[tipoCaso]} />
-        {tipoCaso === 'garantia' && (
-          <DetailRow label="Motivo de Garantía" value={motivoGarantia} />
-        )}
+        {tipoCaso === 'garantia' && <DetailRow label="Motivo de Garantía" value={motivoGarantia} />}
       </dl>
     </>
   );

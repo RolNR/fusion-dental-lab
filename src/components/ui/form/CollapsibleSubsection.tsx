@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 
 interface CollapsibleSubsectionProps {
@@ -22,10 +23,11 @@ export function CollapsibleSubsection({
   return (
     <div className="rounded-lg border border-border bg-muted/20 overflow-hidden">
       {/* Simple title header with collapse toggle */}
-      <button
+      <Button
         type="button"
+        variant="ghost"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="w-full flex items-center justify-between p-4 hover:bg-muted/30 transition-colors"
+        className="!w-full !justify-between !p-4 !rounded-none hover:!bg-muted/30"
       >
         <div className="flex items-center gap-2">
           <IconComponent className="h-5 w-5 text-muted-foreground" />
@@ -36,7 +38,7 @@ export function CollapsibleSubsection({
             isCollapsed ? '-rotate-90' : 'rotate-0'
           }`}
         />
-      </button>
+      </Button>
 
       {/* Collapsible content */}
       {!isCollapsed && <div className="p-4 pt-0">{children}</div>}

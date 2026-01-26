@@ -228,17 +228,14 @@ export function OdontogramWizard({
   );
 
   // Step 1: Handle implant info update
-  const handleImplantUpdate = useCallback(
-    (toothNumber: string, updates: Partial<ImplantInfo>) => {
-      setImplantData((prev) => {
-        const newMap = new Map(prev);
-        const currentData = newMap.get(toothNumber) || { toothNumber };
-        newMap.set(toothNumber, { ...currentData, ...updates });
-        return newMap;
-      });
-    },
-    []
-  );
+  const handleImplantUpdate = useCallback((toothNumber: string, updates: Partial<ImplantInfo>) => {
+    setImplantData((prev) => {
+      const newMap = new Map(prev);
+      const currentData = newMap.get(toothNumber) || { toothNumber };
+      newMap.set(toothNumber, { ...currentData, ...updates });
+      return newMap;
+    });
+  }, []);
 
   // Step 2: Handle tooth click for work assignment
   const handleStep2ToothClick = useCallback(
@@ -289,9 +286,13 @@ export function OdontogramWizard({
               toothNumber: tooth,
               tipoRestauracion: 'puente',
               trabajoSobreImplante: isImplante || undefined,
-              informacionImplante: isImplante && implantInfo
-                ? { marcaImplante: implantInfo.marcaImplante, sistemaConexion: implantInfo.sistemaConexion }
-                : undefined,
+              informacionImplante:
+                isImplante && implantInfo
+                  ? {
+                      marcaImplante: implantInfo.marcaImplante,
+                      sistemaConexion: implantInfo.sistemaConexion,
+                    }
+                  : undefined,
             });
           });
           setTeethData(newTeethData);
@@ -319,9 +320,13 @@ export function OdontogramWizard({
             toothNumber,
             tipoRestauracion: step2Tool,
             trabajoSobreImplante: isImplante || undefined,
-            informacionImplante: isImplante && implantInfo
-              ? { marcaImplante: implantInfo.marcaImplante, sistemaConexion: implantInfo.sistemaConexion }
-              : undefined,
+            informacionImplante:
+              isImplante && implantInfo
+                ? {
+                    marcaImplante: implantInfo.marcaImplante,
+                    sistemaConexion: implantInfo.sistemaConexion,
+                  }
+                : undefined,
             ...currentData,
           });
         }
@@ -330,7 +335,16 @@ export function OdontogramWizard({
         updateTeethInOrder();
       }
     },
-    [step2Tool, bridgeStart, initialStates, teethData, implantData, setTeethData, setBridges, updateTeethInOrder]
+    [
+      step2Tool,
+      bridgeStart,
+      initialStates,
+      teethData,
+      implantData,
+      setTeethData,
+      setBridges,
+      updateTeethInOrder,
+    ]
   );
 
   // Handle tooth data update

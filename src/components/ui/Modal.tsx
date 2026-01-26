@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef } from 'react';
+import { Button } from './Button';
 import { Icons } from './Icons';
 
 interface ModalProps {
@@ -74,13 +75,16 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
               >
                 {title}
               </h3>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={onClose}
-                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 p-2 -mr-2"
+                className="!text-muted-foreground hover:!text-foreground !p-2 !-mr-2 flex-shrink-0"
                 aria-label="Cerrar modal"
               >
                 <Icons.x className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
+              </Button>
             </div>
           </div>
 

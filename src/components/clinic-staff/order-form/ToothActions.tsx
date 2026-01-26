@@ -85,21 +85,20 @@ export function ToothActions({
 
             <div className="grid grid-cols-4 gap-2 mb-6">
               {otherTeeth.map((toothNumber) => (
-                <button
+                <Button
                   key={toothNumber}
                   type="button"
+                  variant={selectedTargets.has(toothNumber) ? 'primary' : 'secondary'}
+                  size="sm"
                   onClick={() => handleToggleTarget(toothNumber)}
-                  className={`
-                    px-3 py-2 rounded-md text-sm font-medium transition-all
-                    ${
-                      selectedTargets.has(toothNumber)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-foreground hover:bg-muted/80 border border-border'
-                    }
-                  `}
+                  className={
+                    selectedTargets.has(toothNumber)
+                      ? ''
+                      : '!bg-muted !text-foreground hover:!bg-muted/80 !border !border-border'
+                  }
                 >
                   {toothNumber}
-                </button>
+                </Button>
               ))}
             </div>
 

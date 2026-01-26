@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { ScanPreview } from '@/components/ui/ScanPreview';
 import Image from 'next/image';
@@ -58,13 +59,16 @@ export function FilePreviewModal({ file, onClose }: FilePreviewModalProps) {
           <h3 className="text-lg font-semibold text-foreground truncate pr-4">
             {file.originalName}
           </h3>
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+            className="!h-8 !w-8 !p-0 !rounded-lg hover:!bg-muted"
             aria-label="Cerrar"
           >
             <Icons.x className="h-5 w-5 text-foreground" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

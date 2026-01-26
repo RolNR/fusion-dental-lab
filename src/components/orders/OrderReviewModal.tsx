@@ -189,14 +189,17 @@ export function OrderReviewModal({
               la orden.
             </p>
           </div>
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+            className="!h-8 !w-8 !p-0 !rounded-lg hover:!bg-muted"
             aria-label="Cerrar"
           >
             <Icons.x className="h-5 w-5 text-foreground" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}

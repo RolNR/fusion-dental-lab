@@ -4,7 +4,12 @@ import { forwardRef } from 'react';
 import { CaseType } from '@prisma/client';
 import { Textarea } from '@/components/ui/Textarea';
 import { Icons } from '@/components/ui/Icons';
-import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
+import {
+  CollapsibleSubsection,
+  FieldLabel,
+  ToggleButtonGroup,
+  ToggleOption,
+} from '@/components/ui/form';
 
 type CaseTypeSectionProps = {
   tipoCaso?: CaseType;

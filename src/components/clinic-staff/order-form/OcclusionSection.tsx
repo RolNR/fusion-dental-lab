@@ -3,7 +3,12 @@
 import { forwardRef } from 'react';
 import { Select } from '@/components/ui/Select';
 import { OcclusionInfo } from '@/types/order';
-import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
+import {
+  CollapsibleSubsection,
+  FieldLabel,
+  ToggleButtonGroup,
+  ToggleOption,
+} from '@/components/ui/form';
 
 type OcclusionSectionProps = {
   oclusionDiseno?: OcclusionInfo;
@@ -80,7 +85,9 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
               <ToggleButtonGroup
                 options={SPACE_OPTIONS}
                 value={spaceValue}
-                onChange={(value) => handleFieldChange('espacioInteroclusalSuficiente', value === 'yes')}
+                onChange={(value) =>
+                  handleFieldChange('espacioInteroclusalSuficiente', value === 'yes')
+                }
                 className="mt-2"
               />
               {errors?.espacioInteroclusalSuficiente && (
