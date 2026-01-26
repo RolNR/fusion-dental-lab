@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/Button';
+import { Checkbox } from '@/components/ui/Checkbox';
 
 interface FieldError {
   field: string;
@@ -27,6 +28,22 @@ export function RegisterForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [useNameAsRazonSocial, setUseNameAsRazonSocial] = useState(false);
+  const [useClinicAddressAsFiscal, setUseClinicAddressAsFiscal] = useState(false);
+
+  // Sync razón social with name when checkbox is checked
+  useEffect(() => {
+    if (useNameAsRazonSocial) {
+      setFormData((prev) => ({ ...prev, razonSocial: prev.name }));
+    }
+  }, [useNameAsRazonSocial, formData.name]);
+
+  // Sync fiscal address with clinic address when checkbox is checked
+  useEffect(() => {
+    if (useClinicAddressAsFiscal) {
+      setFormData((prev) => ({ ...prev, fiscalAddress: prev.clinicAddress }));
+    }
+  }, [useClinicAddressAsFiscal, formData.clinicAddress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,6 +150,54 @@ export function RegisterForm() {
           disabled={isLoading}
         />
 
+        {/* Datos fiscales section */}
+        <div className="border-t border-border pt-4">
+          <p className="text-sm font-medium text-muted-foreground mb-3">Datos fiscales</p>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                id="razonSocial"
+                name="razonSocial"
+                label="Razón social"
+                value={formData.razonSocial}
+                onChange={(e) => setFormData({ ...formData, razonSocial: e.target.value })}
+                error={getFieldError('razonSocial')}
+                placeholder="Razón social para facturación"
+                disabled={isLoading || useNameAsRazonSocial}
+              />
+              <Checkbox
+                id="useNameAsRazonSocial"
+                label="Mismo nombre del doctor"
+                checked={useNameAsRazonSocial}
+                onChange={(e) => setUseNameAsRazonSocial(e.target.checked)}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Input
+                id="fiscalAddress"
+                name="fiscalAddress"
+                label="Dirección fiscal"
+                value={formData.fiscalAddress}
+                onChange={(e) => setFormData({ ...formData, fiscalAddress: e.target.value })}
+                error={getFieldError('fiscalAddress')}
+                placeholder="Dirección fiscal para facturación"
+                disabled={isLoading || useClinicAddressAsFiscal}
+              />
+              <Checkbox
+                id="useClinicAddressAsFiscal"
+                label="Misma dirección del consultorio"
+                checked={useClinicAddressAsFiscal}
+                onChange={(e) => setUseClinicAddressAsFiscal(e.target.checked)}
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Información del consultorio section */}
         <div className="border-t border-border pt-4">
           <p className="text-sm font-medium text-muted-foreground mb-3">
             Información del consultorio
@@ -159,28 +224,6 @@ export function RegisterForm() {
               onChange={(e) => setFormData({ ...formData, clinicAddress: e.target.value })}
               error={getFieldError('clinicAddress')}
               placeholder="Calle, Número, Colonia, Ciudad"
-              disabled={isLoading}
-            />
-
-            <Input
-              id="razonSocial"
-              name="razonSocial"
-              label="Razón social"
-              value={formData.razonSocial}
-              onChange={(e) => setFormData({ ...formData, razonSocial: e.target.value })}
-              error={getFieldError('razonSocial')}
-              placeholder="Razón social para facturación"
-              disabled={isLoading}
-            />
-
-            <Input
-              id="fiscalAddress"
-              name="fiscalAddress"
-              label="Dirección fiscal"
-              value={formData.fiscalAddress}
-              onChange={(e) => setFormData({ ...formData, fiscalAddress: e.target.value })}
-              error={getFieldError('fiscalAddress')}
-              placeholder="Dirección fiscal para facturación"
               disabled={isLoading}
             />
           </div>
