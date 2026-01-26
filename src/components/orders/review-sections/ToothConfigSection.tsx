@@ -92,9 +92,7 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
         <Odontogram
           teethInOrder={teeth.map((t) => t.toothNumber)}
           selectedForConfig={[]} // No selection in read-only mode
-          teethConfigStatus={
-            new Map(teeth.map((t) => [t.toothNumber, getToothConfigStatus(t)]))
-          }
+          teethConfigStatus={new Map(teeth.map((t) => [t.toothNumber, getToothConfigStatus(t)]))}
           teethWithErrors={new Set()}
           readOnly={true}
         />
