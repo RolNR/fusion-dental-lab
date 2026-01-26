@@ -153,7 +153,7 @@ export function Tooth({
     return 'text-muted-foreground';
   };
 
-  const labelClasses = ['text-[10px] font-semibold transition-colors', getLabelClass()]
+  const labelClasses = ['text-xs font-semibold transition-colors', getLabelClass()]
     .filter(Boolean)
     .join(' ');
 
@@ -187,24 +187,24 @@ export function Tooth({
             {/* Error, Complete, or Incomplete badge */}
             {hasError ? (
               <div
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-danger"
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-danger"
                 title="Error de validación"
               >
-                <Icons.alertCircle className="h-3 w-3 text-danger-foreground" />
+                <Icons.alertCircle className="h-3.5 w-3.5 text-danger-foreground" />
               </div>
             ) : configStatus === 'complete' ? (
               <div
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-success"
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-success"
                 title="Configuración completa"
               >
-                <Icons.check className="h-3 w-3 text-success-foreground" />
+                <Icons.check className="h-3.5 w-3.5 text-success-foreground" />
               </div>
             ) : configStatus === 'incomplete' ? (
               <div
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-warning"
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-warning"
                 title="Configuración incompleta"
               >
-                <Icons.alertCircle className="h-3 w-3 text-warning-foreground" />
+                <Icons.alertCircle className="h-3.5 w-3.5 text-warning-foreground" />
               </div>
             ) : null}
 
@@ -212,11 +212,11 @@ export function Tooth({
             {!readOnly && editMode === 'selection' && (
               <button
                 onClick={handleRemoveClick}
-                className="flex h-4 w-4 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
                 title="Quitar diente de la orden"
                 type="button"
               >
-                <Icons.x className="h-3 w-3 text-foreground hover:text-danger-foreground" />
+                <Icons.x className="h-3.5 w-3.5 text-foreground hover:text-danger-foreground" />
               </button>
             )}
           </div>
@@ -226,18 +226,18 @@ export function Tooth({
         {isSelectedForConfig && !readOnly && editMode === 'selection' && (
           <div className="absolute -top-1 -left-1">
             <div
-              className="flex h-4 w-4 items-center justify-center rounded-full bg-primary"
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-primary"
               title="Configurando"
             >
-              <Icons.settings className="h-3 w-3 text-primary-foreground" />
+              <Icons.settings className="h-3.5 w-3.5 text-primary-foreground" />
             </div>
           </div>
         )}
 
         {/* PILAR indicator - screw icon below the tooth */}
         {isPilar && (
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
-            <Icons.screw className="h-4 w-4 text-primary" />
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2">
+            <Icons.screw className="h-5 w-5 text-primary" />
           </div>
         )}
 
