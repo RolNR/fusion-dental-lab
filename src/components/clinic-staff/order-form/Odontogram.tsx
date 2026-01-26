@@ -169,14 +169,14 @@ export function Odontogram({
       {/* Edit mode instructions */}
       {!readOnly && editMode === 'ausente' && (
         <p className="text-xs text-warning text-center font-medium">
-          <strong>Modo Ausentes:</strong> Haz clic en los dientes que faltan para marcarlos como ausentes.
-          Haz clic de nuevo para desmarcarlos.
+          <strong>Modo Ausentes:</strong> Haz clic en los dientes que faltan para marcarlos como
+          ausentes. Haz clic de nuevo para desmarcarlos.
         </p>
       )}
       {!readOnly && editMode === 'pilar' && (
         <p className="text-xs text-primary text-center font-medium">
-          <strong>Modo Pilares:</strong> Haz clic en los dientes con implante para marcarlos como pilares.
-          Haz clic de nuevo para desmarcarlos.
+          <strong>Modo Pilares:</strong> Haz clic en los dientes con implante para marcarlos como
+          pilares. Haz clic de nuevo para desmarcarlos.
         </p>
       )}
     </div>

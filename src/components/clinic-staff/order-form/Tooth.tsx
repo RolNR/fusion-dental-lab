@@ -136,11 +136,7 @@ export function Tooth({
           className={svgClasses}
           style={{ minWidth: shape.width, minHeight: shape.height }}
         >
-          <path
-            d={shape.path}
-            strokeWidth="2"
-            strokeDasharray={isAusente ? '4 2' : undefined}
-          />
+          <path d={shape.path} strokeWidth="2" strokeDasharray={isAusente ? '4 2' : undefined} />
         </svg>
 
         {/* Status Indicators */}

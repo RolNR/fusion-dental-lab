@@ -37,9 +37,7 @@ export function countTeethWithState(
  * Get summary text for initial tooth states.
  * Returns empty string if no states are set.
  */
-export function getInitialStatesSummary(
-  states: InitialToothStatesMap | undefined | null
-): string {
+export function getInitialStatesSummary(states: InitialToothStatesMap | undefined | null): string {
   if (!states || Object.keys(states).length === 0) return '';
 
   const ausenteCount = countTeethWithState(states, 'AUSENTE');

@@ -54,7 +54,9 @@ export function ToothConfigurationSection({
     () =>
       new Set(
         Array.from(teethData.entries())
-          .filter(([_, data]) => data.material || data.tipoRestauracion || data.trabajoSobreImplante)
+          .filter(
+            ([_, data]) => data.material || data.tipoRestauracion || data.trabajoSobreImplante
+          )
           .map(([toothNumber]) => toothNumber)
       ),
     [teethData]
@@ -244,8 +246,8 @@ export function ToothConfigurationSection({
             {editMode === 'pilar' && (
               <>
                 <Icons.info className="h-4 w-4 inline mr-1.5" />
-                Haz clic en los dientes para marcarlos como <strong>pilares de implante</strong>.
-                Al seleccionarlos para trabajo, se marcará automáticamente "trabajo sobre implante".
+                Haz clic en los dientes para marcarlos como <strong>pilares de implante</strong>. Al
+                seleccionarlos para trabajo, se marcará automáticamente "trabajo sobre implante".
               </>
             )}
           </div>
