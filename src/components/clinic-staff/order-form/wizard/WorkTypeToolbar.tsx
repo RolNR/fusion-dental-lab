@@ -1,6 +1,7 @@
 'use client';
 
 import { RestorationType } from '@prisma/client';
+import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 
 interface WorkTypeToolbarProps {
@@ -27,6 +28,12 @@ export function WorkTypeToolbar({
   bridgeInstruction,
   disabled = false,
 }: WorkTypeToolbarProps) {
+  const getToolClassName = (isActive: boolean) => {
+    return isActive
+      ? 'ring-2 ring-primary ring-offset-2'
+      : '!bg-muted !text-foreground hover:!bg-muted/80 !shadow-none';
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -35,20 +42,18 @@ export function WorkTypeToolbar({
           const isActive = activeTool === workType.id;
 
           return (
-            <button
+            <Button
               key={workType.id}
               type="button"
+              variant="primary"
+              size="sm"
               onClick={() => onToolChange(isActive ? null : workType.id)}
               disabled={disabled}
-              className={`
-                flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm font-medium
-                ${isActive ? 'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2' : 'bg-muted text-foreground hover:bg-muted/80'}
-                ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-              `}
+              className={getToolClassName(isActive)}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4 mr-2" />
               <span>{workType.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

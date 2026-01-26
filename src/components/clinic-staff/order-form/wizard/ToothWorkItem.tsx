@@ -1,10 +1,11 @@
 'use client';
 
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Icons } from '@/components/ui/Icons';
 import { ToothData } from '@/types/tooth';
-import { ColorInfo, SHADE_SYSTEMS } from '@/types/order';
+import { ColorInfo, ImplantInfo, SHADE_SYSTEMS } from '@/types/order';
 
 interface ToothWorkItemProps {
   toothNumber: string;
@@ -48,6 +49,7 @@ export function ToothWorkItem({
   };
 
   const colorInfo = toothData.colorInfo as ColorInfo | undefined;
+  const implantInfo = toothData.informacionImplante as ImplantInfo | undefined;
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2 px-3 bg-muted/30 rounded-lg">
@@ -55,8 +57,8 @@ export function ToothWorkItem({
       <div className="flex items-center gap-1 min-w-[50px]">
         <span className="font-bold text-primary">#{toothNumber}</span>
         {isImplante && (
-          <span title="Implante">
-            <Icons.screw className="h-3 w-3 text-primary" />
+          <span title={`Implante: ${implantInfo?.marcaImplante || 'Sin marca'}`}>
+            <Icons.implant className="h-3 w-3 text-primary" />
           </span>
         )}
       </div>
@@ -101,15 +103,17 @@ export function ToothWorkItem({
       </div>
 
       {/* Remove Button */}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => onRemove(toothNumber)}
         disabled={disabled}
-        className="p-1.5 rounded-md hover:bg-danger/10 text-muted-foreground hover:text-danger transition-colors shrink-0"
+        className="!p-1.5 !text-muted-foreground hover:!bg-danger/10 hover:!text-danger shrink-0"
         title="Quitar trabajo"
       >
         <Icons.x className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 }

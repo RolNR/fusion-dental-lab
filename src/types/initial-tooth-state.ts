@@ -34,6 +34,19 @@ export function countTeethWithState(
 }
 
 /**
+ * Get all tooth numbers with a specific state.
+ */
+export function getTeethWithState(
+  states: InitialToothStatesMap | undefined | null,
+  targetState: ToothInitialState
+): string[] {
+  if (!states) return [];
+  return Object.entries(states)
+    .filter(([, state]) => state === targetState)
+    .map(([toothNumber]) => toothNumber);
+}
+
+/**
  * Get summary text for initial tooth states.
  * Returns empty string if no states are set.
  */

@@ -92,7 +92,9 @@ export function AssignedWorkList({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Icons.copy className="h-4 w-4 text-primary" />
-            <span>{WORK_TYPE_LABELS.puente} ({bridges.length})</span>
+            <span>
+              {WORK_TYPE_LABELS.puente} ({bridges.length})
+            </span>
           </div>
           <div className="space-y-2 pl-6">
             {bridges.map((bridge) => (
@@ -116,7 +118,9 @@ export function AssignedWorkList({
           <div key={workType} className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <span className="w-4 h-4 rounded-full bg-primary/20" />
-              <span>{WORK_TYPE_LABELS[workType]} ({teeth.length})</span>
+              <span>
+                {WORK_TYPE_LABELS[workType]} ({teeth.length})
+              </span>
             </div>
             <div className="space-y-2 pl-6">
               {teeth.map((tooth) => (

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { RestorationType } from '@prisma/client';
 import { WizardStepIndicator } from './WizardStepIndicator';
 import { Step1InitialStates } from './Step1InitialStates';
 import { Step2AssignWork } from './Step2AssignWork';
 import { InitialStateTool } from './InitialStateToolbar';
+import { ImplantData } from './ImplantInfoList';
 import { ToothData, BridgeDefinition } from '@/types/tooth';
+import { ImplantInfo } from '@/types/order';
 import {
   InitialToothStatesMap,
   ToothInitialState,
@@ -110,6 +112,7 @@ export function OdontogramWizard({
   const [step1Tool, setStep1Tool] = useState<InitialStateTool>(null);
   const [step2Tool, setStep2Tool] = useState<RestorationType | null>(null);
   const [bridgeStart, setBridgeStart] = useState<string | null>(null);
+  const [implantData, setImplantData] = useState<Map<string, ImplantData>>(new Map());
 
   // Use external state if provided, otherwise use internal
   const [internalTeethData, setInternalTeethData] = useState<Map<string, ToothData>>(new Map());
@@ -119,7 +122,9 @@ export function OdontogramWizard({
   const bridges = externalBridges ?? internalBridges;
 
   const setTeethData = useCallback(
-    (updater: Map<string, ToothData> | ((prev: Map<string, ToothData>) => Map<string, ToothData>)) => {
+    (
+      updater: Map<string, ToothData> | ((prev: Map<string, ToothData>) => Map<string, ToothData>)
+    ) => {
       if (typeof updater === 'function') {
         const newData = updater(teethData);
         if (externalTeethData) {
@@ -187,20 +192,52 @@ export function OdontogramWizard({
 
       // Map tool to state
       const targetState: ToothInitialState =
-        step1Tool === 'ausente' ? 'AUSENTE' :
-        step1Tool === 'pilar' ? 'PILAR' : 'IMPLANTE';
+        step1Tool === 'ausente' ? 'AUSENTE' : step1Tool === 'pilar' ? 'PILAR' : 'IMPLANTE';
 
       if (currentState === targetState) {
         // Remove state (back to NORMAL)
         delete newStates[toothNumber];
+
+        // Also remove implant data if it was an implant
+        if (targetState === 'IMPLANTE') {
+          setImplantData((prev) => {
+            const newMap = new Map(prev);
+            newMap.delete(toothNumber);
+            return newMap;
+          });
+        }
       } else {
         // Set new state
         newStates[toothNumber] = targetState;
+
+        // Initialize implant data entry if marking as implant
+        if (targetState === 'IMPLANTE') {
+          setImplantData((prev) => {
+            const newMap = new Map(prev);
+            if (!newMap.has(toothNumber)) {
+              newMap.set(toothNumber, { toothNumber });
+            }
+            return newMap;
+          });
+        }
       }
 
       onInitialStatesChange(newStates);
     },
     [step1Tool, initialStates, onInitialStatesChange]
+  );
+
+  // Step 1: Handle implant info update
+  const handleImplantUpdate = useCallback(
+    (toothNumber: string, updates: Partial<ImplantInfo>) => {
+      setImplantData((prev) => {
+        const newMap = new Map(prev);
+        const currentData = newMap.get(toothNumber) || { toothNumber };
+        newMap.set(toothNumber, { ...currentData, ...updates });
+        return newMap;
+      });
+    },
+    []
   );
 
   // Step 2: Handle tooth click for work assignment
@@ -227,7 +264,10 @@ export function OdontogramWizard({
 
           // Find pontics (AUSENTE teeth in range)
           const pontics = teethInRange.filter(
-            (t) => t !== bridgeStart && t !== toothNumber && getToothInitialState(initialStates, t) === 'AUSENTE'
+            (t) =>
+              t !== bridgeStart &&
+              t !== toothNumber &&
+              getToothInitialState(initialStates, t) === 'AUSENTE'
           );
 
           // Create bridge
@@ -244,10 +284,14 @@ export function OdontogramWizard({
           const newTeethData = new Map(teethData);
           teethInRange.forEach((tooth) => {
             const isImplante = getToothInitialState(initialStates, tooth) === 'IMPLANTE';
+            const implantInfo = implantData.get(tooth);
             newTeethData.set(tooth, {
               toothNumber: tooth,
               tipoRestauracion: 'puente',
               trabajoSobreImplante: isImplante || undefined,
+              informacionImplante: isImplante && implantInfo
+                ? { marcaImplante: implantInfo.marcaImplante, sistemaConexion: implantInfo.sistemaConexion }
+                : undefined,
             });
           });
           setTeethData(newTeethData);
@@ -270,10 +314,14 @@ export function OdontogramWizard({
         } else {
           // Toggle on - assign work
           const isImplante = state === 'IMPLANTE';
+          const implantInfo = implantData.get(toothNumber);
           newTeethData.set(toothNumber, {
             toothNumber,
             tipoRestauracion: step2Tool,
             trabajoSobreImplante: isImplante || undefined,
+            informacionImplante: isImplante && implantInfo
+              ? { marcaImplante: implantInfo.marcaImplante, sistemaConexion: implantInfo.sistemaConexion }
+              : undefined,
             ...currentData,
           });
         }
@@ -282,7 +330,7 @@ export function OdontogramWizard({
         updateTeethInOrder();
       }
     },
-    [step2Tool, bridgeStart, initialStates, teethData, setTeethData, setBridges, updateTeethInOrder]
+    [step2Tool, bridgeStart, initialStates, teethData, implantData, setTeethData, setBridges, updateTeethInOrder]
   );
 
   // Handle tooth data update
@@ -310,9 +358,7 @@ export function OdontogramWizard({
   // Handle bridge update
   const handleBridgeUpdate = useCallback(
     (bridgeId: string, updates: Partial<BridgeDefinition>) => {
-      setBridges((prev) =>
-        prev.map((b) => (b.id === bridgeId ? { ...b, ...updates } : b))
-      );
+      setBridges((prev) => prev.map((b) => (b.id === bridgeId ? { ...b, ...updates } : b)));
     },
     [setBridges]
   );
@@ -379,9 +425,11 @@ export function OdontogramWizard({
       {currentStep === 1 ? (
         <Step1InitialStates
           initialStates={initialStates}
+          implantData={implantData}
           activeTool={step1Tool}
           onToolChange={setStep1Tool}
           onInitialStateToggle={handleInitialStateToggle}
+          onImplantUpdate={handleImplantUpdate}
           onNext={handleNext}
           disabled={disabled}
         />

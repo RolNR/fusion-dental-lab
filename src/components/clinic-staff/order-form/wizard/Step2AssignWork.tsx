@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { WorkTypeToolbar } from './WorkTypeToolbar';
 import { AssignedWorkList } from './AssignedWorkList';
-import { ToothData, BridgeDefinition, ToothConfigStatus, getToothConfigStatus } from '@/types/tooth';
+import {
+  ToothData,
+  BridgeDefinition,
+  ToothConfigStatus,
+  getToothConfigStatus,
+} from '@/types/tooth';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
 
 interface Step2AssignWorkProps {
@@ -115,8 +120,8 @@ export function Step2AssignWork({
         <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
           <Icons.info className="h-4 w-4 text-muted-foreground shrink-0" />
           <span className="text-sm text-muted-foreground">
-            Haz clic en los dientes para asignar <strong>{activeTool}</strong>.
-            Haz clic de nuevo para quitar la asignación.
+            Haz clic en los dientes para asignar <strong>{activeTool}</strong>. Haz clic de nuevo
+            para quitar la asignación.
           </span>
         </div>
       )}
@@ -151,12 +156,7 @@ export function Step2AssignWork({
 
       {/* Back Button */}
       <div className="flex justify-start">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={onBack}
-          disabled={disabled}
-        >
+        <Button type="button" variant="secondary" onClick={onBack} disabled={disabled}>
           <Icons.chevronLeft className="h-4 w-4 mr-1" />
           Anterior
         </Button>

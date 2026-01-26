@@ -7,3 +7,5 @@ export { WorkTypeToolbar } from './WorkTypeToolbar';
 export { AssignedWorkList } from './AssignedWorkList';
 export { ToothWorkItem } from './ToothWorkItem';
 export { BridgeWorkItem } from './BridgeWorkItem';
+export { ImplantInfoList, areImplantsComplete } from './ImplantInfoList';
+export type { ImplantData } from './ImplantInfoList';

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Icons } from '@/components/ui/Icons';
@@ -52,9 +53,7 @@ export function BridgeWorkItem({
         <span className="font-bold text-primary">
           {bridge.startTooth}-{bridge.endTooth}
         </span>
-        <span className="text-xs text-muted-foreground">
-          ({totalTeeth} dientes)
-        </span>
+        <span className="text-xs text-muted-foreground">({totalTeeth} dientes)</span>
       </div>
 
       {/* Material Input */}
@@ -97,15 +96,17 @@ export function BridgeWorkItem({
       </div>
 
       {/* Remove Button */}
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => onRemove(bridge.id)}
         disabled={disabled}
-        className="p-1.5 rounded-md hover:bg-danger/10 text-muted-foreground hover:text-danger transition-colors shrink-0"
+        className="!p-1.5 !text-muted-foreground hover:!bg-danger/10 hover:!text-danger shrink-0"
         title="Quitar puente"
       >
         <Icons.x className="h-4 w-4" />
-      </button>
+      </Button>
     </div>
   );
 }
