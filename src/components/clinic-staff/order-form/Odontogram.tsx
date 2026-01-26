@@ -3,15 +3,17 @@
 import { ToothQuadrant, QuadrantType } from './ToothQuadrant';
 import { ToothEditMode } from './Tooth';
 import { InitialToothStatesMap } from '@/types/initial-tooth-state';
+import { ToothConfigStatus } from '@/types/tooth';
 import { Icons } from '@/components/ui/Icons';
 
 interface OdontogramProps {
-  selectedTeeth: string[]; // Teeth in the order (e.g., ["11", "12", "21"])
-  currentTooth: string | null; // Tooth being configured
-  teethWithData: Set<string>; // Configured teeth
+  teethInOrder: string[]; // All teeth in the order
+  selectedForConfig: string[]; // Teeth currently selected for configuration
+  teethConfigStatus: Map<string, ToothConfigStatus>; // Configuration status per tooth
   teethWithErrors: Set<string>; // Teeth with errors
-  onToothToggle?: (toothNumber: string) => void; // Add/remove tooth (optional for readOnly)
-  onToothSelect?: (toothNumber: string) => void; // Select for configuration (optional for readOnly)
+  onToothToggle?: (toothNumber: string) => void; // Click to add/select (optional for readOnly)
+  onToothRemove?: (toothNumber: string) => void; // Remove from order via X button
+  onToothSelectIndividual?: (toothNumber: string) => void; // Double-click for individual config
   readOnly?: boolean; // If true, disables all interactions
   initialStates?: InitialToothStatesMap; // Initial states for teeth (NORMAL, AUSENTE, PILAR)
   editMode?: ToothEditMode; // Current edit mode for initial state
@@ -28,12 +30,13 @@ function generateQuadrantTeeth(quadrant: number): string[] {
 }
 
 export function Odontogram({
-  selectedTeeth,
-  currentTooth,
-  teethWithData,
+  teethInOrder,
+  selectedForConfig,
+  teethConfigStatus,
   teethWithErrors,
   onToothToggle,
-  onToothSelect,
+  onToothRemove,
+  onToothSelectIndividual,
   readOnly = false,
   initialStates,
   editMode = 'selection',
@@ -47,12 +50,13 @@ export function Odontogram({
   const lowerRight = generateQuadrantTeeth(4).reverse(); // 48-41 (right to left from patient view)
 
   const quadrantProps = {
-    selectedTeeth,
-    currentTooth,
-    teethWithData,
+    teethInOrder,
+    selectedForConfig,
+    teethConfigStatus,
     teethWithErrors,
     onToothToggle: onToothToggle || (() => {}),
-    onToothSelect: onToothSelect || (() => {}),
+    onToothRemove: onToothRemove || (() => {}),
+    onToothSelectIndividual: onToothSelectIndividual || (() => {}),
     readOnly,
     initialStates,
     editMode,
@@ -65,17 +69,19 @@ export function Odontogram({
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded border-2 border-border" />
-          <span>No seleccionado</span>
+          <span>Sin configurar</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 rounded border-2 border-success bg-success/20" />
+          <span>Completo</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 rounded border-2 border-warning bg-warning/20" />
+          <span>Incompleto</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-4 w-4 rounded bg-primary" />
           <span>Seleccionado</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="relative h-4 w-4 rounded bg-primary">
-            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-success" />
-          </div>
-          <span>Configurado</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="relative h-4 w-4 rounded bg-primary">
@@ -160,9 +166,9 @@ export function Odontogram({
       {/* Instructions */}
       {!readOnly && editMode === 'selection' && (
         <p className="text-xs text-muted-foreground text-center">
-          <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene
-          configuración, vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para
-          editarlo o usa el botón X para quitarlo.
+          <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo a la selección. Si ya está
+          seleccionado, haz clic para configurarlo individualmente. Doble clic para configurar un
+          solo diente. Usa el botón X para quitar un diente de la orden.
         </p>
       )}
 

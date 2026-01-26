@@ -2,18 +2,20 @@
 
 import { TOOTH_SHAPES, getToothTypeFromNumber, getToothName } from './tooth-shapes';
 import { Icons } from '@/components/ui/Icons';
-import { ToothInitialState, isToothSelectable } from '@/types/initial-tooth-state';
+import { ToothInitialState } from '@/types/initial-tooth-state';
+import { ToothConfigStatus } from '@/types/tooth';
 
 export type ToothEditMode = 'selection' | 'ausente' | 'pilar';
 
 interface ToothProps {
   toothNumber: string; // FDI notation (11, 12, etc.)
-  isSelected: boolean; // In the order
-  isCurrent: boolean; // Being configured
-  hasData: boolean; // Configured
+  isInOrder: boolean; // Tooth is part of the order
+  isSelectedForConfig: boolean; // Tooth is currently selected for configuration
+  configStatus: ToothConfigStatus; // Configuration completeness: 'complete' | 'incomplete' | 'none'
   hasError: boolean; // Validation error
-  onToggle: () => void; // Add/remove from order
-  onSelect: () => void; // Select for configuration
+  onToggle: () => void; // Click to add/select
+  onRemove: () => void; // Remove from order (X button)
+  onSelectIndividual: () => void; // Double-click for individual config
   readOnly?: boolean; // If true, disables all interactions
   initialState?: ToothInitialState; // Initial state of the tooth (NORMAL, AUSENTE, PILAR)
   editMode?: ToothEditMode; // Current edit mode for initial state
@@ -22,12 +24,13 @@ interface ToothProps {
 
 export function Tooth({
   toothNumber,
-  isSelected,
-  isCurrent,
-  hasData,
+  isInOrder,
+  isSelectedForConfig,
+  configStatus,
   hasError,
   onToggle,
-  onSelect,
+  onRemove,
+  onSelectIndividual,
   readOnly = false,
   initialState = 'NORMAL',
   editMode = 'selection',
@@ -54,19 +57,23 @@ export function Tooth({
       return; // Can't select missing teeth
     }
 
-    if (isSelected) {
-      // If selected, always open configuration (don't remove)
-      onSelect();
-    } else {
-      // If not selected, add to order
-      onToggle();
-    }
+    // Click behavior: add to selection, or switch to individual config if already selected
+    onToggle();
+  };
+
+  const handleDoubleClick = () => {
+    if (readOnly) return;
+    if (editMode !== 'selection') return;
+    if (isAusente) return;
+
+    // Double-click: select only this tooth for individual configuration
+    onSelectIndividual();
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     if (readOnly) return;
     e.stopPropagation();
-    onToggle();
+    onRemove();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -80,7 +87,8 @@ export function Tooth({
   const containerClasses = [
     'relative flex flex-col items-center gap-1 transition-transform',
     !readOnly && 'cursor-pointer hover:scale-105',
-    isCurrent && 'ring-2 ring-primary-hover rounded-lg p-1',
+    // Highlight teeth selected for configuration
+    isSelectedForConfig && 'ring-2 ring-primary-hover rounded-lg p-1',
     // AUSENTE: ghost appearance
     isAusente && 'opacity-30',
     // Highlight in edit modes
@@ -92,27 +100,60 @@ export function Tooth({
     .filter(Boolean)
     .join(' ');
 
-  const svgClasses = [
-    'transition-colors',
-    isAusente
-      ? 'fill-none stroke-border stroke-dashed'
-      : isSelected
-        ? 'fill-primary stroke-primary'
-        : readOnly
-          ? 'fill-none stroke-border'
-          : 'fill-none stroke-border hover:fill-muted/20',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  // Determine fill color based on selection and config status
+  const getSvgFillClass = () => {
+    if (isAusente) return 'fill-none stroke-border stroke-dashed';
 
-  const labelClasses = [
-    'text-[10px] font-semibold transition-colors',
-    isAusente
-      ? 'text-muted-foreground/50'
-      : isSelected
-        ? 'text-primary-foreground'
-        : 'text-muted-foreground',
-  ]
+    // Teeth selected for configuration - show as primary
+    if (isSelectedForConfig) return 'fill-primary stroke-primary';
+
+    // Teeth in order but not currently selected - show config status
+    if (isInOrder) {
+      if (configStatus === 'complete') {
+        return 'fill-success/20 stroke-success hover:fill-success/30';
+      }
+      if (configStatus === 'incomplete') {
+        return 'fill-warning/20 stroke-warning hover:fill-warning/30';
+      }
+      // In order but no config yet
+      return 'fill-primary/10 stroke-primary/50 hover:fill-primary/20';
+    }
+
+    // Not in order - show config status if any (from previous config)
+    if (configStatus === 'complete') {
+      return 'fill-success/20 stroke-success hover:fill-success/30';
+    }
+    if (configStatus === 'incomplete') {
+      return 'fill-warning/20 stroke-warning hover:fill-warning/30';
+    }
+
+    // No config
+    if (readOnly) return 'fill-none stroke-border';
+    return 'fill-none stroke-border hover:fill-muted/20';
+  };
+
+  const svgClasses = ['transition-colors', getSvgFillClass()].filter(Boolean).join(' ');
+
+  // Determine label color based on selection and config status
+  const getLabelClass = () => {
+    if (isAusente) return 'text-muted-foreground/50';
+    if (isSelectedForConfig) return 'text-primary-foreground';
+
+    // In order but not selected - show config status colors
+    if (isInOrder) {
+      if (configStatus === 'complete') return 'text-success';
+      if (configStatus === 'incomplete') return 'text-warning';
+      return 'text-primary/70';
+    }
+
+    // Not in order - show config status colors if any
+    if (configStatus === 'complete') return 'text-success';
+    if (configStatus === 'incomplete') return 'text-warning';
+
+    return 'text-muted-foreground';
+  };
+
+  const labelClasses = ['text-[10px] font-semibold transition-colors', getLabelClass()]
     .filter(Boolean)
     .join(' ');
 
@@ -120,11 +161,12 @@ export function Tooth({
     <div
       className={containerClasses}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       onKeyDown={handleKeyDown}
       role="button"
-      aria-label={`Diente ${toothNumber}, ${toothName}${isAusente ? ', ausente' : ''}${isPilar ? ', pilar' : ''}`}
-      aria-pressed={isSelected}
-      aria-current={isCurrent ? 'true' : undefined}
+      aria-label={`Diente ${toothNumber}, ${toothName}${isAusente ? ', ausente' : ''}${isPilar ? ', pilar' : ''}${isInOrder ? ', en orden' : ''}${isSelectedForConfig ? ', configurando' : ''}`}
+      aria-pressed={isInOrder}
+      aria-current={isSelectedForConfig ? 'true' : undefined}
       tabIndex={0}
     >
       {/* SVG Tooth */}
@@ -139,10 +181,10 @@ export function Tooth({
           <path d={shape.path} strokeWidth="2" strokeDasharray={isAusente ? '4 2' : undefined} />
         </svg>
 
-        {/* Status Indicators */}
-        {isSelected && !isAusente && (
+        {/* Status Indicators - shown for teeth in order */}
+        {isInOrder && !isAusente && (
           <div className="absolute -top-1 -right-1 flex flex-col gap-0.5">
-            {/* Error or Success badge */}
+            {/* Error, Complete, or Incomplete badge */}
             {hasError ? (
               <div
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-danger"
@@ -150,21 +192,28 @@ export function Tooth({
               >
                 <Icons.alertCircle className="h-3 w-3 text-danger-foreground" />
               </div>
-            ) : hasData ? (
+            ) : configStatus === 'complete' ? (
               <div
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-success"
-                title="Configurado"
+                title="Configuración completa"
               >
                 <Icons.check className="h-3 w-3 text-success-foreground" />
               </div>
+            ) : configStatus === 'incomplete' ? (
+              <div
+                className="flex h-4 w-4 items-center justify-center rounded-full bg-warning"
+                title="Configuración incompleta"
+              >
+                <Icons.alertCircle className="h-3 w-3 text-warning-foreground" />
+              </div>
             ) : null}
 
-            {/* Remove button for ALL selected teeth (hidden in readOnly mode) */}
+            {/* Remove button for teeth in order (hidden in readOnly mode) */}
             {!readOnly && editMode === 'selection' && (
               <button
                 onClick={handleRemoveClick}
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
-                title="Quitar diente"
+                title="Quitar diente de la orden"
                 type="button"
               >
                 <Icons.x className="h-3 w-3 text-foreground hover:text-danger-foreground" />
@@ -174,7 +223,7 @@ export function Tooth({
         )}
 
         {/* Edit icon when tooth is being configured */}
-        {isCurrent && !readOnly && editMode === 'selection' && (
+        {isSelectedForConfig && !readOnly && editMode === 'selection' && (
           <div className="absolute -top-1 -left-1">
             <div
               className="flex h-4 w-4 items-center justify-center rounded-full bg-primary"

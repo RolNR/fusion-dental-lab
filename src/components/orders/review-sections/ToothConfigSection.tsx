@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { DetailRow, SectionTitle } from './ReviewSectionComponents';
 import { Odontogram } from '@/components/clinic-staff/order-form/Odontogram';
 import { Icons } from '@/components/ui/Icons';
-import type { ToothData } from '@/types/tooth';
+import { getToothConfigStatus, type ToothData, type ToothConfigStatus } from '@/types/tooth';
 import type { RestorationType } from '@prisma/client';
 
 interface ToothConfigSectionProps {
@@ -90,14 +90,10 @@ export function ToothConfigSection({ teeth }: ToothConfigSectionProps) {
       {/* Visual Odontogram (read-only) */}
       <div className="mb-6">
         <Odontogram
-          selectedTeeth={teeth.map((t) => t.toothNumber)}
-          currentTooth={null}
-          teethWithData={
-            new Set(
-              teeth
-                .filter((t) => t.material || t.tipoRestauracion || t.trabajoSobreImplante)
-                .map((t) => t.toothNumber)
-            )
+          teethInOrder={teeth.map((t) => t.toothNumber)}
+          selectedForConfig={[]} // No selection in read-only mode
+          teethConfigStatus={
+            new Map(teeth.map((t) => [t.toothNumber, getToothConfigStatus(t)]))
           }
           teethWithErrors={new Set()}
           readOnly={true}
@@ -158,11 +154,13 @@ interface ToothDetailRowProps {
 
 function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
   const colorInfo = tooth.colorInfo as { shadeCode?: string; shadeType?: string } | undefined;
-  const implantInfo = tooth.informacionImplante as {
-    marcaImplante?: string;
-    sistemaConexion?: string;
-    numeroImplantes?: number;
-  } | undefined;
+  const implantInfo = tooth.informacionImplante as
+    | {
+        marcaImplante?: string;
+        sistemaConexion?: string;
+        numeroImplantes?: number;
+      }
+    | undefined;
 
   return (
     <div className="px-4 py-3">

@@ -2,18 +2,20 @@
 
 import { Tooth, ToothEditMode } from './Tooth';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
+import { ToothConfigStatus } from '@/types/tooth';
 
 export type QuadrantType = 'upper-right' | 'upper-left' | 'lower-left' | 'lower-right';
 
 interface ToothQuadrantProps {
   quadrant: QuadrantType;
   teeth: string[]; // Array of 8 tooth numbers (e.g., ["11", "12", ..., "18"])
-  selectedTeeth: string[]; // Teeth in the order
-  currentTooth: string | null; // Tooth being configured
-  teethWithData: Set<string>; // Configured teeth
+  teethInOrder: string[]; // All teeth in the order
+  selectedForConfig: string[]; // Teeth currently selected for configuration
+  teethConfigStatus: Map<string, ToothConfigStatus>; // Configuration status per tooth
   teethWithErrors: Set<string>; // Teeth with validation errors
-  onToothToggle: (toothNumber: string) => void; // Add/remove tooth
-  onToothSelect: (toothNumber: string) => void; // Select for configuration
+  onToothToggle: (toothNumber: string) => void; // Click to add/select
+  onToothRemove: (toothNumber: string) => void; // Remove from order (X button)
+  onToothSelectIndividual: (toothNumber: string) => void; // Double-click for individual config
   readOnly?: boolean; // If true, disables all interactions
   initialStates?: InitialToothStatesMap; // Initial states for teeth (NORMAL, AUSENTE, PILAR)
   editMode?: ToothEditMode; // Current edit mode for initial state
@@ -23,12 +25,13 @@ interface ToothQuadrantProps {
 export function ToothQuadrant({
   quadrant,
   teeth,
-  selectedTeeth,
-  currentTooth,
-  teethWithData,
+  teethInOrder,
+  selectedForConfig,
+  teethConfigStatus,
   teethWithErrors,
   onToothToggle,
-  onToothSelect,
+  onToothRemove,
+  onToothSelectIndividual,
   readOnly = false,
   initialStates,
   editMode = 'selection',
@@ -53,12 +56,13 @@ export function ToothQuadrant({
         <Tooth
           key={toothNumber}
           toothNumber={toothNumber}
-          isSelected={selectedTeeth.includes(toothNumber)}
-          isCurrent={currentTooth === toothNumber}
-          hasData={teethWithData.has(toothNumber)}
+          isInOrder={teethInOrder.includes(toothNumber)}
+          isSelectedForConfig={selectedForConfig.includes(toothNumber)}
+          configStatus={teethConfigStatus.get(toothNumber) ?? 'none'}
           hasError={teethWithErrors.has(toothNumber)}
           onToggle={() => onToothToggle(toothNumber)}
-          onSelect={() => onToothSelect(toothNumber)}
+          onRemove={() => onToothRemove(toothNumber)}
+          onSelectIndividual={() => onToothSelectIndividual(toothNumber)}
           readOnly={readOnly}
           initialState={getToothInitialState(initialStates, toothNumber)}
           editMode={editMode}

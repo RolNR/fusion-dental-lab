@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { Odontogram } from './Odontogram';
-import { ToothData } from '@/types/tooth';
+import { ToothData, ToothConfigStatus, getToothConfigStatus } from '@/types/tooth';
 import { ValidationErrorDetail } from '@/types/validation';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
@@ -20,10 +20,11 @@ import {
 import type { ToothEditMode } from './Tooth';
 
 interface ToothConfigurationSectionProps {
-  teethNumbers: string[];
-  selectedTooth: string | null;
-  onToothSelect: (toothNumber: string) => void;
-  onToothToggle: (toothNumber: string) => void;
+  teethInOrder: string[]; // All teeth in the order
+  selectedForConfig: string[]; // Teeth currently selected for bulk configuration
+  onToothToggle: (toothNumber: string) => void; // Click to add/select
+  onToothRemove: (toothNumber: string) => void; // Remove from order (X button)
+  onToothSelectIndividual: (toothNumber: string) => void; // Double-click for individual config
   teethData: Map<string, ToothData>;
   onTeethDataChange: (updater: (prev: Map<string, ToothData>) => Map<string, ToothData>) => void;
   teethWithErrors?: Set<string>;
@@ -34,10 +35,11 @@ interface ToothConfigurationSectionProps {
 }
 
 export function ToothConfigurationSection({
-  teethNumbers,
-  selectedTooth,
-  onToothSelect,
+  teethInOrder,
+  selectedForConfig,
   onToothToggle,
+  onToothRemove,
+  onToothSelectIndividual,
   teethData,
   onTeethDataChange,
   teethWithErrors = new Set(),
@@ -49,23 +51,19 @@ export function ToothConfigurationSection({
   // Edit mode for initial states
   const [editMode, setEditMode] = useState<ToothEditMode>('selection');
 
-  // Determine which teeth have data configured
-  const teethWithData = useMemo(
-    () =>
-      new Set(
-        Array.from(teethData.entries())
-          .filter(
-            ([_, data]) => data.material || data.tipoRestauracion || data.trabajoSobreImplante
-          )
-          .map(([toothNumber]) => toothNumber)
-      ),
-    [teethData]
-  );
+  // Compute configuration status for all teeth
+  const teethConfigStatus = useMemo(() => {
+    const statusMap = new Map<string, ToothConfigStatus>();
+    for (const [toothNumber, data] of teethData) {
+      statusMap.set(toothNumber, getToothConfigStatus(data));
+    }
+    return statusMap;
+  }, [teethData]);
 
   // Get errors for all selected teeth
   const allSelectedTeethErrors = useMemo(() => {
     const errors: ValidationErrorDetail[] = [];
-    teethNumbers.forEach((toothNumber) => {
+    selectedForConfig.forEach((toothNumber) => {
       validationErrors.forEach((errList) => {
         errList.forEach((error) => {
           if (error.toothNumber === toothNumber) {
@@ -75,13 +73,13 @@ export function ToothConfigurationSection({
       });
     });
     return errors;
-  }, [teethNumbers, validationErrors]);
+  }, [selectedForConfig, validationErrors]);
 
   // Get common values across all selected teeth (for displaying in form fields)
   const commonValues = useMemo(() => {
     const getCommonValue = <T,>(getter: (tooth: ToothData) => T | undefined): T | undefined => {
-      if (teethNumbers.length === 0) return undefined;
-      const values = teethNumbers.map((num) => {
+      if (selectedForConfig.length === 0) return undefined;
+      const values = selectedForConfig.map((num) => {
         const data = teethData.get(num);
         return data ? getter(data) : undefined;
       });
@@ -97,22 +95,22 @@ export function ToothConfigurationSection({
       trabajoSobreImplante: getCommonValue((t) => t.trabajoSobreImplante),
       informacionImplante: getCommonValue((t) => t.informacionImplante),
     };
-  }, [teethNumbers, teethData]);
+  }, [selectedForConfig, teethData]);
 
   // Helper to update ALL selected teeth data
   const updateAllTeethData = useCallback(
     (updates: Partial<ToothData>) => {
-      if (teethNumbers.length === 0) return;
+      if (selectedForConfig.length === 0) return;
       onTeethDataChange((prev) => {
         const updated = new Map(prev);
-        teethNumbers.forEach((toothNumber) => {
+        selectedForConfig.forEach((toothNumber) => {
           const currentData = updated.get(toothNumber) || { toothNumber };
           updated.set(toothNumber, { ...currentData, ...updates });
         });
         return updated;
       });
     },
-    [teethNumbers, onTeethDataChange]
+    [selectedForConfig, onTeethDataChange]
   );
 
   // Handler for work type changes - applies to ALL selected teeth
@@ -256,12 +254,13 @@ export function ToothConfigurationSection({
 
       {/* Odontogram */}
       <Odontogram
-        selectedTeeth={teethNumbers}
-        currentTooth={editMode === 'selection' ? null : selectedTooth}
-        teethWithData={teethWithData}
+        teethInOrder={teethInOrder}
+        selectedForConfig={selectedForConfig}
+        teethConfigStatus={teethConfigStatus}
         teethWithErrors={teethWithErrors}
         onToothToggle={onToothToggle}
-        onToothSelect={onToothSelect}
+        onToothRemove={onToothRemove}
+        onToothSelectIndividual={onToothSelectIndividual}
         initialStates={initialToothStates}
         showInitialStatesLegend={true}
         editMode={editMode}
@@ -289,13 +288,13 @@ export function ToothConfigurationSection({
         </div>
       )}
 
-      {/* Configuration sections - shown when teeth are selected */}
-      {teethNumbers.length > 0 && editMode === 'selection' && (
+      {/* Configuration sections - shown when teeth are selected for config */}
+      {selectedForConfig.length > 0 && editMode === 'selection' && (
         <div className="mt-6 space-y-4 border-t border-border pt-6">
           {/* Selected teeth indicator */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              {teethNumbers.map((num) => (
+              {selectedForConfig.map((num) => (
                 <div
                   key={num}
                   className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm"
@@ -305,13 +304,13 @@ export function ToothConfigurationSection({
               ))}
             </div>
             <h3 className="text-lg font-semibold text-foreground ml-2">
-              {teethNumbers.length === 1
-                ? `Configuración del Diente ${teethNumbers[0]}`
-                : `Configuración de ${teethNumbers.length} Dientes`}
+              {selectedForConfig.length === 1
+                ? `Configuración del Diente ${selectedForConfig[0]}`
+                : `Configuración de ${selectedForConfig.length} Dientes`}
             </h3>
           </div>
 
-          {teethNumbers.length > 1 && (
+          {selectedForConfig.length > 1 && (
             <p className="text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
               <Icons.info className="h-4 w-4 inline mr-1.5" />
               Los cambios se aplicarán a todos los dientes seleccionados.

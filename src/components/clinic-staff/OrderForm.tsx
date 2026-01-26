@@ -77,7 +77,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   // Per-tooth configuration state
   const [selectedToothNumber, setSelectedToothNumber] = useState<string | null>(null);
   const [teethData, setTeethData] = useState<Map<string, ToothData>>(new Map());
-  const [teethNumbers, setTeethNumbers] = useState<string[]>([]);
+  const [teethNumbers, setTeethNumbers] = useState<string[]>([]); // All teeth in the order
+  const [selectedForConfig, setSelectedForConfig] = useState<string[]>([]); // Teeth currently selected for bulk config
 
   // AI suggestions state
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
@@ -278,7 +279,32 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
   };
 
-  // Handle adding/removing teeth from the odontogram
+  // Handle adding/removing teeth from the odontogram (X button removes from order)
+  const handleToothRemove = (toothNumber: string) => {
+    // Remove from order
+    setTeethNumbers((prev) => prev.filter((t) => t !== toothNumber));
+
+    // Remove from teethData
+    setTeethData((prevData) => {
+      const newData = new Map(prevData);
+      newData.delete(toothNumber);
+      return newData;
+    });
+
+    // Remove from selectedForConfig
+    setSelectedForConfig((prev) => prev.filter((t) => t !== toothNumber));
+
+    // Update formData.teethNumbers string
+    setFormData((prev) => ({
+      ...prev,
+      teethNumbers: teethNumbers
+        .filter((t) => t !== toothNumber)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .join(', '),
+    }));
+  };
+
+  // Handle clicking on a tooth in the odontogram
   const handleToothToggle = (toothNumber: string) => {
     // Check if tooth is AUSENTE - cannot select missing teeth
     const initialState = getToothInitialState(formData.initialToothStates, toothNumber);
@@ -289,61 +315,88 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     // Check if tooth is PILAR - auto-set trabajoSobreImplante
     const isPilar = initialState === 'PILAR';
 
-    setTeethNumbers((prev) => {
-      if (prev.includes(toothNumber)) {
-        // Remove tooth
-        const updated = prev.filter((t) => t !== toothNumber);
+    const isInOrder = teethNumbers.includes(toothNumber);
+    const isInSelection = selectedForConfig.includes(toothNumber);
 
-        // Also remove from teethData
-        setTeethData((prevData) => {
-          const newData = new Map(prevData);
-          newData.delete(toothNumber);
-          return newData;
-        });
-
-        // Clear selection if removing current tooth
-        if (selectedToothNumber === toothNumber) {
-          setSelectedToothNumber(null);
-        }
-
-        return updated;
+    if (isInOrder) {
+      // Tooth is already in order
+      if (isInSelection) {
+        // Tooth is in current selection - switch to individual mode (select only this tooth)
+        setSelectedForConfig([toothNumber]);
       } else {
-        // Add tooth
-        const updated = [...prev, toothNumber].sort((a, b) => {
-          // Sort numerically by FDI notation
-          return parseInt(a, 10) - parseInt(b, 10);
-        });
-
-        // Initialize ToothData with default values
-        // Auto-set trabajoSobreImplante: true for PILAR teeth
-        setTeethData((prevData) => {
-          const newData = new Map(prevData);
-          newData.set(toothNumber, {
-            toothNumber,
-            trabajoSobreImplante: isPilar ? true : undefined,
-          });
-          return newData;
-        });
-
-        // Auto-select if no tooth selected
-        if (!selectedToothNumber) {
-          setSelectedToothNumber(toothNumber);
-        }
-
-        return updated;
+        // Tooth is in order but not in selection - add to selection
+        setSelectedForConfig((prev) =>
+          [...prev, toothNumber].sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        );
       }
-    });
+    } else {
+      // Add tooth to order AND selection
+      const newTeethNumbers = [...teethNumbers, toothNumber].sort((a, b) =>
+        parseInt(a, 10) - parseInt(b, 10)
+      );
+      setTeethNumbers(newTeethNumbers);
 
-    // Update the formData.teethNumbers string (comma-separated)
-    setFormData((prev) => {
-      const currentTeeth = teethNumbers.includes(toothNumber)
-        ? teethNumbers.filter((t) => t !== toothNumber)
-        : [...teethNumbers, toothNumber].sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-      return {
+      // Add to selection
+      setSelectedForConfig((prev) =>
+        [...prev, toothNumber].sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+      );
+
+      // Initialize ToothData with default values
+      // Auto-set trabajoSobreImplante: true for PILAR teeth
+      setTeethData((prevData) => {
+        const newData = new Map(prevData);
+        newData.set(toothNumber, {
+          toothNumber,
+          trabajoSobreImplante: isPilar ? true : undefined,
+        });
+        return newData;
+      });
+
+      // Update formData.teethNumbers string
+      setFormData((prev) => ({
         ...prev,
-        teethNumbers: currentTeeth.join(', '),
-      };
-    });
+        teethNumbers: newTeethNumbers.join(', '),
+      }));
+    }
+  };
+
+  // Handle selecting only one tooth for individual configuration (double-click)
+  const handleToothSelectIndividual = (toothNumber: string) => {
+    // Check if tooth is AUSENTE
+    const initialState = getToothInitialState(formData.initialToothStates, toothNumber);
+    if (initialState === 'AUSENTE') {
+      return;
+    }
+
+    const isPilar = initialState === 'PILAR';
+    const isInOrder = teethNumbers.includes(toothNumber);
+
+    if (!isInOrder) {
+      // Add to order first
+      const newTeethNumbers = [...teethNumbers, toothNumber].sort((a, b) =>
+        parseInt(a, 10) - parseInt(b, 10)
+      );
+      setTeethNumbers(newTeethNumbers);
+
+      // Initialize ToothData
+      setTeethData((prevData) => {
+        const newData = new Map(prevData);
+        newData.set(toothNumber, {
+          toothNumber,
+          trabajoSobreImplante: isPilar ? true : undefined,
+        });
+        return newData;
+      });
+
+      // Update formData.teethNumbers string
+      setFormData((prev) => ({
+        ...prev,
+        teethNumbers: newTeethNumbers.join(', '),
+      }));
+    }
+
+    // Select only this tooth for configuration
+    setSelectedForConfig([toothNumber]);
   };
 
   const handleSaveDraft = async (e: React.FormEvent) => {
@@ -906,10 +959,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           {/* Tooth Configuration Section (Odontogram + per-tooth config + initial states) */}
           <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
             <ToothConfigurationSection
-              teethNumbers={teethNumbers}
-              selectedTooth={selectedToothNumber}
-              onToothSelect={setSelectedToothNumber}
+              teethInOrder={teethNumbers}
+              selectedForConfig={selectedForConfig}
               onToothToggle={handleToothToggle}
+              onToothRemove={handleToothRemove}
+              onToothSelectIndividual={handleToothSelectIndividual}
               teethData={teethData}
               onTeethDataChange={setTeethData}
               teethWithErrors={teethWithErrors}
