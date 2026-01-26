@@ -331,8 +331,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       }
     } else {
       // Add tooth to order AND selection
-      const newTeethNumbers = [...teethNumbers, toothNumber].sort((a, b) =>
-        parseInt(a, 10) - parseInt(b, 10)
+      const newTeethNumbers = [...teethNumbers, toothNumber].sort(
+        (a, b) => parseInt(a, 10) - parseInt(b, 10)
       );
       setTeethNumbers(newTeethNumbers);
 
@@ -373,8 +373,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
     if (!isInOrder) {
       // Add to order first
-      const newTeethNumbers = [...teethNumbers, toothNumber].sort((a, b) =>
-        parseInt(a, 10) - parseInt(b, 10)
+      const newTeethNumbers = [...teethNumbers, toothNumber].sort(
+        (a, b) => parseInt(a, 10) - parseInt(b, 10)
       );
       setTeethNumbers(newTeethNumbers);
 
@@ -934,18 +934,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       {/* Show full form only after AI processing or when editing */}
       {showFullForm && (
         <>
-          {/* Order Info Section */}
-          <OrderInfoSection
-            ref={(el) => registerSectionRef('patient', el)}
-            patientName={formData.patientName}
-            fechaEntregaDeseada={formData.fechaEntregaDeseada}
-            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-            disabled={isLoading}
-            hasErrors={getSectionErrorInfo('patient').hasErrors}
-            errorCount={getSectionErrorInfo('patient').errorCount}
-          />
-
-          {/* Case Type Section */}
+          {/* 1. Case Type Section */}
           <CaseTypeSection
             ref={(el) => registerSectionRef('caseType', el)}
             tipoCaso={formData.tipoCaso ?? undefined}
@@ -956,7 +945,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('caseType').errorCount}
           />
 
-          {/* Tooth Configuration Section (Odontogram + per-tooth config + initial states) */}
+          {/* 2. Patient Info Section */}
+          <OrderInfoSection
+            ref={(el) => registerSectionRef('patient', el)}
+            patientName={formData.patientName}
+            fechaEntregaDeseada={formData.fechaEntregaDeseada}
+            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+            disabled={isLoading}
+            hasErrors={getSectionErrorInfo('patient').hasErrors}
+            errorCount={getSectionErrorInfo('patient').errorCount}
+          />
+
+          {/* 3. Tooth Configuration Section (Odontogram + per-tooth config + initial states) */}
           <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
             <ToothConfigurationSection
               teethInOrder={teethNumbers}
@@ -976,7 +976,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             />
           </div>
 
-          {/* Digital Scan Section */}
+          {/* 4. Digital Scan Section */}
           <DigitalScanSection
             isDigitalScan={formData.isDigitalScan}
             escanerUtilizado={formData.escanerUtilizado ?? undefined}
@@ -991,7 +991,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             disabled={isLoading}
           />
 
-          {/* Occlusion Section */}
+          {/* 5. Occlusion Section */}
           <OcclusionSection
             ref={(el) => registerSectionRef('occlusion', el)}
             oclusionDiseno={formData.oclusionDiseno}
@@ -1000,19 +1000,19 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('occlusion').errorCount}
           />
 
-          {/* Material Sent Section */}
+          {/* 6. Material Sent Section */}
           <MaterialSentSection
             materialSent={formData.materialSent}
             onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
           />
 
-          {/* Mouth Photos Section - Optional */}
+          {/* 7. Mouth Photos Section - Optional */}
           <MouthPhotosSection
             photographFiles={photographFiles}
             onPhotographFilesChange={setPhotographFiles}
           />
 
-          {/* Submission Type Section */}
+          {/* 8. Submission Type Section */}
           <SubmissionTypeSection
             ref={(el) => registerSectionRef('submission', el)}
             submissionType={formData.submissionType ?? undefined}
