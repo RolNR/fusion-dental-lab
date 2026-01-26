@@ -939,7 +939,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             ref={(el) => registerSectionRef('caseType', el)}
             tipoCaso={formData.tipoCaso ?? undefined}
             motivoGarantia={formData.motivoGarantia}
-            seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
             onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
             hasErrors={getSectionErrorInfo('caseType').hasErrors}
             errorCount={getSectionErrorInfo('caseType').errorCount}

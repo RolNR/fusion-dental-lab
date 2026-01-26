@@ -35,7 +35,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "description": "Descripción general del caso",
   "notes": "Notas adicionales o instrucciones especiales",
 
-  "tipoCaso": "nuevo" o "garantia",
+  "tipoCaso": "nuevo", "garantia", "regreso_prueba", o "reparacion_ajuste",
   "motivoGarantia": "Razón de la garantía (solo si tipoCaso es 'garantia')",
   "seDevuelveTrabajoOriginal": true o false (si devuelven el trabajo original en garantía),
 

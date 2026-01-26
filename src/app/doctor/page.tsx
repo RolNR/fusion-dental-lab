@@ -56,9 +56,13 @@ export default function DoctorDashboard() {
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/doctor/orders');
-      if (!response.ok) throw new Error('Error al cargar estadísticas');
-
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error('API Error:', response.status, data);
+        throw new Error(data.error || 'Error al cargar estadísticas');
+      }
+
       const fetchedOrders = data.orders || [];
 
       const newStats = {

@@ -277,7 +277,6 @@ export function OrderReviewModal({
           <CaseTypeSection
             tipoCaso={formData.tipoCaso ?? undefined}
             motivoGarantia={formData.motivoGarantia}
-            seDevuelveTrabajoOriginal={formData.seDevuelveTrabajoOriginal}
           />
 
           <SubmissionTypeSection

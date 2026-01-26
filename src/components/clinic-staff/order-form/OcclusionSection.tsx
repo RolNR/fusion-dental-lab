@@ -3,7 +3,7 @@
 import { forwardRef } from 'react';
 import { Select } from '@/components/ui/Select';
 import { OcclusionInfo } from '@/types/order';
-import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
 
 type OcclusionSectionProps = {
   oclusionDiseno?: OcclusionInfo;
@@ -16,6 +16,21 @@ type OcclusionSectionProps = {
   hasErrors?: boolean;
   errorCount?: number;
 };
+
+type OcclusionType = 'normal' | 'clase_ii' | 'clase_iii' | 'mordida_cruzada';
+type SpaceOption = 'yes' | 'no';
+
+const OCCLUSION_TYPE_OPTIONS: ToggleOption<OcclusionType>[] = [
+  { value: 'normal', label: 'Normal', icon: 'check' },
+  { value: 'clase_ii', label: 'Mordida Profunda', icon: 'arrowDown' },
+  { value: 'clase_iii', label: 'Mordida Abierta', icon: 'arrowUp' },
+  { value: 'mordida_cruzada', label: 'Bruxismo', icon: 'zap' },
+];
+
+const SPACE_OPTIONS: ToggleOption<SpaceOption>[] = [
+  { value: 'yes', label: 'Sí, Espacio Adecuado', icon: 'check' },
+  { value: 'no', label: 'No, Espacio Limitado', icon: 'x' },
+];
 
 export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps>(
   ({ oclusionDiseno, onChange, errors }, ref) => {
@@ -33,27 +48,13 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
       onChange(updated);
     };
 
-    const occlusionTypes = [
-      { value: 'normal', label: 'Normal', subtitle: 'Clase I', icon: 'check' as const },
-      {
-        value: 'clase_ii',
-        label: 'Mordida Profunda',
-        subtitle: 'Sobremordida',
-        icon: 'arrowDown' as const,
-      },
-      {
-        value: 'clase_iii',
-        label: 'Mordida Abierta',
-        subtitle: 'Espacio anterior',
-        icon: 'arrowUp' as const,
-      },
-      {
-        value: 'mordida_cruzada',
-        label: 'Bruxismo',
-        subtitle: 'Rechinamiento',
-        icon: 'zap' as const,
-      },
-    ];
+    // Convert boolean to string for ToggleButtonGroup
+    const spaceValue: SpaceOption | undefined =
+      oclusionDiseno?.espacioInteroclusalSuficiente === true
+        ? 'yes'
+        : oclusionDiseno?.espacioInteroclusalSuficiente === false
+          ? 'no'
+          : undefined;
 
     return (
       <div ref={ref}>
@@ -62,18 +63,12 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
             {/* Occlusion Type */}
             <div>
               <FieldLabel icon="layers" label="Tipo de Oclusión" required />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {occlusionTypes.map((type) => (
-                  <ButtonCard
-                    key={type.value}
-                    icon={type.icon}
-                    title={type.label}
-                    subtitle={type.subtitle}
-                    selected={oclusionDiseno?.tipoOclusion === type.value}
-                    onClick={() => handleFieldChange('tipoOclusion', type.value)}
-                  />
-                ))}
-              </div>
+              <ToggleButtonGroup
+                options={OCCLUSION_TYPE_OPTIONS}
+                value={oclusionDiseno?.tipoOclusion as OcclusionType | undefined}
+                onChange={(value) => handleFieldChange('tipoOclusion', value)}
+                className="mt-2"
+              />
               {errors?.tipoOclusion && (
                 <p className="mt-2 text-sm text-danger font-medium">{errors.tipoOclusion}</p>
               )}
@@ -82,22 +77,12 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
             {/* Interocclusal Space Available */}
             <div>
               <FieldLabel label="¿Espacio Interoclusal Disponible?" required />
-              <div className="grid grid-cols-2 gap-3">
-                <ButtonCard
-                  icon="check"
-                  title="Sí, Espacio Adecuado"
-                  subtitle="Espacio suficiente para restauración"
-                  selected={oclusionDiseno?.espacioInteroclusalSuficiente === true}
-                  onClick={() => handleFieldChange('espacioInteroclusalSuficiente', true)}
-                />
-                <ButtonCard
-                  icon="x"
-                  title="No, Espacio Limitado"
-                  subtitle="Se necesitan consideraciones especiales"
-                  selected={oclusionDiseno?.espacioInteroclusalSuficiente === false}
-                  onClick={() => handleFieldChange('espacioInteroclusalSuficiente', false)}
-                />
-              </div>
+              <ToggleButtonGroup
+                options={SPACE_OPTIONS}
+                value={spaceValue}
+                onChange={(value) => handleFieldChange('espacioInteroclusalSuficiente', value === 'yes')}
+                className="mt-2"
+              />
               {errors?.espacioInteroclusalSuficiente && (
                 <p className="mt-2 text-sm text-danger font-medium">
                   {errors.espacioInteroclusalSuficiente}

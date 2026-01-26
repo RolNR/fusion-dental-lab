@@ -3,55 +3,41 @@
 import { forwardRef } from 'react';
 import { CaseType } from '@prisma/client';
 import { Textarea } from '@/components/ui/Textarea';
-import { CollapsibleSubsection, ButtonCard, FieldLabel } from '@/components/ui/form';
+import { Icons } from '@/components/ui/Icons';
+import { CollapsibleSubsection, FieldLabel, ToggleButtonGroup, ToggleOption } from '@/components/ui/form';
 
 type CaseTypeSectionProps = {
   tipoCaso?: CaseType;
   motivoGarantia?: string;
-  seDevuelveTrabajoOriginal?: boolean;
-  onChange: (updates: {
-    tipoCaso?: CaseType;
-    motivoGarantia?: string;
-    seDevuelveTrabajoOriginal?: boolean;
-  }) => void;
+  onChange: (updates: { tipoCaso?: CaseType; motivoGarantia?: string }) => void;
   errors?: {
     tipoCaso?: string;
     motivoGarantia?: string;
-    seDevuelveTrabajoOriginal?: string;
   };
   hasErrors?: boolean;
   errorCount?: number;
 };
 
+const CASE_TYPE_OPTIONS: ToggleOption<CaseType>[] = [
+  { value: 'nuevo', label: 'Caso Nuevo', icon: 'filePlus' },
+  { value: 'garantia', label: 'Garantía', icon: 'shield' },
+  { value: 'regreso_prueba', label: 'Regreso de Prueba', icon: 'undo' },
+  { value: 'reparacion_ajuste', label: 'Reparación o Ajuste', icon: 'wrench' },
+];
+
 export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
-  ({ tipoCaso, motivoGarantia, seDevuelveTrabajoOriginal, onChange, errors }, ref) => {
+  ({ tipoCaso, motivoGarantia, onChange, errors }, ref) => {
     const handleTipoCasoChange = (value: CaseType) => {
-      // Batch updates to avoid state update conflicts
+      // Clear warranty fields when switching away from garantia
       if (value === 'nuevo') {
-        onChange({
-          tipoCaso: value,
-          motivoGarantia: undefined,
-          seDevuelveTrabajoOriginal: undefined,
-        });
+        onChange({ tipoCaso: value, motivoGarantia: undefined });
       } else {
         onChange({ tipoCaso: value });
       }
     };
 
-    const caseTypes = [
-      {
-        value: 'nuevo',
-        label: 'Caso Nuevo',
-        subtitle: 'Trabajo inicial',
-        icon: 'filePlus' as const,
-      },
-      {
-        value: 'garantia',
-        label: 'Garantía',
-        subtitle: 'Corrección o reemplazo',
-        icon: 'shield' as const,
-      },
-    ];
+    // Default to 'nuevo' if not set
+    const effectiveTipoCaso = tipoCaso || 'nuevo';
 
     return (
       <div ref={ref}>
@@ -60,18 +46,12 @@ export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
             {/* Case Type Selection */}
             <div>
               <FieldLabel label="Selecciona el Tipo" required />
-              <div className="grid grid-cols-2 gap-3">
-                {caseTypes.map((type) => (
-                  <ButtonCard
-                    key={type.value}
-                    icon={type.icon}
-                    title={type.label}
-                    subtitle={type.subtitle}
-                    selected={tipoCaso === type.value || (!tipoCaso && type.value === 'nuevo')}
-                    onClick={() => handleTipoCasoChange(type.value as CaseType)}
-                  />
-                ))}
-              </div>
+              <ToggleButtonGroup
+                options={CASE_TYPE_OPTIONS}
+                value={effectiveTipoCaso}
+                onChange={handleTipoCasoChange}
+                className="mt-2"
+              />
               {errors?.tipoCaso && (
                 <p className="mt-2 text-sm text-danger font-medium">{errors.tipoCaso}</p>
               )}
@@ -91,30 +71,13 @@ export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
                   error={errors?.motivoGarantia}
                 />
 
-                {/* Returns Original Work */}
-                <div>
-                  <FieldLabel label="¿Se devuelve el trabajo original?" required />
-                  <div className="grid grid-cols-2 gap-3">
-                    <ButtonCard
-                      icon="check"
-                      title="Sí"
-                      subtitle="Se incluye el trabajo original"
-                      selected={seDevuelveTrabajoOriginal === true}
-                      onClick={() => onChange({ seDevuelveTrabajoOriginal: true })}
-                    />
-                    <ButtonCard
-                      icon="x"
-                      title="No"
-                      subtitle="No se devuelve"
-                      selected={seDevuelveTrabajoOriginal === false}
-                      onClick={() => onChange({ seDevuelveTrabajoOriginal: false })}
-                    />
-                  </div>
-                  {errors?.seDevuelveTrabajoOriginal && (
-                    <p className="mt-2 text-sm text-danger font-medium">
-                      {errors.seDevuelveTrabajoOriginal}
-                    </p>
-                  )}
+                {/* Note about returning original work */}
+                <div className="flex items-start gap-2 rounded-md bg-primary/10 p-3">
+                  <Icons.info className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-primary">
+                    <strong>Nota:</strong> Es necesario devolver el trabajo original junto con la
+                    orden de garantía.
+                  </p>
                 </div>
               </div>
             )}

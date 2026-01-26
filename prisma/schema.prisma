@@ -247,6 +247,8 @@ enum AuditAction {
 enum CaseType {
   nuevo
   garantia
+  regreso_prueba
+  reparacion_ajuste
 }
 
 enum OrderStatus {
