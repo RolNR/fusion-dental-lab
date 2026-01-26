@@ -285,6 +285,7 @@ enum ScannerType {
 enum SubmissionType {
   prueba_estructura
   prueba_estetica
+  prueba
   terminado
 }
 

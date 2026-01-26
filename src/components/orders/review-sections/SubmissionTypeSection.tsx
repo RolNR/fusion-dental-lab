@@ -5,6 +5,21 @@ interface SubmissionTypeSectionProps {
   articulatedBy?: 'doctor' | 'laboratorio' | null;
 }
 
+function getSubmissionTypeLabel(type: string): string {
+  switch (type) {
+    case 'prueba':
+      return 'Prueba';
+    case 'prueba_estructura':
+      return 'Prueba de Estructura';
+    case 'prueba_estetica':
+      return 'Prueba Estética';
+    case 'terminado':
+      return 'Terminado';
+    default:
+      return type;
+  }
+}
+
 export function SubmissionTypeSection({
   submissionType,
   articulatedBy,
@@ -13,9 +28,9 @@ export function SubmissionTypeSection({
 
   return (
     <>
-      <SectionTitle>Tipo de Envío</SectionTitle>
+      <SectionTitle>Tipo de Entrega</SectionTitle>
       <dl className="space-y-1">
-        <DetailRow label="Tipo de Envío" value={submissionType} />
+        <DetailRow label="Tipo de Entrega" value={getSubmissionTypeLabel(submissionType)} />
         {articulatedBy && (
           <DetailRow
             label="Articulado Por"

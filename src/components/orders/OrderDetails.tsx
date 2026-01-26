@@ -69,8 +69,9 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
           )}
           {order.submissionType && (
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Tipo de Envío</dt>
+              <dt className="text-sm font-medium text-muted-foreground">Tipo de Entrega</dt>
               <dd className="mt-1 text-sm text-foreground">
+                {order.submissionType === 'prueba' && 'Prueba'}
                 {order.submissionType === 'prueba_estructura' && 'Prueba de Estructura'}
                 {order.submissionType === 'prueba_estetica' && 'Prueba Estética'}
                 {order.submissionType === 'terminado' && 'Terminado'}

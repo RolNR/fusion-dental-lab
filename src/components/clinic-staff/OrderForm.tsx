@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -352,6 +352,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   };
 
   // Compute pre-submission validation errors
+  // Check if any tooth has implant work
+  const hasImplant = useMemo(() => {
+    return Array.from(teethData.values()).some((tooth) => tooth.trabajoSobreImplante);
+  }, [teethData]);
+
   const computePreSubmitValidation = useCallback(() => {
     const errors: typeof preSubmitErrors = {};
     const teethArray = Array.from(teethData.values());
@@ -961,6 +966,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
             hasErrors={getSectionErrorInfo('submission').hasErrors}
             errorCount={getSectionErrorInfo('submission').errorCount}
+            hasImplant={hasImplant}
           />
 
           <AdditionalNotesSection
