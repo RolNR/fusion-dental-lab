@@ -1,6 +1,7 @@
 'use client';
 
-import { Tooth } from './Tooth';
+import { Tooth, ToothEditMode } from './Tooth';
+import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
 
 export type QuadrantType = 'upper-right' | 'upper-left' | 'lower-left' | 'lower-right';
 
@@ -14,6 +15,9 @@ interface ToothQuadrantProps {
   onToothToggle: (toothNumber: string) => void; // Add/remove tooth
   onToothSelect: (toothNumber: string) => void; // Select for configuration
   readOnly?: boolean; // If true, disables all interactions
+  initialStates?: InitialToothStatesMap; // Initial states for teeth (NORMAL, AUSENTE, PILAR)
+  editMode?: ToothEditMode; // Current edit mode for initial state
+  onInitialStateToggle?: (toothNumber: string) => void; // Toggle initial state
 }
 
 export function ToothQuadrant({
@@ -26,6 +30,9 @@ export function ToothQuadrant({
   onToothToggle,
   onToothSelect,
   readOnly = false,
+  initialStates,
+  editMode = 'selection',
+  onInitialStateToggle,
 }: ToothQuadrantProps) {
   // Determine if teeth should be reversed for anatomical accuracy
   // Upper quadrants: left-to-right (11→18, 21→28)
@@ -53,6 +60,9 @@ export function ToothQuadrant({
           onToggle={() => onToothToggle(toothNumber)}
           onSelect={() => onToothSelect(toothNumber)}
           readOnly={readOnly}
+          initialState={getToothInitialState(initialStates, toothNumber)}
+          editMode={editMode}
+          onInitialStateToggle={() => onInitialStateToggle?.(toothNumber)}
         />
       ))}
     </div>

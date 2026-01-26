@@ -2,6 +2,9 @@
 
 import { TOOTH_SHAPES, getToothTypeFromNumber, getToothName } from './tooth-shapes';
 import { Icons } from '@/components/ui/Icons';
+import { ToothInitialState, isToothSelectable } from '@/types/initial-tooth-state';
+
+export type ToothEditMode = 'selection' | 'ausente' | 'pilar';
 
 interface ToothProps {
   toothNumber: string; // FDI notation (11, 12, etc.)
@@ -12,6 +15,9 @@ interface ToothProps {
   onToggle: () => void; // Add/remove from order
   onSelect: () => void; // Select for configuration
   readOnly?: boolean; // If true, disables all interactions
+  initialState?: ToothInitialState; // Initial state of the tooth (NORMAL, AUSENTE, PILAR)
+  editMode?: ToothEditMode; // Current edit mode for initial state
+  onInitialStateToggle?: () => void; // Toggle initial state (called in ausente/pilar edit modes)
 }
 
 export function Tooth({
@@ -23,13 +29,30 @@ export function Tooth({
   onToggle,
   onSelect,
   readOnly = false,
+  initialState = 'NORMAL',
+  editMode = 'selection',
+  onInitialStateToggle,
 }: ToothProps) {
   const toothType = getToothTypeFromNumber(toothNumber);
   const toothName = getToothName(toothNumber);
   const shape = TOOTH_SHAPES[toothType];
 
+  const isAusente = initialState === 'AUSENTE';
+  const isPilar = initialState === 'PILAR';
+
   const handleClick = () => {
-    if (readOnly) return; // Disable clicks in readOnly mode
+    if (readOnly) return;
+
+    // Handle edit modes for initial state
+    if (editMode === 'ausente' || editMode === 'pilar') {
+      onInitialStateToggle?.();
+      return;
+    }
+
+    // Standard selection mode - but block AUSENTE teeth
+    if (isAusente) {
+      return; // Can't select missing teeth
+    }
 
     if (isSelected) {
       // If selected, always open configuration (don't remove)
@@ -41,7 +64,7 @@ export function Tooth({
   };
 
   const handleRemoveClick = (e: React.MouseEvent) => {
-    if (readOnly) return; // Disable clicks in readOnly mode
+    if (readOnly) return;
     e.stopPropagation();
     onToggle();
   };
@@ -58,24 +81,37 @@ export function Tooth({
     'relative flex flex-col items-center gap-1 transition-transform',
     !readOnly && 'cursor-pointer hover:scale-105',
     isCurrent && 'ring-2 ring-primary-hover rounded-lg p-1',
+    // AUSENTE: ghost appearance
+    isAusente && 'opacity-30',
+    // Highlight in edit modes
+    editMode === 'ausente' && !isAusente && 'ring-2 ring-muted ring-dashed rounded-lg',
+    editMode === 'pilar' && !isPilar && 'ring-2 ring-muted ring-dashed rounded-lg',
+    editMode === 'ausente' && isAusente && 'ring-2 ring-warning rounded-lg',
+    editMode === 'pilar' && isPilar && 'ring-2 ring-primary rounded-lg',
   ]
     .filter(Boolean)
     .join(' ');
 
   const svgClasses = [
     'transition-colors',
-    isSelected
-      ? 'fill-primary stroke-primary'
-      : readOnly
-        ? 'fill-none stroke-border'
-        : 'fill-none stroke-border hover:fill-muted/20',
+    isAusente
+      ? 'fill-none stroke-border stroke-dashed'
+      : isSelected
+        ? 'fill-primary stroke-primary'
+        : readOnly
+          ? 'fill-none stroke-border'
+          : 'fill-none stroke-border hover:fill-muted/20',
   ]
     .filter(Boolean)
     .join(' ');
 
   const labelClasses = [
     'text-[10px] font-semibold transition-colors',
-    isSelected ? 'text-primary-foreground' : 'text-muted-foreground',
+    isAusente
+      ? 'text-muted-foreground/50'
+      : isSelected
+        ? 'text-primary-foreground'
+        : 'text-muted-foreground',
   ]
     .filter(Boolean)
     .join(' ');
@@ -86,7 +122,7 @@ export function Tooth({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       role="button"
-      aria-label={`Diente ${toothNumber}, ${toothName}`}
+      aria-label={`Diente ${toothNumber}, ${toothName}${isAusente ? ', ausente' : ''}${isPilar ? ', pilar' : ''}`}
       aria-pressed={isSelected}
       aria-current={isCurrent ? 'true' : undefined}
       tabIndex={0}
@@ -100,11 +136,15 @@ export function Tooth({
           className={svgClasses}
           style={{ minWidth: shape.width, minHeight: shape.height }}
         >
-          <path d={shape.path} strokeWidth="2" />
+          <path
+            d={shape.path}
+            strokeWidth="2"
+            strokeDasharray={isAusente ? '4 2' : undefined}
+          />
         </svg>
 
         {/* Status Indicators */}
-        {isSelected && (
+        {isSelected && !isAusente && (
           <div className="absolute -top-1 -right-1 flex flex-col gap-0.5">
             {/* Error or Success badge */}
             {hasError ? (
@@ -124,7 +164,7 @@ export function Tooth({
             ) : null}
 
             {/* Remove button for ALL selected teeth (hidden in readOnly mode) */}
-            {!readOnly && (
+            {!readOnly && editMode === 'selection' && (
               <button
                 onClick={handleRemoveClick}
                 className="flex h-4 w-4 items-center justify-center rounded-full bg-muted hover:bg-danger transition-colors"
@@ -138,7 +178,7 @@ export function Tooth({
         )}
 
         {/* Edit icon when tooth is being configured */}
-        {isCurrent && !readOnly && (
+        {isCurrent && !readOnly && editMode === 'selection' && (
           <div className="absolute -top-1 -left-1">
             <div
               className="flex h-4 w-4 items-center justify-center rounded-full bg-primary"
@@ -146,6 +186,13 @@ export function Tooth({
             >
               <Icons.settings className="h-3 w-3 text-primary-foreground" />
             </div>
+          </div>
+        )}
+
+        {/* PILAR indicator - screw icon below the tooth */}
+        {isPilar && (
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2">
+            <Icons.screw className="h-4 w-4 text-primary" />
           </div>
         )}
 

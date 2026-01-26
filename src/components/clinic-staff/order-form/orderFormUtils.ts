@@ -157,6 +157,7 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     fechaEntregaDeseada: initialData?.fechaEntregaDeseada || '',
     aiPrompt: initialData?.aiPrompt || '',
     teethNumbers: initialData?.teethNumbers || '',
+    initialToothStates: initialData?.initialToothStates || {},
     isDigitalScan: initialData?.isDigitalScan || false,
     tipoCaso: initialData?.tipoCaso || null,
     motivoGarantia: initialData?.motivoGarantia || '',

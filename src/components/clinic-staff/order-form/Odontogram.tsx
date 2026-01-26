@@ -1,6 +1,9 @@
 'use client';
 
 import { ToothQuadrant, QuadrantType } from './ToothQuadrant';
+import { ToothEditMode } from './Tooth';
+import { InitialToothStatesMap } from '@/types/initial-tooth-state';
+import { Icons } from '@/components/ui/Icons';
 
 interface OdontogramProps {
   selectedTeeth: string[]; // Teeth in the order (e.g., ["11", "12", "21"])
@@ -10,6 +13,10 @@ interface OdontogramProps {
   onToothToggle?: (toothNumber: string) => void; // Add/remove tooth (optional for readOnly)
   onToothSelect?: (toothNumber: string) => void; // Select for configuration (optional for readOnly)
   readOnly?: boolean; // If true, disables all interactions
+  initialStates?: InitialToothStatesMap; // Initial states for teeth (NORMAL, AUSENTE, PILAR)
+  editMode?: ToothEditMode; // Current edit mode for initial state
+  onInitialStateToggle?: (toothNumber: string) => void; // Toggle initial state
+  showInitialStatesLegend?: boolean; // Whether to show AUSENTE/PILAR in the legend
 }
 
 /**
@@ -28,6 +35,10 @@ export function Odontogram({
   onToothToggle,
   onToothSelect,
   readOnly = false,
+  initialStates,
+  editMode = 'selection',
+  onInitialStateToggle,
+  showInitialStatesLegend = false,
 }: OdontogramProps) {
   // Generate teeth for each quadrant
   const upperRight = generateQuadrantTeeth(1).reverse(); // 18-11 (right to left from patient view)
@@ -43,6 +54,9 @@ export function Odontogram({
     onToothToggle: onToothToggle || (() => {}),
     onToothSelect: onToothSelect || (() => {}),
     readOnly,
+    initialStates,
+    editMode,
+    onInitialStateToggle,
   };
 
   return (
@@ -69,6 +83,20 @@ export function Odontogram({
           </div>
           <span>Error</span>
         </div>
+        {showInitialStatesLegend && (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 rounded border-2 border-dashed border-border opacity-30" />
+              <span>Ausente</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="relative h-4 w-4 rounded border-2 border-border">
+                <Icons.screw className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-3 w-3 text-primary" />
+              </div>
+              <span>Pilar</span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Odontogram Chart */}
@@ -130,11 +158,25 @@ export function Odontogram({
       </div>
 
       {/* Instructions */}
-      {!readOnly && (
+      {!readOnly && editMode === 'selection' && (
         <p className="text-xs text-muted-foreground text-center">
           <strong>Cómo usar:</strong> Haz clic en un diente para añadirlo. Si no tiene
           configuración, vuelve a hacer clic para quitarlo. Si ya está configurado, haz clic para
           editarlo o usa el botón X para quitarlo.
+        </p>
+      )}
+
+      {/* Edit mode instructions */}
+      {!readOnly && editMode === 'ausente' && (
+        <p className="text-xs text-warning text-center font-medium">
+          <strong>Modo Ausentes:</strong> Haz clic en los dientes que faltan para marcarlos como ausentes.
+          Haz clic de nuevo para desmarcarlos.
+        </p>
+      )}
+      {!readOnly && editMode === 'pilar' && (
+        <p className="text-xs text-primary text-center font-medium">
+          <strong>Modo Pilares:</strong> Haz clic en los dientes con implante para marcarlos como pilares.
+          Haz clic de nuevo para desmarcarlos.
         </p>
       )}
     </div>

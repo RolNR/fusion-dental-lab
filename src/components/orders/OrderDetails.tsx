@@ -1,5 +1,6 @@
 import { Order } from '@/types/order';
 import { CollapsibleToothList } from './CollapsibleToothCard';
+import { getInitialStatesSummary, InitialToothStatesMap } from '@/types/initial-tooth-state';
 
 interface OrderDetailsProps {
   order: Order;
@@ -42,6 +43,14 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
             <div>
               <dt className="text-sm font-medium text-muted-foreground">Números de Dientes</dt>
               <dd className="mt-1 text-sm text-foreground">{order.teethNumbers}</dd>
+            </div>
+          )}
+          {getInitialStatesSummary(order.initialToothStates as InitialToothStatesMap) && (
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">Situación Inicial</dt>
+              <dd className="mt-1 text-sm text-foreground">
+                {getInitialStatesSummary(order.initialToothStates as InitialToothStatesMap)}
+              </dd>
             </div>
           )}
           {order.tipoCaso && (

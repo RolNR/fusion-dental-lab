@@ -9,6 +9,7 @@ import {
 } from '@prisma/client';
 import { z } from 'zod';
 import { Tooth } from './tooth';
+import { InitialToothStatesMap } from './initial-tooth-state';
 
 // Order interface for detail pages (doctor/assistant views)
 export interface Order {
@@ -21,6 +22,7 @@ export interface Order {
   fechaEntregaDeseada?: string;
   aiPrompt?: string;
   teethNumbers?: string;
+  initialToothStates?: InitialToothStatesMap;
   isDigitalScan?: boolean;
   status: OrderStatus;
   doctorId: string;
@@ -113,6 +115,7 @@ export interface OrderDetail {
   fechaEntregaDeseada: string | null;
   aiPrompt: string | null;
   teethNumbers: string | null;
+  initialToothStates: InitialToothStatesMap | null;
   isDigitalScan: boolean;
   status: OrderStatus;
   createdAt: string;
@@ -237,6 +240,10 @@ export const orderDraftSchema = z.object({
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   aiPrompt: z.string().optional(),
   teethNumbers: z.string().optional(),
+  initialToothStates: z
+    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR']))
+    .optional()
+    .transform((val) => val as Prisma.InputJsonValue | undefined),
   isDigitalScan: z.boolean().optional(),
 
   // Case type
@@ -332,6 +339,10 @@ export const orderUpdateSchema = z.object({
     .optional()
     .transform((val) => (val && val.trim() !== '' ? new Date(val) : undefined)),
   teethNumbers: z.string().optional(),
+  initialToothStates: z
+    .record(z.string(), z.enum(['NORMAL', 'AUSENTE', 'PILAR']))
+    .optional()
+    .transform((val) => val as Prisma.InputJsonValue | undefined),
   isDigitalScan: z.boolean().optional(),
   status: z.nativeEnum(OrderStatus).optional(),
 

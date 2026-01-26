@@ -1,6 +1,7 @@
 import { CaseType, ScannerType, SubmissionType, ArticulatedBy } from '@prisma/client';
 import { OcclusionInfo } from '@/types/order';
 import { ToothData } from '@/types/tooth';
+import { InitialToothStatesMap } from '@/types/initial-tooth-state';
 
 export interface OrderFormProps {
   initialData?: OrderFormData;
@@ -17,6 +18,7 @@ export interface OrderFormData {
   fechaEntregaDeseada?: string; // ISO date string
   aiPrompt?: string;
   teethNumbers?: string;
+  initialToothStates?: InitialToothStatesMap;
   isDigitalScan?: boolean;
   doctorId?: string;
   status?: string;
@@ -51,6 +53,7 @@ export interface OrderFormState {
   fechaEntregaDeseada: string;
   aiPrompt: string;
   teethNumbers: string;
+  initialToothStates: InitialToothStatesMap;
   isDigitalScan: boolean;
   doctorId: string;
 

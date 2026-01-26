@@ -44,6 +44,7 @@ import { ToothData } from '@/types/tooth';
 import { ToothConfigurationSection } from './order-form/ToothConfigurationSection';
 import { AIPromptInput } from './order-form/AIPromptInput';
 import type { AISuggestion } from '@/types/ai-suggestions';
+import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
@@ -279,6 +280,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   // Handle adding/removing teeth from the odontogram
   const handleToothToggle = (toothNumber: string) => {
+    // Check if tooth is AUSENTE - cannot select missing teeth
+    const initialState = getToothInitialState(formData.initialToothStates, toothNumber);
+    if (initialState === 'AUSENTE') {
+      return; // Cannot select missing teeth
+    }
+
+    // Check if tooth is PILAR - auto-set trabajoSobreImplante
+    const isPilar = initialState === 'PILAR';
+
     setTeethNumbers((prev) => {
       if (prev.includes(toothNumber)) {
         // Remove tooth
@@ -305,10 +315,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         });
 
         // Initialize ToothData with default values
+        // Auto-set trabajoSobreImplante: true for PILAR teeth
         setTeethData((prevData) => {
           const newData = new Map(prevData);
           newData.set(toothNumber, {
             toothNumber,
+            trabajoSobreImplante: isPilar ? true : undefined,
           });
           return newData;
         });
@@ -886,7 +898,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('caseType').errorCount}
           />
 
-          {/* Tooth Configuration Section (Odontogram + per-tooth config) */}
+          {/* Tooth Configuration Section (Odontogram + per-tooth config + initial states) */}
           <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
             <ToothConfigurationSection
               teethNumbers={teethNumbers}
@@ -898,6 +910,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               teethWithErrors={teethWithErrors}
               validationErrors={validationErrors}
               disabled={isLoading}
+              initialToothStates={formData.initialToothStates}
+              onInitialStatesChange={(states) =>
+                setFormData((prev) => ({ ...prev, initialToothStates: states }))
+              }
             />
           </div>
 

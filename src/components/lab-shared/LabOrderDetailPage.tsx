@@ -17,6 +17,7 @@ import { FileCategory } from '@/types/file';
 import { useSession } from 'next-auth/react';
 import { CollapsibleToothList } from '@/components/orders/CollapsibleToothCard';
 import { generateCaseSummary } from '@/lib/orderSummaryGenerator';
+import { getInitialStatesSummary, InitialToothStatesMap } from '@/types/initial-tooth-state';
 
 interface CopyButtonProps {
   value: string;
@@ -205,6 +206,12 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <CopyableField label="Números de Dientes" value={order.teethNumbers} />
+              {getInitialStatesSummary(order.initialToothStates as InitialToothStatesMap) && (
+                <CopyableField
+                  label="Situación Inicial"
+                  value={getInitialStatesSummary(order.initialToothStates as InitialToothStatesMap)}
+                />
+              )}
               {order.isDigitalScan && <CopyableField label="Escaneo Digital" value="Sí" />}
             </dl>
             {order.aiPrompt && (

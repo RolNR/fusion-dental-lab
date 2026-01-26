@@ -256,6 +256,7 @@ export function OrderReviewModal({
           <DentalDetailsSection
             teethNumbers={formData.teethNumbers}
             isDigitalScan={formData.isDigitalScan}
+            initialToothStates={formData.initialToothStates}
           />
 
           <ToothConfigSection teeth={formData.teeth} />
