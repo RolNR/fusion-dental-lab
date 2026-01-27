@@ -176,9 +176,7 @@ export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: 
         placeholder="juan@ejemplo.com"
       />
 
-      {!userId && !roleFixed && (
-        <input type="hidden" name="role" value="DOCTOR" />
-      )}
+      {!userId && !roleFixed && <input type="hidden" name="role" value="DOCTOR" />}
 
       {!userId && roleFixed && formData.role && (
         <div>
