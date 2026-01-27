@@ -55,8 +55,6 @@ export const authOptions: NextAuthOptions = {
 
         if (user.role === 'LAB_ADMIN') {
           laboratoryId = user.laboratoryId;
-        } else if (user.role === 'LAB_COLLABORATOR') {
-          laboratoryId = user.labCollaboratorId;
         } else if (user.role === 'DOCTOR') {
           laboratoryId = user.doctorLaboratoryId;
         }

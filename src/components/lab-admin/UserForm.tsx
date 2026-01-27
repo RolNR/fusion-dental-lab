@@ -53,7 +53,7 @@ export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: 
     name: initialData?.name || '',
     email: initialData?.email || '',
     password: '',
-    role: initialData?.role || ('' as Role | ''),
+    role: initialData?.role || ('DOCTOR' as Role),
     phone: initialData?.phone || '',
     clinicName: initialData?.clinicName || '',
     clinicAddress: initialData?.clinicAddress || '',
@@ -177,26 +177,13 @@ export function UserForm({ initialData, userId, roleFixed = false, onSuccess }: 
       />
 
       {!userId && !roleFixed && (
-        <Select
-          label="Rol"
-          name="role"
-          value={formData.role}
-          onChange={(e) => setFormData({ ...formData, role: e.target.value as Role })}
-          error={errors.role}
-          required
-        >
-          <option value="">Selecciona un rol</option>
-          <option value="LAB_COLLABORATOR">Colaborador del Laboratorio</option>
-          <option value="DOCTOR">Doctor</option>
-        </Select>
+        <input type="hidden" name="role" value="DOCTOR" />
       )}
 
       {!userId && roleFixed && formData.role && (
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">Rol</label>
-          <p className="text-sm text-muted-foreground">
-            {formData.role === 'DOCTOR' ? 'Doctor' : 'Colaborador del Laboratorio'}
-          </p>
+          <p className="text-sm text-muted-foreground">Doctor</p>
         </div>
       )}
 

@@ -125,27 +125,14 @@ export default function UsersPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
       <PageHeader
-        title="Usuarios"
-        description="Gestiona los colaboradores y doctores del laboratorio"
+        title="Doctores"
+        description="Gestiona los doctores del laboratorio"
         action={{
-          label: 'Nuevo Usuario',
+          label: 'Nuevo Doctor',
           href: '/lab-admin/users/new',
           variant: 'primary',
         }}
       />
-
-      {/* Filters */}
-      <div className="mb-6 flex gap-4">
-        <Select
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="w-full sm:w-64"
-        >
-          <option value="">Todos los roles</option>
-          <option value="LAB_COLLABORATOR">Colaborador Lab</option>
-          <option value="DOCTOR">Doctor</option>
-        </Select>
-      </div>
 
       {/* Users Table */}
       <Table

@@ -12,7 +12,7 @@ const createUserSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres'),
-  role: z.enum(['LAB_COLLABORATOR', 'DOCTOR']),
+  role: z.literal('DOCTOR'),
   // Doctor profile fields
   clinicName: z.string().optional(),
   clinicAddress: z.string().optional(),
@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const roleFilter = searchParams.get('role');
 
-    // Build where clause - get users in this laboratory
+    // Build where clause - get doctors in this laboratory
     const where: any = {
-      OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
+      doctorLaboratoryId: laboratoryId,
     };
 
     if (roleFilter) {
@@ -125,17 +125,13 @@ export async function POST(request: NextRequest) {
       role: validatedData.role,
     };
 
-    // Set appropriate foreign keys based on role
-    if (validatedData.role === 'LAB_COLLABORATOR') {
-      userData.labCollaboratorId = laboratoryId;
-    } else if (validatedData.role === 'DOCTOR') {
-      userData.doctorLaboratoryId = laboratoryId;
-      userData.clinicName = validatedData.clinicName;
-      userData.clinicAddress = validatedData.clinicAddress;
-      userData.phone = validatedData.phone;
-      userData.razonSocial = validatedData.razonSocial;
-      userData.fiscalAddress = validatedData.fiscalAddress;
-    }
+    // Set doctor foreign key and profile fields
+    userData.doctorLaboratoryId = laboratoryId;
+    userData.clinicName = validatedData.clinicName;
+    userData.clinicAddress = validatedData.clinicAddress;
+    userData.phone = validatedData.phone;
+    userData.razonSocial = validatedData.razonSocial;
+    userData.fiscalAddress = validatedData.fiscalAddress;
 
     // Create user
     const user = await prisma.user.create({

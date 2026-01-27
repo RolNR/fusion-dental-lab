@@ -12,10 +12,6 @@ export default withAuth(
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }
 
-    if (path.startsWith('/lab-collaborator') && token?.role !== Role.LAB_COLLABORATOR) {
-      return NextResponse.redirect(new URL('/unauthorized', req.url));
-    }
-
     if (path.startsWith('/doctor') && token?.role !== Role.DOCTOR) {
       return NextResponse.redirect(new URL('/unauthorized', req.url));
     }

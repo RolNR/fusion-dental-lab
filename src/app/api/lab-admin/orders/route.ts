@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
     }
 
-    // Check authorization (only LAB_ADMIN and LAB_COLLABORATOR)
-    if (session.user.role !== Role.LAB_ADMIN && session.user.role !== Role.LAB_COLLABORATOR) {
+    // Check authorization (only LAB_ADMIN)
+    if (session.user.role !== Role.LAB_ADMIN) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 

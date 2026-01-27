@@ -47,7 +47,7 @@ export async function GET(
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
+        doctorLaboratoryId: laboratoryId,
       },
       select: {
         id: true,
@@ -103,7 +103,7 @@ export async function PATCH(
     const existingUser = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
+        doctorLaboratoryId: laboratoryId,
       },
     });
 
@@ -223,7 +223,7 @@ export async function DELETE(
     const existingUser = await prisma.user.findFirst({
       where: {
         id: userId,
-        OR: [{ labCollaboratorId: laboratoryId }, { doctorLaboratoryId: laboratoryId }],
+        doctorLaboratoryId: laboratoryId,
       },
     });
 

@@ -49,7 +49,7 @@ export async function checkOrderAccess({
   }
 
   // Determine user type and check access
-  const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
+  const isLabUser = userRole === Role.LAB_ADMIN;
 
   if (isLabUser) {
     // Lab users can only access orders from doctors in their laboratory

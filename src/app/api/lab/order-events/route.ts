@@ -7,7 +7,7 @@ import eventBus, { NewOrderEventPayload } from '@/lib/sse/eventBus';
 export const dynamic = 'force-dynamic';
 
 /**
- * SSE endpoint for lab users (LAB_ADMIN and LAB_COLLABORATOR) to receive real-time new order notifications
+ * SSE endpoint for lab admin to receive real-time new order notifications
  * Sends events when orders are submitted and change to PENDING_REVIEW status
  */
 export async function GET() {
@@ -17,13 +17,13 @@ export async function GET() {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  // Only lab admin and lab collaborator can subscribe
+  // Only lab admin can subscribe
   const userRole = session.user.role as Role;
-  if (userRole !== Role.LAB_ADMIN && userRole !== Role.LAB_COLLABORATOR) {
+  if (userRole !== Role.LAB_ADMIN) {
     return new Response('Forbidden', { status: 403 });
   }
 
-  // Get laboratory ID (both LAB_ADMIN and LAB_COLLABORATOR have laboratoryId)
+  // Get laboratory ID
   const laboratoryId = session.user.laboratoryId;
   if (!laboratoryId) {
     return new Response('Laboratory not found', { status: 400 });

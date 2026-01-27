@@ -96,7 +96,6 @@ model Laboratory {
   isActive                                Boolean  @default(true)
   createdAt                               DateTime @default(now())
   updatedAt                               DateTime @updatedAt
-  labCollaborators                        User[]   @relation("LaboratoryCollaborators")
   labAdmins                               User[]   @relation("LaboratoryAdmins")
   doctors                                 User[]   @relation("LaboratoryDoctors")
 
@@ -192,7 +191,6 @@ model User {
   passwordHash                                      String
   role                                              Role
   laboratoryId                                      String?
-  labCollaboratorId                                 String?
   doctorLaboratoryId                                String?
   clinicName                                        String?
   clinicAddress                                     String?
@@ -208,7 +206,6 @@ model User {
   ordersCreated                                     Order[]           @relation("CreatorOrders")
   ordersByDoctor                                    Order[]           @relation("DoctorOrders")
   orderComments                                     OrderComment[]
-  labCollaborator                                   Laboratory?       @relation("LaboratoryCollaborators", fields: [labCollaboratorId], references: [id], onDelete: Cascade)
   laboratory                                        Laboratory?       @relation("LaboratoryAdmins", fields: [laboratoryId], references: [id], onDelete: Cascade)
   doctorLaboratory                                  Laboratory?       @relation("LaboratoryDoctors", fields: [doctorLaboratoryId], references: [id], onDelete: Cascade)
 
@@ -272,7 +269,6 @@ enum RestorationType {
 
 enum Role {
   LAB_ADMIN
-  LAB_COLLABORATOR
   DOCTOR
 }
 

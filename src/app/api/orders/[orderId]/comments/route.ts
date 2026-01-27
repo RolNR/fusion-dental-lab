@@ -34,7 +34,7 @@ export async function POST(
       return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
-    const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
+    const isLabUser = userRole === Role.LAB_ADMIN;
 
     // Validate request body
     const commentSchema = z.object({
@@ -130,7 +130,7 @@ export async function GET(
       return NextResponse.json({ error: accessCheck.error }, { status: accessCheck.statusCode });
     }
 
-    const isLabUser = userRole === Role.LAB_ADMIN || userRole === Role.LAB_COLLABORATOR;
+    const isLabUser = userRole === Role.LAB_ADMIN;
     const isClinicUser = userRole === Role.DOCTOR;
 
     // Fetch comments - exclude internal comments for clinic users

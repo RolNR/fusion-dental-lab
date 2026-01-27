@@ -20,16 +20,13 @@ export default async function LabAdminDashboard() {
   }
 
   // Fetch statistics
-  const [laboratory, doctorsCount, collaboratorsCount] = await Promise.all([
+  const [laboratory, doctorsCount] = await Promise.all([
     prisma.laboratory.findUnique({
       where: { id: laboratoryId },
       select: { name: true, email: true, phone: true, createdAt: true },
     }),
     prisma.user.count({
       where: { doctorLaboratoryId: laboratoryId },
-    }),
-    prisma.user.count({
-      where: { labCollaboratorId: laboratoryId },
     }),
   ]);
 
@@ -74,7 +71,7 @@ export default async function LabAdminDashboard() {
       </div>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 mb-6 sm:mb-8">
         <StatsCard
           title="Doctores"
           value={doctorsCount}
@@ -82,14 +79,8 @@ export default async function LabAdminDashboard() {
           description="Doctores registrados"
         />
         <StatsCard
-          title="Colaboradores Lab"
-          value={collaboratorsCount}
-          icon="🔬"
-          description="Personal del laboratorio"
-        />
-        <StatsCard
           title="Total Usuarios"
-          value={doctorsCount + collaboratorsCount}
+          value={doctorsCount}
           icon="👥"
           description="Todos los usuarios"
         />

@@ -45,7 +45,6 @@ export function formatDate(date: string | Date, includeTime = false): string {
 export function getRoleLabel(role: string): string {
   const labels: Record<string, string> = {
     LAB_ADMIN: 'Admin Laboratorio',
-    LAB_COLLABORATOR: 'Colaborador Lab',
     DOCTOR: 'Doctor',
   };
   return labels[role] || role;

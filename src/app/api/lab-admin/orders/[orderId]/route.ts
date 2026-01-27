@@ -19,9 +19,8 @@ export async function GET(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Check authorization (only LAB_ADMIN and LAB_COLLABORATOR)
-    const allowedRoles: Role[] = [Role.LAB_ADMIN, Role.LAB_COLLABORATOR];
-    if (!allowedRoles.includes(session.user.role as Role)) {
+    // Check authorization (only LAB_ADMIN)
+    if (session.user.role !== Role.LAB_ADMIN) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
     }
 
@@ -109,9 +108,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    // Only lab admin and lab collaborator can update order status
-    const allowedRoles: Role[] = [Role.LAB_ADMIN, Role.LAB_COLLABORATOR];
-    if (!allowedRoles.includes(session.user.role as Role)) {
+    // Only lab admin can update order status
+    if (session.user.role !== Role.LAB_ADMIN) {
       return NextResponse.json(
         { error: 'No tienes permisos para realizar esta acción' },
         { status: 403 }

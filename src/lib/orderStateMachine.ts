@@ -66,16 +66,6 @@ const ROLE_TRANSITIONS: Record<Role, Record<OrderStatus, OrderStatus[]>> = {
     [OrderStatus.COMPLETED]: [],
     [OrderStatus.CANCELLED]: [],
   },
-  // Lab collaborators can mark in progress and complete, but not cancel
-  [Role.LAB_COLLABORATOR]: {
-    [OrderStatus.DRAFT]: [],
-    [OrderStatus.PENDING_REVIEW]: [OrderStatus.IN_PROGRESS, OrderStatus.NEEDS_INFO],
-    [OrderStatus.MATERIALS_SENT]: [OrderStatus.IN_PROGRESS, OrderStatus.NEEDS_INFO],
-    [OrderStatus.NEEDS_INFO]: [],
-    [OrderStatus.IN_PROGRESS]: [OrderStatus.COMPLETED],
-    [OrderStatus.COMPLETED]: [],
-    [OrderStatus.CANCELLED]: [],
-  },
 };
 
 /**
