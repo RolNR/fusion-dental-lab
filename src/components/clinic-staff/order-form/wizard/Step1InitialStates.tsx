@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Odontogram } from '../Odontogram';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
+import { GuidedTooltip } from '@/components/ui/GuidedTooltip';
 import { InitialStateToolbar, InitialStateTool } from './InitialStateToolbar';
 import { ImplantInfoList, ImplantData, areImplantsComplete } from './ImplantInfoList';
+import { TooltipState } from '@/hooks/useGuidedTooltips';
 import {
   InitialToothStatesMap,
   countTeethWithState,
@@ -25,6 +27,9 @@ interface Step1InitialStatesProps {
   onImplantUpdate: (toothNumber: string, updates: Partial<ImplantInfo>) => void;
   onNext: () => void;
   disabled?: boolean;
+  // Tooltip props
+  shouldShowTooltip: (key: keyof TooltipState) => boolean;
+  dismissTooltip: (key: keyof TooltipState) => void;
 }
 
 export function Step1InitialStates({
@@ -36,8 +41,14 @@ export function Step1InitialStates({
   onImplantUpdate,
   onNext,
   disabled = false,
+  shouldShowTooltip,
+  dismissTooltip,
 }: Step1InitialStatesProps) {
   const [skipImplantValidation, setSkipImplantValidation] = useState(false);
+
+  // Refs for tooltip targets
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const implantListRef = useRef<HTMLDivElement>(null);
 
   const counts = useMemo(
     () => ({
@@ -94,11 +105,22 @@ export function Step1InitialStates({
       </div>
 
       {/* Toolbar */}
-      <InitialStateToolbar
-        activeTool={activeTool}
-        onToolChange={onToolChange}
-        counts={counts}
-        disabled={disabled}
+      <div ref={toolbarRef}>
+        <InitialStateToolbar
+          activeTool={activeTool}
+          onToolChange={onToolChange}
+          counts={counts}
+          disabled={disabled}
+        />
+      </div>
+
+      {/* Toolbar tooltip */}
+      <GuidedTooltip
+        targetRef={toolbarRef}
+        message="Primero selecciona una herramienta para marcar la situación inicial de los dientes (ausentes, pilares o implantes)"
+        position="bottom"
+        isVisible={shouldShowTooltip('step1Toolbar')}
+        onDismiss={() => dismissTooltip('step1Toolbar')}
       />
 
       {/* Tool instruction hint */}
@@ -142,10 +164,21 @@ export function Step1InitialStates({
       {/* Implant Information List */}
       {implantsList.length > 0 && (
         <div className="border-t border-border pt-6 space-y-4">
-          <ImplantInfoList
-            implants={implantsList}
-            onImplantUpdate={onImplantUpdate}
-            disabled={disabled}
+          <div ref={implantListRef}>
+            <ImplantInfoList
+              implants={implantsList}
+              onImplantUpdate={onImplantUpdate}
+              disabled={disabled}
+            />
+          </div>
+
+          {/* Implant info tooltip */}
+          <GuidedTooltip
+            targetRef={implantListRef}
+            message="Completa la información del implante para continuar al siguiente paso"
+            position="bottom"
+            isVisible={shouldShowTooltip('step1Implants')}
+            onDismiss={() => dismissTooltip('step1Implants')}
           />
 
           {/* Skip validation checkbox */}

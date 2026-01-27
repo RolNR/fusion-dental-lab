@@ -7,6 +7,9 @@ import { Step1InitialStates } from './Step1InitialStates';
 import { Step2AssignWork } from './Step2AssignWork';
 import { InitialStateTool } from './InitialStateToolbar';
 import { ImplantData } from './ImplantInfoList';
+import { Button } from '@/components/ui/Button';
+import { Icons } from '@/components/ui/Icons';
+import { useGuidedTooltips } from '@/hooks/useGuidedTooltips';
 import { ToothData, BridgeDefinition } from '@/types/tooth';
 import { ImplantInfo } from '@/types/order';
 import {
@@ -107,6 +110,10 @@ export function OdontogramWizard({
   onTeethInOrderChange,
   disabled = false,
 }: OdontogramWizardProps) {
+  // Guided tooltips - lifted to parent so reset works across all children
+  const { resetTooltips, shouldShowTooltip, dismissTooltip, dismissedTooltips } =
+    useGuidedTooltips();
+
   // State
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [step1Tool, setStep1Tool] = useState<InitialStateTool>(null);
@@ -428,12 +435,27 @@ export function OdontogramWizard({
 
   return (
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-      {/* Step Indicator */}
-      <WizardStepIndicator
-        currentStep={currentStep}
-        onStepClick={handleStepClick}
-        disabled={disabled}
-      />
+      {/* Header with Step Indicator and Help Button */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex-1">
+          <WizardStepIndicator
+            currentStep={currentStep}
+            onStepClick={handleStepClick}
+            disabled={disabled}
+          />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={resetTooltips}
+          title="Ver tutorial"
+          aria-label="Ver tutorial"
+          className="!ring-0 !ring-offset-0 focus:!ring-0"
+        >
+          <Icons.helpCircle className="h-5 w-5" />
+        </Button>
+      </div>
 
       {/* Step Content */}
       {currentStep === 1 ? (
@@ -446,6 +468,8 @@ export function OdontogramWizard({
           onImplantUpdate={handleImplantUpdate}
           onNext={handleNext}
           disabled={disabled}
+          shouldShowTooltip={shouldShowTooltip}
+          dismissTooltip={dismissTooltip}
         />
       ) : (
         <Step2AssignWork
@@ -456,6 +480,9 @@ export function OdontogramWizard({
           bridgeStart={bridgeStart}
           onToolChange={handleStep2ToolChange}
           onToothClick={handleStep2ToothClick}
+          shouldShowTooltip={shouldShowTooltip}
+          dismissTooltip={dismissTooltip}
+          dismissedTooltips={dismissedTooltips}
           onToothUpdate={handleToothUpdate}
           onToothRemove={handleToothRemove}
           onBridgeUpdate={handleBridgeUpdate}
