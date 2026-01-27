@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { OrderStatus, Role } from '@prisma/client';
+import { CaseType, OrderStatus, Role } from '@prisma/client';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
 import { updateOrderStatus } from '@/lib/api/orderStatusUpdate';
 import { prisma } from '@/lib/prisma';
-import { orderSubmitSchema } from '@/types/order';
+import {
+  orderSubmitSchema,
+  orderSubmitWarrantySchema,
+  orderSubmitRepairSchema,
+} from '@/types/order';
 
 /**
  * Factory function to create a submit order handler with role-based permissions
@@ -70,12 +74,30 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
         return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
       }
 
+      // Select validation schema based on case type
+      const tipoCaso = orderData.tipoCaso;
+      const dataToValidate = {
+        patientName: orderData.patientName,
+        teeth: orderData.teeth,
+        tipoCaso: orderData.tipoCaso,
+        motivoGarantia: orderData.motivoGarantia,
+      };
+
       // Validate order data before submitting
       try {
-        orderSubmitSchema.parse({
-          patientName: orderData.patientName,
-          teeth: orderData.teeth,
-        });
+        if (tipoCaso === CaseType.garantia) {
+          // Warranty cases: require motivoGarantia, teeth optional
+          orderSubmitWarrantySchema.parse(dataToValidate);
+        } else if (
+          tipoCaso === CaseType.reparacion_ajuste ||
+          tipoCaso === CaseType.regreso_prueba
+        ) {
+          // Repair/adjustment cases: teeth optional
+          orderSubmitRepairSchema.parse(dataToValidate);
+        } else {
+          // New cases (nuevo) or no case type: require teeth
+          orderSubmitSchema.parse(dataToValidate);
+        }
       } catch (validationError) {
         // Return validation errors to client
         if (validationError instanceof Error && 'issues' in validationError) {

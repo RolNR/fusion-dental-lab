@@ -92,32 +92,44 @@ export function OrderReviewModal({
   useEffect(() => {
     const errors: typeof localErrors = {};
 
+    // Check case type for conditional validation
+    const isWarrantyCase = formData.tipoCaso === 'garantia';
+    const isRepairCase =
+      formData.tipoCaso === 'reparacion_ajuste' || formData.tipoCaso === 'regreso_prueba';
+
     if (!formData.patientName || formData.patientName.trim() === '') {
       errors.patientName = 'El nombre del paciente es requerido';
     }
 
-    // Validate teeth selection
-    if (!formData.teeth || formData.teeth.length === 0) {
-      errors.teeth = 'Al menos un diente debe ser configurado';
-    } else {
-      // Check if any teeth are missing required fields
-      const incompleteTeeth: string[] = [];
-      for (const tooth of formData.teeth) {
-        const missingFields: string[] = [];
-        if (!tooth.material) missingFields.push('material');
-        if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
+    // Validate teeth selection - skip for warranty and repair cases
+    if (!isWarrantyCase && !isRepairCase) {
+      if (!formData.teeth || formData.teeth.length === 0) {
+        errors.teeth = 'Al menos un diente debe ser configurado';
+      } else {
+        // Check if any teeth are missing required fields
+        const incompleteTeeth: string[] = [];
+        for (const tooth of formData.teeth) {
+          const missingFields: string[] = [];
+          if (!tooth.material) missingFields.push('material');
+          if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
 
-        if (missingFields.length > 0) {
-          incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
+          if (missingFields.length > 0) {
+            incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
+          }
         }
-      }
-      if (incompleteTeeth.length > 0) {
-        errors.teethIncomplete = incompleteTeeth;
+        if (incompleteTeeth.length > 0) {
+          errors.teethIncomplete = incompleteTeeth;
+        }
       }
     }
 
-    // Validate digital scan files - require upper AND lower when isDigitalScan is true
-    if (formData.isDigitalScan) {
+    // Validate warranty reason for warranty cases
+    if (isWarrantyCase && (!formData.motivoGarantia || formData.motivoGarantia.trim() === '')) {
+      errors.teeth = 'El motivo de garantía es requerido';
+    }
+
+    // Validate digital scan files - skip for warranty and repair cases
+    if (!isWarrantyCase && !isRepairCase && formData.isDigitalScan) {
       const missingFiles: string[] = [];
       if (upperFiles.length === 0) missingFiles.push('arcada superior');
       if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
@@ -128,7 +140,15 @@ export function OrderReviewModal({
     }
 
     setLocalErrors(errors);
-  }, [formData.patientName, formData.teeth, formData.isDigitalScan, upperFiles, lowerFiles]);
+  }, [
+    formData.patientName,
+    formData.teeth,
+    formData.isDigitalScan,
+    formData.tipoCaso,
+    formData.motivoGarantia,
+    upperFiles,
+    lowerFiles,
+  ]);
 
   // Check if form is valid for submission
   const hasValidationErrors = Object.keys(localErrors).length > 0;

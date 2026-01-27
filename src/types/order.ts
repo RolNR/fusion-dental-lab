@@ -324,8 +324,23 @@ const toothSubmitSchema = z.object({
 });
 
 // Schema for submitting orders for review (stricter validation on teeth)
+// Used for case type "nuevo" - requires teeth configuration
 export const orderSubmitSchema = orderCreateSchema.extend({
   teeth: z.array(toothSubmitSchema).min(1, 'Al menos un diente debe ser configurado'),
+});
+
+// Schema for submitting warranty orders (garantia) - no teeth required
+// Requires warranty reason instead
+export const orderSubmitWarrantySchema = orderCreateSchema.extend({
+  tipoCaso: z.literal(CaseType.garantia),
+  motivoGarantia: z.string().min(1, 'El motivo de garantía es requerido'),
+  teeth: z.array(toothSubmitSchema).optional(), // Teeth optional for warranty
+});
+
+// Schema for submitting repair/adjustment orders - teeth optional
+// Used for "reparacion_ajuste" and "regreso_prueba"
+export const orderSubmitRepairSchema = orderCreateSchema.extend({
+  teeth: z.array(toothSubmitSchema).optional(), // Teeth optional for repairs
 });
 
 // Schema for updating orders
