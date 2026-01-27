@@ -465,7 +465,14 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
 
     return errors;
-  }, [formData.patientName, formData.isDigitalScan, formData.tipoCaso, teethData, upperFiles, lowerFiles]);
+  }, [
+    formData.patientName,
+    formData.isDigitalScan,
+    formData.tipoCaso,
+    teethData,
+    upperFiles,
+    lowerFiles,
+  ]);
 
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();

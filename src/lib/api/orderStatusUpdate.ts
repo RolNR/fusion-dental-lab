@@ -6,6 +6,7 @@ import {
   getTimestampUpdates,
   getTransitionErrorMessage,
 } from '@/lib/orderStateMachine';
+import { sendOrderSubmittedNotifications } from '@/lib/order-notifications';
 
 interface StatusUpdateParams {
   orderId: string;
@@ -226,6 +227,11 @@ export async function updateOrderStatus({
       // Log error but don't fail the status update
       console.error('Error emitting new-order event:', newOrderError);
     }
+
+    // Send email notifications to doctor and lab admins (non-blocking)
+    sendOrderSubmittedNotifications(updatedOrder).catch((err) => {
+      console.error('Error sending order notification emails:', err);
+    });
   }
 
   return {
