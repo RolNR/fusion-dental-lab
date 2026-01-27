@@ -424,44 +424,48 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const computePreSubmitValidation = useCallback(() => {
     const errors: typeof preSubmitErrors = {};
     const teethArray = Array.from(teethData.values());
+    const isWarrantyCase = formData.tipoCaso === 'garantia';
 
     if (!formData.patientName || formData.patientName.trim() === '') {
       errors.patientName = 'El nombre del paciente es requerido';
     }
 
-    // Validate teeth selection
-    if (teethArray.length === 0) {
-      errors.teeth = 'Al menos un diente debe ser configurado';
-    } else {
-      // Check if any teeth are missing required fields
-      const incompleteTeeth: string[] = [];
-      for (const tooth of teethArray) {
-        const missingFields: string[] = [];
-        if (!tooth.material) missingFields.push('material');
-        if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
+    // Skip teeth and scan validation for warranty cases
+    if (!isWarrantyCase) {
+      // Validate teeth selection
+      if (teethArray.length === 0) {
+        errors.teeth = 'Al menos un diente debe ser configurado';
+      } else {
+        // Check if any teeth are missing required fields
+        const incompleteTeeth: string[] = [];
+        for (const tooth of teethArray) {
+          const missingFields: string[] = [];
+          if (!tooth.material) missingFields.push('material');
+          if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
 
-        if (missingFields.length > 0) {
-          incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
+          if (missingFields.length > 0) {
+            incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
+          }
+        }
+        if (incompleteTeeth.length > 0) {
+          errors.teethIncomplete = incompleteTeeth;
         }
       }
-      if (incompleteTeeth.length > 0) {
-        errors.teethIncomplete = incompleteTeeth;
-      }
-    }
 
-    // Validate digital scan files - require upper AND lower when isDigitalScan is true
-    if (formData.isDigitalScan) {
-      const missingFiles: string[] = [];
-      if (upperFiles.length === 0) missingFiles.push('arcada superior');
-      if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
+      // Validate digital scan files - require upper AND lower when isDigitalScan is true
+      if (formData.isDigitalScan) {
+        const missingFiles: string[] = [];
+        if (upperFiles.length === 0) missingFiles.push('arcada superior');
+        if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
 
-      if (missingFiles.length > 0) {
-        errors.digitalScanFiles = `Escaneo digital requiere archivos STL/PLY de: ${missingFiles.join(' y ')}`;
+        if (missingFiles.length > 0) {
+          errors.digitalScanFiles = `Escaneo digital requiere archivos STL/PLY de: ${missingFiles.join(' y ')}`;
+        }
       }
     }
 
     return errors;
-  }, [formData.patientName, formData.isDigitalScan, teethData, upperFiles, lowerFiles]);
+  }, [formData.patientName, formData.isDigitalScan, formData.tipoCaso, teethData, upperFiles, lowerFiles]);
 
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -829,6 +833,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const isEditingNeedsInfo = orderId && initialData?.status === 'NEEDS_INFO';
   const canSubmit = !orderId || isEditingDraft || isEditingNeedsInfo;
 
+  // Hide most sections when case type is "garantia" (warranty)
+  const isGarantia = formData.tipoCaso === 'garantia';
+
   const hasPreSubmitErrors = Object.keys(preSubmitErrors).length > 0;
 
   return (
@@ -968,68 +975,73 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('patient').errorCount}
           />
 
-          {/* 3. Tooth Configuration Section (Odontogram Wizard - 2 steps) */}
-          <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
-            <OdontogramWizard
-              initialStates={formData.initialToothStates}
-              teethData={teethData}
-              bridges={bridges}
-              onInitialStatesChange={(states) =>
-                setFormData((prev) => ({ ...prev, initialToothStates: states }))
-              }
-              onTeethDataChange={(data) => setTeethData(data)}
-              onBridgesChange={setBridges}
-              onTeethInOrderChange={setTeethNumbers}
-              disabled={isLoading}
-            />
-          </div>
+          {/* Sections hidden when case type is "garantia" (warranty) */}
+          {!isGarantia && (
+            <>
+              {/* 3. Tooth Configuration Section (Odontogram Wizard - 2 steps) */}
+              <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
+                <OdontogramWizard
+                  initialStates={formData.initialToothStates}
+                  teethData={teethData}
+                  bridges={bridges}
+                  onInitialStatesChange={(states) =>
+                    setFormData((prev) => ({ ...prev, initialToothStates: states }))
+                  }
+                  onTeethDataChange={(data) => setTeethData(data)}
+                  onBridgesChange={setBridges}
+                  onTeethInOrderChange={setTeethNumbers}
+                  disabled={isLoading}
+                />
+              </div>
 
-          {/* 4. Digital Scan Section */}
-          <DigitalScanSection
-            isDigitalScan={formData.isDigitalScan}
-            escanerUtilizado={formData.escanerUtilizado ?? undefined}
-            otroEscaner={formData.otroEscaner}
-            upperFiles={upperFiles}
-            lowerFiles={lowerFiles}
-            biteFiles={biteFiles}
-            onUpperFilesChange={setUpperFiles}
-            onLowerFilesChange={setLowerFiles}
-            onBiteFilesChange={setBiteFiles}
-            onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-            disabled={isLoading}
-          />
+              {/* 4. Digital Scan Section */}
+              <DigitalScanSection
+                isDigitalScan={formData.isDigitalScan}
+                escanerUtilizado={formData.escanerUtilizado ?? undefined}
+                otroEscaner={formData.otroEscaner}
+                upperFiles={upperFiles}
+                lowerFiles={lowerFiles}
+                biteFiles={biteFiles}
+                onUpperFilesChange={setUpperFiles}
+                onLowerFilesChange={setLowerFiles}
+                onBiteFilesChange={setBiteFiles}
+                onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
+                disabled={isLoading}
+              />
 
-          {/* 5. Occlusion Section */}
-          <OcclusionSection
-            ref={(el) => registerSectionRef('occlusion', el)}
-            oclusionDiseno={formData.oclusionDiseno}
-            onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
-            hasErrors={getSectionErrorInfo('occlusion').hasErrors}
-            errorCount={getSectionErrorInfo('occlusion').errorCount}
-          />
+              {/* 5. Occlusion Section */}
+              <OcclusionSection
+                ref={(el) => registerSectionRef('occlusion', el)}
+                oclusionDiseno={formData.oclusionDiseno}
+                onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
+                hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+                errorCount={getSectionErrorInfo('occlusion').errorCount}
+              />
 
-          {/* 6. Material Sent Section */}
-          <MaterialSentSection
-            materialSent={formData.materialSent}
-            onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
-          />
+              {/* 6. Material Sent Section */}
+              <MaterialSentSection
+                materialSent={formData.materialSent}
+                onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
+              />
 
-          {/* 7. Mouth Photos Section - Optional */}
-          <MouthPhotosSection
-            photographFiles={photographFiles}
-            onPhotographFilesChange={setPhotographFiles}
-          />
+              {/* 7. Mouth Photos Section - Optional */}
+              <MouthPhotosSection
+                photographFiles={photographFiles}
+                onPhotographFilesChange={setPhotographFiles}
+              />
 
-          {/* 8. Submission Type Section */}
-          <SubmissionTypeSection
-            ref={(el) => registerSectionRef('submission', el)}
-            submissionType={formData.submissionType ?? undefined}
-            articulatedBy={formData.articulatedBy ?? undefined}
-            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-            hasErrors={getSectionErrorInfo('submission').hasErrors}
-            errorCount={getSectionErrorInfo('submission').errorCount}
-            hasImplant={hasImplant}
-          />
+              {/* 8. Submission Type Section */}
+              <SubmissionTypeSection
+                ref={(el) => registerSectionRef('submission', el)}
+                submissionType={formData.submissionType ?? undefined}
+                articulatedBy={formData.articulatedBy ?? undefined}
+                onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+                hasErrors={getSectionErrorInfo('submission').hasErrors}
+                errorCount={getSectionErrorInfo('submission').errorCount}
+                hasImplant={hasImplant}
+              />
+            </>
+          )}
 
           <AdditionalNotesSection
             ref={(el) => registerSectionRef('notes', el)}
@@ -1039,24 +1051,28 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             errorCount={getSectionErrorInfo('notes').errorCount}
           />
 
-          {/* Urgent Order Checkbox */}
-          <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
-            <div className="flex items-start gap-3">
-              <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <Checkbox
-                  id="isUrgent"
-                  label="Orden Urgente"
-                  checked={formData.isUrgent || false}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))}
-                  disabled={isLoading}
-                />
-                <p className="text-sm text-warning/80 mt-2 ml-6">
-                  Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
-                </p>
+          {/* Urgent Order Checkbox - hidden for warranty cases */}
+          {!isGarantia && (
+            <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
+              <div className="flex items-start gap-3">
+                <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <Checkbox
+                    id="isUrgent"
+                    label="Orden Urgente"
+                    checked={formData.isUrgent || false}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))
+                    }
+                    disabled={isLoading}
+                  />
+                  <p className="text-sm text-warning/80 mt-2 ml-6">
+                    Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Button
