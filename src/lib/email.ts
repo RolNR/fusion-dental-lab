@@ -57,17 +57,12 @@ interface SendPulseResponse {
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   // Skip sending if SendPulse is not configured
   if (!API_USER_ID || !API_SECRET) {
-    console.warn(
-      '[Email] SendPulse no configurado, omitiendo envío de email:',
-      options.subject
-    );
+    console.warn('[Email] SendPulse no configurado, omitiendo envío de email:', options.subject);
     return false;
   }
 
   if (!SENDER_EMAIL) {
-    console.warn(
-      '[Email] SENDPULSE_SENDER_EMAIL no configurado, omitiendo envío de email'
-    );
+    console.warn('[Email] SENDPULSE_SENDER_EMAIL no configurado, omitiendo envío de email');
     return false;
   }
 

@@ -36,9 +36,7 @@ interface OrderForNotification {
  *
  * @param order - The order that was just submitted
  */
-export async function sendOrderSubmittedNotifications(
-  order: OrderForNotification
-): Promise<void> {
+export async function sendOrderSubmittedNotifications(order: OrderForNotification): Promise<void> {
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
   // Get teeth count if not provided
@@ -114,10 +112,7 @@ export async function sendOrderSubmittedNotifications(
         });
       }
     } catch (error) {
-      console.error(
-        '[OrderNotifications] Error enviando email a lab admins:',
-        error
-      );
+      console.error('[OrderNotifications] Error enviando email a lab admins:', error);
     }
   }
 }
