@@ -37,7 +37,7 @@ export function BulkColorConfig({
   onApplyToBridges,
   disabled = false,
 }: BulkColorConfigProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [material, setMaterial] = useState('');
   const [shadeType, setShadeType] = useState('');
   const [shadeCode, setShadeCode] = useState('');
@@ -45,25 +45,19 @@ export function BulkColorConfig({
 
   // Calculate counts by work type (excluding bridge teeth)
   const workTypeCounts = useMemo(() => {
-    const bridgeTeeth = new Set<string>();
-    bridges.forEach((bridge) => {
-      bridgeTeeth.add(bridge.startTooth);
-      bridgeTeeth.add(bridge.endTooth);
-      bridge.pontics.forEach((p) => bridgeTeeth.add(p));
-    });
-
     const counts = new Map<RestorationType, number>();
 
-    for (const [toothNumber, data] of teethData) {
-      if (bridgeTeeth.has(toothNumber)) continue;
+    for (const [, data] of teethData) {
       if (!data.tipoRestauracion) continue;
+      // Skip bridge teeth - bridges are handled separately via bridges array
+      if (data.tipoRestauracion === 'puente') continue;
 
       const workType = data.tipoRestauracion;
       counts.set(workType, (counts.get(workType) || 0) + 1);
     }
 
     return counts;
-  }, [teethData, bridges]);
+  }, [teethData]);
 
   // Calculate total items that would be affected
   const totalAffected = useMemo(() => {
@@ -110,17 +104,17 @@ export function BulkColorConfig({
   if (!hasAnyWork) return null;
 
   return (
-    <div className="mb-4 rounded-lg border border-success/30 bg-success/5 overflow-hidden">
+    <div className="mb-4 rounded-lg border border-blue-500/30 bg-blue-500/5 overflow-hidden">
       {/* Header - Always visible */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 text-left hover:bg-success/10 transition-colors"
+        className="w-full flex items-center justify-between p-3 text-left hover:bg-blue-500/10 transition-colors"
         disabled={disabled}
       >
         <div className="flex items-center gap-2">
-          <Icons.zap className="h-4 w-4 text-success" />
-          <span className="font-medium text-foreground">Configuración Rápida de Color</span>
+          <Icons.zap className="h-4 w-4 text-blue-500" />
+          <span className="font-medium text-foreground">Configuración Rápida</span>
         </div>
         <Icons.chevronDown
           className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -157,7 +151,8 @@ export function BulkColorConfig({
               className="text-sm flex-1 min-w-[150px]"
             >
               <option value="all">
-                Todos los dientes ({Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
+                Todos los dientes (
+                {Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
               </option>
               {bridges.length > 0 && (
                 <option value="puente">Solo Puentes ({bridges.length})</option>

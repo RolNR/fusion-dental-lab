@@ -46,6 +46,43 @@ import { AIPromptInput } from './order-form/AIPromptInput';
 import type { AISuggestion } from '@/types/ai-suggestions';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
 
+/**
+ * Merges bridge material and colorInfo into individual teeth that belong to bridges.
+ * This ensures that when teeth data is saved or displayed, bridge teeth have the
+ * correct material/color from their parent bridge.
+ */
+function mergeTeethWithBridgeData(
+  teethData: Map<string, ToothData>,
+  bridges: BridgeDefinition[]
+): ToothData[] {
+  const teethArray = Array.from(teethData.values());
+
+  return teethArray.map((tooth) => {
+    // Check if this tooth belongs to a bridge
+    if (tooth.tipoRestauracion === 'puente') {
+      // Find the bridge this tooth belongs to
+      const bridge = bridges.find((b) => {
+        const start = parseInt(b.startTooth, 10);
+        const end = parseInt(b.endTooth, 10);
+        const toothNum = parseInt(tooth.toothNumber, 10);
+        const minTooth = Math.min(start, end);
+        const maxTooth = Math.max(start, end);
+        return toothNum >= minTooth && toothNum <= maxTooth;
+      });
+
+      if (bridge) {
+        // Merge bridge material and colorInfo into the tooth
+        return {
+          ...tooth,
+          material: bridge.material || tooth.material,
+          colorInfo: bridge.colorInfo || tooth.colorInfo,
+        };
+      }
+    }
+    return tooth;
+  });
+}
+
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -423,7 +460,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
   const computePreSubmitValidation = useCallback(() => {
     const errors: typeof preSubmitErrors = {};
-    const teethArray = Array.from(teethData.values());
+    // Merge bridge data into teeth before validation
+    const teethArray = mergeTeethWithBridgeData(teethData, bridges);
     const isWarrantyCase = formData.tipoCaso === 'garantia';
 
     if (!formData.patientName || formData.patientName.trim() === '') {
@@ -470,6 +508,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     formData.isDigitalScan,
     formData.tipoCaso,
     teethData,
+    bridges,
     upperFiles,
     lowerFiles,
   ]);
@@ -515,8 +554,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
 
     try {
-      // Convert teethData Map to array
-      const teethArray = Array.from(teethData.values());
+      // Convert teethData Map to array, merging bridge data
+      const teethArray = mergeTeethWithBridgeData(teethData, bridges);
 
       // Merge teeth array into formData
       const dataToSave = {
@@ -1122,7 +1161,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         <OrderReviewModal
           formData={{
             ...formData,
-            teeth: Array.from(teethData.values()),
+            teeth: mergeTeethWithBridgeData(teethData, bridges),
           }}
           suggestions={aiSuggestions}
           onApplySuggestion={handleApplySuggestion}

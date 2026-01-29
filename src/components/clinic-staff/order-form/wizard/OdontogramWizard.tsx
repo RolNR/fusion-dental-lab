@@ -17,6 +17,7 @@ import {
   ToothInitialState,
   getToothInitialState,
 } from '@/types/initial-tooth-state';
+import { useToast } from '@/contexts/ToastContext';
 
 interface OdontogramWizardProps {
   initialStates?: InitialToothStatesMap;
@@ -110,6 +111,9 @@ export function OdontogramWizard({
   onTeethInOrderChange,
   disabled = false,
 }: OdontogramWizardProps) {
+  // Toast notifications
+  const { addToast } = useToast();
+
   // Guided tooltips - lifted to parent so reset works across all children
   const { resetTooltips, shouldShowTooltip, dismissTooltip, dismissedTooltips } =
     useGuidedTooltips();
@@ -257,11 +261,29 @@ export function OdontogramWizard({
           // First click - set start
           setBridgeStart(toothNumber);
         } else {
+          // Check if same tooth clicked twice
+          if (bridgeStart === toothNumber) {
+            addToast('Debes seleccionar un diente diferente para completar el puente', 'warning');
+            setBridgeStart(null);
+            return;
+          }
+
           // Second click - complete bridge
           const teethInRange = getTeethInRange(bridgeStart, toothNumber, initialStates);
 
+          if (teethInRange.length === 0) {
+            // Teeth are in different arches
+            addToast(
+              'Los dientes deben estar en la misma arcada (superior o inferior)',
+              'error'
+            );
+            setBridgeStart(null);
+            return;
+          }
+
           if (teethInRange.length < 2) {
             // Invalid bridge (must span at least 2 teeth)
+            addToast('El puente debe incluir al menos 2 dientes', 'error');
             setBridgeStart(null);
             return;
           }
@@ -306,6 +328,11 @@ export function OdontogramWizard({
 
           setBridgeStart(null);
           updateTeethInOrder();
+
+          addToast(
+            `Puente creado: #${bridgeStart} - #${toothNumber} (${teethInRange.length} dientes)`,
+            'success'
+          );
         }
       } else {
         // Non-bridge work type
@@ -351,6 +378,7 @@ export function OdontogramWizard({
       setTeethData,
       setBridges,
       updateTeethInOrder,
+      addToast,
     ]
   );
 
@@ -360,6 +388,19 @@ export function OdontogramWizard({
       const newTeethData = new Map(teethData);
       const currentData = newTeethData.get(toothNumber) || { toothNumber };
       newTeethData.set(toothNumber, { ...currentData, ...updates });
+      setTeethData(newTeethData);
+    },
+    [teethData, setTeethData]
+  );
+
+  // Handle bulk tooth data update (for applying to multiple teeth at once)
+  const handleBulkToothUpdate = useCallback(
+    (updates: Map<string, Partial<ToothData>>) => {
+      const newTeethData = new Map(teethData);
+      for (const [toothNumber, toothUpdates] of updates) {
+        const currentData = newTeethData.get(toothNumber) || { toothNumber };
+        newTeethData.set(toothNumber, { ...currentData, ...toothUpdates });
+      }
       setTeethData(newTeethData);
     },
     [teethData, setTeethData]
@@ -484,6 +525,7 @@ export function OdontogramWizard({
           dismissTooltip={dismissTooltip}
           dismissedTooltips={dismissedTooltips}
           onToothUpdate={handleToothUpdate}
+          onBulkToothUpdate={handleBulkToothUpdate}
           onToothRemove={handleToothRemove}
           onBridgeUpdate={handleBridgeUpdate}
           onBridgeRemove={handleBridgeRemove}

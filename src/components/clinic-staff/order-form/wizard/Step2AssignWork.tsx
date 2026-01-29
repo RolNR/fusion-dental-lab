@@ -26,6 +26,7 @@ interface Step2AssignWorkProps {
   onToolChange: (tool: RestorationType | null) => void;
   onToothClick: (toothNumber: string) => void;
   onToothUpdate: (toothNumber: string, updates: Partial<ToothData>) => void;
+  onBulkToothUpdate: (updates: Map<string, Partial<ToothData>>) => void;
   onToothRemove: (toothNumber: string) => void;
   onBridgeUpdate: (bridgeId: string, updates: Partial<BridgeDefinition>) => void;
   onBridgeRemove: (bridgeId: string) => void;
@@ -46,6 +47,7 @@ export function Step2AssignWork({
   onToolChange,
   onToothClick,
   onToothUpdate,
+  onBulkToothUpdate,
   onToothRemove,
   onBridgeUpdate,
   onBridgeRemove,
@@ -79,14 +81,48 @@ export function Step2AssignWork({
     return teeth.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
   }, [teethData, bridges]);
 
+  // Build a map of tooth -> bridge for quick lookup
+  // Include all teeth that have tipoRestauracion === 'puente'
+  const toothToBridge = useMemo(() => {
+    const map = new Map<string, BridgeDefinition>();
+    // First, map all teeth with tipoRestauracion === 'puente' to find their bridge
+    for (const [toothNumber, data] of teethData) {
+      if (data.tipoRestauracion === 'puente') {
+        // Find which bridge this tooth belongs to
+        const bridge = bridges.find((b) => {
+          const start = parseInt(b.startTooth, 10);
+          const end = parseInt(b.endTooth, 10);
+          const tooth = parseInt(toothNumber, 10);
+          const minTooth = Math.min(start, end);
+          const maxTooth = Math.max(start, end);
+          return tooth >= minTooth && tooth <= maxTooth;
+        });
+        if (bridge) {
+          map.set(toothNumber, bridge);
+        }
+      }
+    }
+    return map;
+  }, [bridges, teethData]);
+
   // Compute config status for teeth
   const teethConfigStatus = useMemo(() => {
     const statusMap = new Map<string, ToothConfigStatus>();
     for (const [toothNumber, data] of teethData) {
-      statusMap.set(toothNumber, getToothConfigStatus(data));
+      const bridge = toothToBridge.get(toothNumber);
+      if (bridge) {
+        // For bridge teeth, check bridge's material and colorInfo
+        const hasMaterial = !!bridge.material;
+        const hasColor = !!bridge.colorInfo?.shadeCode;
+        const hasColorSystem = !!bridge.colorInfo?.shadeType;
+        const isComplete = hasMaterial && hasColor && hasColorSystem;
+        statusMap.set(toothNumber, isComplete ? 'complete' : 'incomplete');
+      } else {
+        statusMap.set(toothNumber, getToothConfigStatus(data));
+      }
     }
     return statusMap;
-  }, [teethData]);
+  }, [teethData, toothToBridge]);
 
   // Determine bridge instruction
   const bridgeInstruction = useMemo(() => {
@@ -180,6 +216,14 @@ export function Step2AssignWork({
         onDismiss={() => dismissTooltip('step2SelectTeeth')}
       />
 
+      {/* Back Button */}
+      <div className="flex justify-start">
+        <Button type="button" variant="secondary" onClick={onBack} disabled={disabled}>
+          <Icons.chevronLeft className="h-4 w-4 mr-1" />
+          Anterior
+        </Button>
+      </div>
+
       {/* Assigned Work List */}
       <div className="border-t border-border pt-6">
         <div ref={workListRef}>
@@ -188,6 +232,7 @@ export function Step2AssignWork({
             bridges={bridges}
             initialStates={initialStates}
             onToothUpdate={onToothUpdate}
+            onBulkToothUpdate={onBulkToothUpdate}
             onToothRemove={onToothRemove}
             onBridgeUpdate={onBridgeUpdate}
             onBridgeRemove={onBridgeRemove}
@@ -207,14 +252,6 @@ export function Step2AssignWork({
           }
           onDismiss={() => dismissTooltip('step2FillDetails')}
         />
-      </div>
-
-      {/* Back Button */}
-      <div className="flex justify-start">
-        <Button type="button" variant="secondary" onClick={onBack} disabled={disabled}>
-          <Icons.chevronLeft className="h-4 w-4 mr-1" />
-          Anterior
-        </Button>
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ interface AssignedWorkListProps {
   bridges: BridgeDefinition[];
   initialStates: InitialToothStatesMap;
   onToothUpdate: (toothNumber: string, updates: Partial<ToothData>) => void;
+  onBulkToothUpdate: (updates: Map<string, Partial<ToothData>>) => void;
   onToothRemove: (toothNumber: string) => void;
   onBridgeUpdate: (bridgeId: string, updates: Partial<BridgeDefinition>) => void;
   onBridgeRemove: (bridgeId: string) => void;
@@ -34,6 +35,7 @@ export function AssignedWorkList({
   bridges,
   initialStates,
   onToothUpdate,
+  onBulkToothUpdate,
   onToothRemove,
   onBridgeUpdate,
   onBridgeRemove,
@@ -76,8 +78,11 @@ export function AssignedWorkList({
   // Handler for bulk applying color to teeth
   const handleApplyToTeeth = useCallback(
     (material: string, shadeType: string, shadeCode: string, filter: 'all' | RestorationType) => {
+      const bulkUpdates = new Map<string, Partial<ToothData>>();
+
       for (const [toothNumber, data] of teethData) {
-        if (bridgeTeethSet.has(toothNumber)) continue; // Skip bridge teeth
+        // Skip bridge teeth - bridges are handled separately
+        if (data.tipoRestauracion === 'puente') continue;
         if (!data.tipoRestauracion) continue; // Skip teeth without work type
 
         // Apply filter
@@ -97,11 +102,15 @@ export function AssignedWorkList({
         }
 
         if (Object.keys(updates).length > 0) {
-          onToothUpdate(toothNumber, updates);
+          bulkUpdates.set(toothNumber, updates);
         }
       }
+
+      if (bulkUpdates.size > 0) {
+        onBulkToothUpdate(bulkUpdates);
+      }
     },
-    [teethData, bridgeTeethSet, onToothUpdate]
+    [teethData, onBulkToothUpdate]
   );
 
   // Handler for bulk applying color to bridges
