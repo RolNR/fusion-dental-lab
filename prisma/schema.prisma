@@ -133,6 +133,7 @@ model Order {
   submittedAt                  DateTime?
   materialsSentAt              DateTime?
   completedAt                  DateTime?
+  deletedAt                    DateTime?
   alerts                       Alert[]
   auditLogs                    AuditLog[]
   files                        File[]
@@ -147,6 +148,7 @@ model Order {
   @@index([orderNumber])
   @@index([status])
   @@index([isUrgent])
+  @@index([deletedAt])
 }
 
 model Tooth {

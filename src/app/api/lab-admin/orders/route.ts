@@ -11,6 +11,10 @@ const queryParamsSchema = z.object({
   status: z.nativeEnum(OrderStatus).optional(),
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(10),
+  includeDeleted: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
 });
 
 // GET /api/lab-admin/orders - Get all orders for the laboratory
@@ -40,6 +44,7 @@ export async function GET(request: NextRequest) {
       status: searchParams.get('status') || undefined,
       page: searchParams.get('page') || undefined,
       limit: searchParams.get('limit') || undefined,
+      includeDeleted: searchParams.get('includeDeleted') || undefined,
     });
 
     if (!result.success) {
@@ -49,13 +54,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { search, status, page, limit } = result.data;
+    const { search, status, page, limit, includeDeleted } = result.data;
 
     // Build where clause using shared utility
     const where = buildOrderWhereClause({
       search,
       status,
       laboratoryId,
+      includeDeleted,
     });
 
     // Calculate pagination

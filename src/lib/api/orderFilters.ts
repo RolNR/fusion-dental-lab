@@ -5,6 +5,7 @@ export interface OrderFilterParams {
   status?: OrderStatus | null;
   laboratoryId?: string | null;
   doctorId?: string | null;
+  includeDeleted?: boolean;
 }
 
 /**
@@ -13,9 +14,14 @@ export interface OrderFilterParams {
  * @returns Prisma where clause for Order.findMany
  */
 export function buildOrderWhereClause(params: OrderFilterParams): Prisma.OrderWhereInput {
-  const { search, status, laboratoryId, doctorId } = params;
+  const { search, status, laboratoryId, doctorId, includeDeleted = false } = params;
 
   const where: Prisma.OrderWhereInput = {};
+
+  // Filter soft-deleted orders unless explicitly included
+  if (!includeDeleted) {
+    where.deletedAt = null;
+  }
 
   // Lab users: filter by doctor's laboratory membership
   if (laboratoryId) {

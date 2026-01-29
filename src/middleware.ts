@@ -35,11 +35,12 @@ export const config = {
      * - / (home page - public)
      * - /auth (authentication pages)
      * - /api/auth (authentication endpoints)
+     * - /api/cron (cron job endpoints - secured by CRON_SECRET)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public assets
      */
-    '/((?!^/$|auth|api/auth|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!^/$|auth|api/auth|api/cron|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

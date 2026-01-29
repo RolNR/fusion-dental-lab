@@ -79,6 +79,14 @@ export function OrdersTable({
               Urgente
             </span>
           )}
+
+          {/* Archived Badge */}
+          {order.deletedAt && (
+            <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold bg-muted text-muted-foreground">
+              <Icons.archive className="h-3 w-3" />
+              Archivado
+            </span>
+          )}
         </div>
       ),
     },

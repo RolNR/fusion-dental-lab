@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { OrderSearchFilter } from '@/components/orders/OrderSearchFilter';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { OrderWithRelations } from '@/types/order';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -14,6 +15,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [includeDeleted, setIncludeDeleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -30,6 +32,7 @@ export default function OrdersPage() {
         const params = new URLSearchParams();
         if (statusFilter) params.append('status', statusFilter);
         if (searchQuery) params.append('search', searchQuery);
+        if (includeDeleted) params.append('includeDeleted', 'true');
         params.append('page', currentPage.toString());
         params.append('limit', '10');
 
@@ -51,12 +54,12 @@ export default function OrdersPage() {
     }, SEARCH_DEBOUNCE_MS);
 
     return () => clearTimeout(timeoutId);
-  }, [statusFilter, searchQuery, currentPage]);
+  }, [statusFilter, searchQuery, currentPage, includeDeleted]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, searchQuery]);
+  }, [statusFilter, searchQuery, includeDeleted]);
 
   if (isInitialLoading) {
     return (
@@ -83,12 +86,17 @@ export default function OrdersPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="mb-6">
+      <div className="mb-6 space-y-4">
         <OrderSearchFilter
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
+        />
+        <Checkbox
+          checked={includeDeleted}
+          onChange={(e) => setIncludeDeleted(e.target.checked)}
+          label="Mostrar órdenes archivadas"
         />
       </div>
 

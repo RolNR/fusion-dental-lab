@@ -91,6 +91,7 @@ export interface OrderWithRelations {
   status: OrderStatus;
   createdAt: string;
   isUrgent: boolean;
+  deletedAt?: string | null;
   doctor?: {
     id: string;
     name: string;

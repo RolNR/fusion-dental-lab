@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
     // Build where clause
     const where: Prisma.OrderWhereInput = {
       doctorId: session.user.id,
+      deletedAt: null, // Exclude soft-deleted orders
       ...(search && {
         OR: [
           { patientName: { contains: search, mode: 'insensitive' } },
