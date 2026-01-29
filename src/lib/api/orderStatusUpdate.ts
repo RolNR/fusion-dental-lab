@@ -14,6 +14,7 @@ interface StatusUpdateParams {
   userId: string;
   userRole: Role;
   comment?: string;
+  metadata?: Record<string, string | number | boolean | null>;
 }
 
 interface StatusUpdateResult {
@@ -53,6 +54,7 @@ export async function updateOrderStatus({
   userId,
   userRole,
   comment,
+  metadata,
 }: StatusUpdateParams): Promise<StatusUpdateResult> {
   // Get the order with current status
   const order = await prisma.order.findUnique({
@@ -106,7 +108,7 @@ export async function updateOrderStatus({
     },
   });
 
-  // Create audit log
+  // Create audit log with optional analytics metadata
   await prisma.auditLog.create({
     data: {
       action: 'STATUS_CHANGE',
@@ -116,6 +118,7 @@ export async function updateOrderStatus({
       newValue: newStatus,
       userId: userId,
       orderId: orderId,
+      ...(metadata && { metadata }),
     },
   });
 

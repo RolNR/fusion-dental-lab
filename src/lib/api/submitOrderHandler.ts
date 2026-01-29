@@ -113,12 +113,18 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
         return NextResponse.json({ error: 'Error de validación' }, { status: 400 });
       }
 
-      // Update order status to PENDING_REVIEW
+      // Update order status to PENDING_REVIEW with AI analytics metadata
       const updateResult = await updateOrderStatus({
         orderId,
         newStatus: OrderStatus.PENDING_REVIEW,
         userId,
         userRole,
+        metadata: {
+          aiGenerated: Boolean(orderData.aiPrompt),
+          aiPromptLength: orderData.aiPrompt?.length || 0,
+          teethCount: orderData.teeth.length,
+          tipoCaso: orderData.tipoCaso,
+        },
       });
 
       if (!updateResult.success) {

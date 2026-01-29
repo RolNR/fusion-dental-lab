@@ -6,6 +6,7 @@ import { Role, Prisma, OrderStatus } from '@prisma/client';
 import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
 import { DEFAULT_PAGE_SIZE, MAX_DRAFTS_PER_DOCTOR } from '@/lib/constants';
+import { logOrderEvent, getAuditContext } from '@/lib/audit';
 import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -170,6 +171,17 @@ export async function POST(request: NextRequest) {
       },
       doctorId,
       patientName: validatedData.patientName || 'borrador',
+    });
+
+    // Log order creation with AI analytics metadata
+    const hasAiPrompt = Boolean(orderFields.aiPrompt);
+    await logOrderEvent('CREATE', doctorId, order.id, undefined, { status: 'DRAFT' }, {
+      ...getAuditContext(request),
+      metadata: {
+        aiGenerated: hasAiPrompt,
+        aiPromptLength: orderFields.aiPrompt?.length || 0,
+        teethCount: teeth?.length || 0,
+      },
     });
 
     return NextResponse.json({ message: 'Orden creada exitosamente', order }, { status: 201 });
