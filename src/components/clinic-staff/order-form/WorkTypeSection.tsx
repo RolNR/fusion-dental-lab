@@ -33,7 +33,7 @@ export function WorkTypeSection({ tipoRestauracion, onChange, errors }: WorkType
         <ToggleButtonGroup
           options={RESTORATION_TYPE_OPTIONS}
           value={tipoRestauracion}
-          onChange={(value) => onChange({ tipoRestauracion: value })}
+          onChange={(value) => value && onChange({ tipoRestauracion: value })}
         />
         {errors?.tipoRestauracion && (
           <p className="mt-2 text-sm text-danger font-medium">{errors.tipoRestauracion}</p>

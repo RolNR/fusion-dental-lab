@@ -273,10 +273,7 @@ export function OdontogramWizard({
 
           if (teethInRange.length === 0) {
             // Teeth are in different arches
-            addToast(
-              'Los dientes deben estar en la misma arcada (superior o inferior)',
-              'error'
-            );
+            addToast('Los dientes deben estar en la misma arcada (superior o inferior)', 'error');
             setBridgeStart(null);
             return;
           }

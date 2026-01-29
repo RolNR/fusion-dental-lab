@@ -75,7 +75,7 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
               <ToggleButtonGroup
                 options={submissionTypeOptions}
                 value={effectiveSubmissionType}
-                onChange={(value) => onChange('submissionType', value)}
+                onChange={(value) => value && onChange('submissionType', value)}
               />
             </div>
             {errors?.submissionType && (
@@ -88,7 +88,7 @@ export const SubmissionTypeSection = forwardRef<HTMLDivElement, SubmissionTypeSe
               <ToggleButtonGroup
                 options={ARTICULATED_BY_OPTIONS}
                 value={effectiveArticulatedBy}
-                onChange={(value) => onChange('articulatedBy', value)}
+                onChange={(value) => value && onChange('articulatedBy', value)}
               />
             </div>
             {errors?.articulatedBy && (

@@ -40,6 +40,32 @@ const SPACE_OPTIONS: ToggleOption<SpaceOption>[] = [
 export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps>(
   ({ oclusionDiseno, onChange, errors }, ref) => {
     const handleFieldChange = (field: keyof OcclusionInfo, value: unknown) => {
+      // If clearing a value, remove the field
+      if (value === undefined) {
+        const updated = { ...oclusionDiseno };
+        delete updated[field];
+
+        // If clearing tipoOclusion, clear all occlusion data
+        if (field === 'tipoOclusion') {
+          onChange(undefined);
+          return;
+        }
+
+        // If clearing espacioInteroclusalSuficiente, also clear the solution
+        if (field === 'espacioInteroclusalSuficiente') {
+          delete updated.solucionEspacioInsuficiente;
+        }
+
+        // If no fields left, clear the entire object
+        if (Object.keys(updated).length === 0) {
+          onChange(undefined);
+          return;
+        }
+
+        onChange(updated as OcclusionInfo);
+        return;
+      }
+
       const updated = {
         ...oclusionDiseno,
         [field]: value,
@@ -67,11 +93,12 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
           <div className="space-y-6">
             {/* Occlusion Type */}
             <div>
-              <FieldLabel icon="layers" label="Tipo de Oclusión" required />
+              <FieldLabel icon="layers" label="Tipo de Oclusión" />
               <ToggleButtonGroup
                 options={OCCLUSION_TYPE_OPTIONS}
                 value={oclusionDiseno?.tipoOclusion as OcclusionType | undefined}
                 onChange={(value) => handleFieldChange('tipoOclusion', value)}
+                allowDeselect
                 className="mt-2"
               />
               {errors?.tipoOclusion && (
@@ -81,13 +108,17 @@ export const OcclusionSection = forwardRef<HTMLDivElement, OcclusionSectionProps
 
             {/* Interocclusal Space Available */}
             <div>
-              <FieldLabel label="¿Espacio Interoclusal Disponible?" required />
+              <FieldLabel label="¿Espacio Interoclusal Disponible?" />
               <ToggleButtonGroup
                 options={SPACE_OPTIONS}
                 value={spaceValue}
                 onChange={(value) =>
-                  handleFieldChange('espacioInteroclusalSuficiente', value === 'yes')
+                  handleFieldChange(
+                    'espacioInteroclusalSuficiente',
+                    value === undefined ? undefined : value === 'yes'
+                  )
                 }
+                allowDeselect
                 className="mt-2"
               />
               {errors?.espacioInteroclusalSuficiente && (

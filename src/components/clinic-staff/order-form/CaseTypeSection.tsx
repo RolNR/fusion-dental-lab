@@ -32,7 +32,8 @@ const CASE_TYPE_OPTIONS: ToggleOption<CaseType>[] = [
 
 export const CaseTypeSection = forwardRef<HTMLDivElement, CaseTypeSectionProps>(
   ({ tipoCaso, motivoGarantia, onChange, errors }, ref) => {
-    const handleTipoCasoChange = (value: CaseType) => {
+    const handleTipoCasoChange = (value: CaseType | undefined) => {
+      if (!value) return; // Don't allow deselection for case type
       // Clear warranty fields when switching away from garantia
       if (value === 'nuevo') {
         onChange({ tipoCaso: value, motivoGarantia: undefined });

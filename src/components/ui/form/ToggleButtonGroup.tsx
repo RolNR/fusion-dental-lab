@@ -13,9 +13,11 @@ export interface ToggleOption<T extends string = string> {
 interface ToggleButtonGroupProps<T extends string = string> {
   options: ToggleOption<T>[];
   value?: T;
-  onChange: (value: T) => void;
+  onChange: (value: T | undefined) => void;
   disabled?: boolean;
   className?: string;
+  /** If true, clicking the selected option will deselect it. Default: false */
+  allowDeselect?: boolean;
 }
 
 export function ToggleButtonGroup<T extends string = string>({
@@ -24,7 +26,17 @@ export function ToggleButtonGroup<T extends string = string>({
   onChange,
   disabled = false,
   className = '',
+  allowDeselect = false,
 }: ToggleButtonGroupProps<T>) {
+  const handleClick = (optionValue: T) => {
+    if (allowDeselect && value === optionValue) {
+      // Deselect if clicking the already-selected option
+      onChange(undefined);
+    } else {
+      onChange(optionValue);
+    }
+  };
+
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
       {options.map((option) => {
@@ -38,7 +50,7 @@ export function ToggleButtonGroup<T extends string = string>({
             type="button"
             variant={isSelected ? 'primary' : 'secondary'}
             size="sm"
-            onClick={() => !isDisabled && onChange(option.value)}
+            onClick={() => !isDisabled && handleClick(option.value)}
             disabled={isDisabled}
           >
             {IconComponent && <IconComponent className="h-4 w-4 mr-1.5" />}
