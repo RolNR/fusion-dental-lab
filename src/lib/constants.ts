@@ -6,3 +6,6 @@ export const DEFAULT_TOAST_DURATION = 5000; // milliseconds
 
 // Pagination constants
 export const DEFAULT_PAGE_SIZE = 10;
+
+// Order limits
+export const MAX_DRAFTS_PER_DOCTOR = parseInt(process.env.MAX_DRAFTS_PER_DOCTOR || '5', 10);

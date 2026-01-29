@@ -45,6 +45,7 @@ import { OdontogramWizard } from './order-form/wizard';
 import { AIPromptInput } from './order-form/AIPromptInput';
 import type { AISuggestion } from '@/types/ai-suggestions';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
+import { useToast } from '@/contexts/ToastContext';
 
 /**
  * Merges bridge material and colorInfo into individual teeth that belong to bridges.
@@ -85,6 +86,7 @@ function mergeTeethWithBridgeData(
 
 export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormProps) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -631,6 +633,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         // If it's a validation error, suppress it when saving as draft
         if (validationError || err.message.includes('archivos STL/PLY obligatorios')) {
           // Silently ignore validation errors when saving as draft
+          return;
+        }
+        // Show toast for draft limit errors
+        if (err.message.includes('límite de')) {
+          addToast(err.message, 'error');
           return;
         }
         // Show non-validation errors (e.g., network errors)

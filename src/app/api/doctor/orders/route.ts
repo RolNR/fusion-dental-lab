@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role, Prisma, OrderStatus } from '@prisma/client';
 import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
-import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { DEFAULT_PAGE_SIZE, MAX_DRAFTS_PER_DOCTOR } from '@/lib/constants';
 import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -114,6 +114,23 @@ export async function POST(request: NextRequest) {
     }
 
     const doctorId = session.user.id;
+
+    // Check draft limit before creating a new order
+    const draftCount = await prisma.order.count({
+      where: {
+        doctorId,
+        status: 'DRAFT',
+      },
+    });
+
+    if (draftCount >= MAX_DRAFTS_PER_DOCTOR) {
+      return NextResponse.json(
+        {
+          error: `Has alcanzado el límite de ${MAX_DRAFTS_PER_DOCTOR} borradores. Por favor, envía o elimina algunos borradores antes de crear uno nuevo.`,
+        },
+        { status: 400 }
+      );
+    }
 
     // Parse and validate request body
     const body = await request.json();
