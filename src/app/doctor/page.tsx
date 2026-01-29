@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Role, OrderStatus } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { useAlerts } from '@/hooks/useAlerts';
 import { useAlertActions } from '@/hooks/useAlertActions';
-import { StatsCard } from '@/components/lab-admin/StatsCard';
 import { OrdersTable } from '@/components/lab-admin/OrdersTable';
 import { AlertsList } from '@/components/ui/AlertsList';
 import { Button } from '@/components/ui/Button';
@@ -14,26 +13,11 @@ import { OrderWithRelations } from '@/types/order';
 import { DashboardAIPrompt } from '@/components/clinic-staff/DashboardAIPrompt';
 import Link from 'next/link';
 
-interface OrderStats {
-  total: number;
-  draft: number;
-  submitted: number;
-  inProgress: number;
-  completed: number;
-}
-
 export default function DoctorDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [stats, setStats] = useState<OrderStats>({
-    total: 0,
-    draft: 0,
-    submitted: 0,
-    inProgress: 0,
-    completed: 0,
-  });
   const [orders, setOrders] = useState<OrderWithRelations[]>([]);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   // Use the new custom hook for alerts
   const { alerts, loading: alertsLoading, setAlerts } = useAlerts({ role: Role.DOCTOR });
@@ -49,47 +33,30 @@ export default function DoctorDashboard() {
       router.push('/auth/login');
     }
     if (status === 'authenticated') {
-      fetchStats();
+      fetchOrders();
     }
   }, [status, router]);
 
-  const fetchStats = async () => {
+  const fetchOrders = async () => {
     try {
       const response = await fetch('/api/doctor/orders');
       const data = await response.json();
 
       if (!response.ok) {
         console.error('API Error:', response.status, data);
-        throw new Error(data.error || 'Error al cargar estadísticas');
+        throw new Error(data.error || 'Error al cargar órdenes');
       }
 
       const fetchedOrders = data.orders || [];
-
-      const newStats = {
-        total: fetchedOrders.length,
-        draft: fetchedOrders.filter((o: OrderWithRelations) => o.status === OrderStatus.DRAFT)
-          .length,
-        submitted: fetchedOrders.filter(
-          (o: OrderWithRelations) => o.status === OrderStatus.PENDING_REVIEW
-        ).length,
-        inProgress: fetchedOrders.filter(
-          (o: OrderWithRelations) => o.status === OrderStatus.IN_PROGRESS
-        ).length,
-        completed: fetchedOrders.filter(
-          (o: OrderWithRelations) => o.status === OrderStatus.COMPLETED
-        ).length,
-      };
-
-      setStats(newStats);
       setOrders(fetchedOrders.slice(0, 10)); // Show latest 10 orders
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error fetching orders:', error);
     } finally {
-      setStatsLoading(false);
+      setOrdersLoading(false);
     }
   };
 
-  if (status === 'loading' || statsLoading) {
+  if (status === 'loading' || ordersLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg text-muted-foreground">Cargando...</div>
@@ -110,23 +77,6 @@ export default function DoctorDashboard() {
         </div>
 
         <DashboardAIPrompt role="doctor" />
-
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 mb-6 sm:mb-8">
-          <StatsCard title="Total Órdenes" value={stats.total} description="Todas tus órdenes" />
-          <StatsCard title="Borradores" value={stats.draft} description="En edición" />
-          <StatsCard
-            title="En Proceso"
-            value={stats.submitted + stats.inProgress}
-            description="Activas"
-            variant="info"
-          />
-          <StatsCard
-            title="Completadas"
-            value={stats.completed}
-            description="Finalizadas"
-            variant="success"
-          />
-        </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">

@@ -1,6 +1,5 @@
 import { requireAuth } from '@/lib/auth-helpers';
 import { prisma } from '@/lib/prisma';
-import { StatsCard } from '@/components/lab-admin/StatsCard';
 import { LabOrderNotifications } from '@/components/lab-shared/LabOrderNotifications';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
@@ -19,16 +18,11 @@ export default async function LabAdminDashboard() {
     );
   }
 
-  // Fetch statistics
-  const [laboratory, doctorsCount] = await Promise.all([
-    prisma.laboratory.findUnique({
-      where: { id: laboratoryId },
-      select: { name: true, email: true, phone: true, createdAt: true },
-    }),
-    prisma.user.count({
-      where: { doctorLaboratoryId: laboratoryId },
-    }),
-  ]);
+  // Fetch laboratory info
+  const laboratory = await prisma.laboratory.findUnique({
+    where: { id: laboratoryId },
+    select: { name: true, email: true, phone: true },
+  });
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 sm:px-6 md:px-6 lg:px-8">
@@ -68,22 +62,6 @@ export default async function LabAdminDashboard() {
             </div>
           )}
         </dl>
-      </div>
-
-      {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 mb-6 sm:mb-8">
-        <StatsCard
-          title="Doctores"
-          value={doctorsCount}
-          icon="👨‍⚕️"
-          description="Doctores registrados"
-        />
-        <StatsCard
-          title="Total Usuarios"
-          value={doctorsCount}
-          icon="👥"
-          description="Todos los usuarios"
-        />
       </div>
 
       {/* Quick Actions */}
