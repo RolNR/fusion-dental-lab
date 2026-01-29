@@ -1,11 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { Icons } from '@/components/ui/Icons';
 import { ToothData } from '@/types/tooth';
-import { ColorInfo, ImplantInfo, SHADE_SYSTEMS } from '@/types/order';
+import { ColorInfo, ImplantInfo } from '@/types/order';
+import { ToothColorFields } from './ToothColorFields';
 
 interface ToothWorkItemProps {
   toothNumber: string;
@@ -63,44 +62,15 @@ export function ToothWorkItem({
         )}
       </div>
 
-      {/* Material Input */}
-      <div className="flex-1 min-w-[100px]">
-        <Input
-          value={toothData.material || ''}
-          onChange={(e) => handleMaterialChange(e.target.value)}
-          disabled={disabled}
-          placeholder="Material"
-          className="text-sm !h-8 !py-1"
-        />
-      </div>
-
-      {/* Color System Select */}
-      <div className="flex-1 min-w-[120px]">
-        <Select
-          value={colorInfo?.shadeType || ''}
-          onChange={(e) => handleColorSystemChange(e.target.value)}
-          disabled={disabled}
-          className="text-sm !h-8 !py-1"
-        >
-          <option value="">Sistema</option>
-          {SHADE_SYSTEMS.map((system) => (
-            <option key={system.value} value={system.value}>
-              {system.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      {/* Shade Code Input */}
-      <div className="flex-1 min-w-[80px]">
-        <Input
-          value={colorInfo?.shadeCode || ''}
-          onChange={(e) => handleShadeChange(e.target.value)}
-          disabled={disabled}
-          placeholder="Color"
-          className="text-sm !h-8 !py-1"
-        />
-      </div>
+      <ToothColorFields
+        material={toothData.material || ''}
+        shadeType={colorInfo?.shadeType || ''}
+        shadeCode={colorInfo?.shadeCode || ''}
+        onMaterialChange={handleMaterialChange}
+        onShadeTypeChange={handleColorSystemChange}
+        onShadeCodeChange={handleShadeChange}
+        disabled={disabled}
+      />
 
       {/* Remove Button */}
       <Button

@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { RestorationType } from '@prisma/client';
 import { Icons } from '@/components/ui/Icons';
 import { ToothData, BridgeDefinition } from '@/types/tooth';
 import { InitialToothStatesMap } from '@/types/initial-tooth-state';
 import { ToothWorkItem } from './ToothWorkItem';
 import { BridgeWorkItem } from './BridgeWorkItem';
+import { BulkColorConfig } from './BulkColorConfig';
 
 interface AssignedWorkListProps {
   teethData: Map<string, ToothData>;
@@ -38,19 +39,23 @@ export function AssignedWorkList({
   onBridgeRemove,
   disabled = false,
 }: AssignedWorkListProps) {
-  // Group teeth by work type (excluding bridge teeth which are handled separately)
-  const teethByWorkType = useMemo(() => {
+  // Get bridge teeth set for filtering
+  const bridgeTeethSet = useMemo(() => {
     const bridgeTeeth = new Set<string>();
     bridges.forEach((bridge) => {
       bridgeTeeth.add(bridge.startTooth);
       bridgeTeeth.add(bridge.endTooth);
       bridge.pontics.forEach((p) => bridgeTeeth.add(p));
     });
+    return bridgeTeeth;
+  }, [bridges]);
 
+  // Group teeth by work type (excluding bridge teeth which are handled separately)
+  const teethByWorkType = useMemo(() => {
     const groups = new Map<RestorationType, ToothData[]>();
 
     for (const [toothNumber, data] of teethData) {
-      if (bridgeTeeth.has(toothNumber)) continue; // Skip bridge teeth
+      if (bridgeTeethSet.has(toothNumber)) continue; // Skip bridge teeth
       if (!data.tipoRestauracion) continue; // Skip teeth without work type
 
       const workType = data.tipoRestauracion;
@@ -66,7 +71,62 @@ export function AssignedWorkList({
     });
 
     return groups;
-  }, [teethData, bridges]);
+  }, [teethData, bridgeTeethSet]);
+
+  // Handler for bulk applying color to teeth
+  const handleApplyToTeeth = useCallback(
+    (material: string, shadeType: string, shadeCode: string, filter: 'all' | RestorationType) => {
+      for (const [toothNumber, data] of teethData) {
+        if (bridgeTeethSet.has(toothNumber)) continue; // Skip bridge teeth
+        if (!data.tipoRestauracion) continue; // Skip teeth without work type
+
+        // Apply filter
+        if (filter !== 'all' && data.tipoRestauracion !== filter) continue;
+
+        // Build updates
+        const updates: Partial<ToothData> = {};
+        if (material) {
+          updates.material = material;
+        }
+        if (shadeType || shadeCode) {
+          updates.colorInfo = {
+            ...data.colorInfo,
+            ...(shadeType && { shadeType }),
+            ...(shadeCode && { shadeCode }),
+          };
+        }
+
+        if (Object.keys(updates).length > 0) {
+          onToothUpdate(toothNumber, updates);
+        }
+      }
+    },
+    [teethData, bridgeTeethSet, onToothUpdate]
+  );
+
+  // Handler for bulk applying color to bridges
+  const handleApplyToBridges = useCallback(
+    (material: string, shadeType: string, shadeCode: string) => {
+      bridges.forEach((bridge) => {
+        const updates: Partial<BridgeDefinition> = {};
+        if (material) {
+          updates.material = material;
+        }
+        if (shadeType || shadeCode) {
+          updates.colorInfo = {
+            ...bridge.colorInfo,
+            ...(shadeType && { shadeType }),
+            ...(shadeCode && { shadeCode }),
+          };
+        }
+
+        if (Object.keys(updates).length > 0) {
+          onBridgeUpdate(bridge.id, updates);
+        }
+      });
+    },
+    [bridges, onBridgeUpdate]
+  );
 
   const hasAnyWork = teethByWorkType.size > 0 || bridges.length > 0;
 
@@ -86,6 +146,15 @@ export function AssignedWorkList({
         <Icons.clipboardList className="h-5 w-5" />
         Trabajos Asignados
       </h3>
+
+      {/* Bulk Color Configuration */}
+      <BulkColorConfig
+        teethData={teethData}
+        bridges={bridges}
+        onApplyToTeeth={handleApplyToTeeth}
+        onApplyToBridges={handleApplyToBridges}
+        disabled={disabled}
+      />
 
       {/* Bridges Section */}
       {bridges.length > 0 && (

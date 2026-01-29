@@ -1,11 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
 import { Icons } from '@/components/ui/Icons';
 import { BridgeDefinition } from '@/types/tooth';
-import { ColorInfo, SHADE_SYSTEMS } from '@/types/order';
+import { ColorInfo } from '@/types/order';
+import { ToothColorFields } from './ToothColorFields';
 
 interface BridgeWorkItemProps {
   bridge: BridgeDefinition;
@@ -56,44 +55,15 @@ export function BridgeWorkItem({
         <span className="text-xs text-muted-foreground">({totalTeeth} dientes)</span>
       </div>
 
-      {/* Material Input */}
-      <div className="flex-1 min-w-[100px]">
-        <Input
-          value={bridge.material || ''}
-          onChange={(e) => handleMaterialChange(e.target.value)}
-          disabled={disabled}
-          placeholder="Material"
-          className="text-sm !h-8 !py-1"
-        />
-      </div>
-
-      {/* Color System Select */}
-      <div className="flex-1 min-w-[120px]">
-        <Select
-          value={bridge.colorInfo?.shadeType || ''}
-          onChange={(e) => handleColorSystemChange(e.target.value)}
-          disabled={disabled}
-          className="text-sm !h-8 !py-1"
-        >
-          <option value="">Sistema</option>
-          {SHADE_SYSTEMS.map((system) => (
-            <option key={system.value} value={system.value}>
-              {system.label}
-            </option>
-          ))}
-        </Select>
-      </div>
-
-      {/* Shade Code Input */}
-      <div className="flex-1 min-w-[80px]">
-        <Input
-          value={bridge.colorInfo?.shadeCode || ''}
-          onChange={(e) => handleShadeChange(e.target.value)}
-          disabled={disabled}
-          placeholder="Color"
-          className="text-sm !h-8 !py-1"
-        />
-      </div>
+      <ToothColorFields
+        material={bridge.material || ''}
+        shadeType={bridge.colorInfo?.shadeType || ''}
+        shadeCode={bridge.colorInfo?.shadeCode || ''}
+        onMaterialChange={handleMaterialChange}
+        onShadeTypeChange={handleColorSystemChange}
+        onShadeCodeChange={handleShadeChange}
+        disabled={disabled}
+      />
 
       {/* Remove Button */}
       <Button
