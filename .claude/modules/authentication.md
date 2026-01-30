@@ -3,7 +3,16 @@
 **Framework**: NextAuth.js v4
 **Strategy**: JWT sessions with bcrypt password hashing
 **Session Duration**: 30 days
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-30
+
+## Two-Role System
+
+The system has only TWO roles:
+
+| Role | Dashboard | Access |
+|------|-----------|--------|
+| `LAB_ADMIN` | `/lab-admin` | Full control of laboratory |
+| `DOCTOR` | `/doctor` | Create/manage own orders |
 
 ## Authentication Flow
 
@@ -43,13 +52,12 @@ export const authOptions: NextAuthOptions = {
         // 1. Find user by email
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
-          include: { /* organization data */ },
         });
 
         // 2. Verify password
         const isValid = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.passwordHash
         );
 
         // 3. Return user data for JWT
@@ -59,8 +67,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           laboratoryId: user.laboratoryId,
-          clinicId: user.clinicId,
-          // ... other org IDs
+          doctorLaboratoryId: user.doctorLaboratoryId,
         };
       },
     }),
@@ -71,21 +78,19 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Add user data to token on login
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.laboratoryId = user.laboratoryId;
-        // ... other fields
+        token.doctorLaboratoryId = user.doctorLaboratoryId;
       }
       return token;
     },
     async session({ session, token }) {
-      // Add token data to session
       session.user.id = token.id;
       session.user.role = token.role;
       session.user.laboratoryId = token.laboratoryId;
-      // ... other fields
+      session.user.doctorLaboratoryId = token.doctorLaboratoryId;
       return session;
     },
   },
@@ -101,7 +106,7 @@ import bcrypt from 'bcryptjs';
 const hashedPassword = await bcrypt.hash(password, 10);
 
 // On login
-const isValid = await bcrypt.compare(password, user.password);
+const isValid = await bcrypt.compare(password, user.passwordHash);
 ```
 
 **Salt rounds**: 10 (bcrypt default)
@@ -126,7 +131,7 @@ const session = await requireAuth();
 import { requireRole } from '@/lib/auth-helpers';
 import { Role } from '@prisma/client';
 
-const session = await requireRole([Role.LAB_ADMIN, Role.LAB_COLLABORATOR]);
+const session = await requireRole([Role.LAB_ADMIN]);
 // Redirects to /unauthorized if wrong role
 ```
 
@@ -154,10 +159,7 @@ Protects ALL routes except:
 ```typescript
 const roleRouteMap = {
   '/lab-admin': Role.LAB_ADMIN,
-  '/lab-collaborator': Role.LAB_COLLABORATOR,
-  '/clinic-admin': Role.CLINIC_ADMIN,
   '/doctor': Role.DOCTOR,
-  '/assistant': Role.CLINIC_ASSISTANT,
 };
 ```
 
@@ -179,13 +181,13 @@ export async function GET(request: NextRequest) {
   }
 
   // 2. Check role
-  if (session.user.role !== Role.EXPECTED_ROLE) {
+  if (session.user.role !== Role.DOCTOR) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
   // 3. Check organization context
-  const organizationId = session.user.laboratoryId || session.user.clinicId;
-  if (!organizationId) {
+  const laboratoryId = session.user.doctorLaboratoryId;
+  if (!laboratoryId) {
     return NextResponse.json({ error: 'Usuario no asociado' }, { status: 400 });
   }
 
@@ -201,14 +203,11 @@ interface SessionUser {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: Role;  // LAB_ADMIN or DOCTOR
 
   // Organization IDs (mutually exclusive)
-  laboratoryId?: string | null;
-  labCollaboratorId?: string | null;
-  clinicId?: string | null;
-  doctorClinicId?: string | null;
-  assistantClinicId?: string | null;
+  laboratoryId?: string | null;        // LAB_ADMIN
+  doctorLaboratoryId?: string | null;  // DOCTOR
 }
 
 // Access in components
@@ -223,10 +222,7 @@ const userRole = session?.user.role;
 ```typescript
 const dashboardRoutes = {
   LAB_ADMIN: '/lab-admin',
-  LAB_COLLABORATOR: '/lab-collaborator',
-  CLINIC_ADMIN: '/clinic-admin',
   DOCTOR: '/doctor',
-  CLINIC_ASSISTANT: '/assistant',
 };
 
 router.push(dashboardRoutes[session.user.role]);
@@ -269,20 +265,20 @@ DATABASE_URL="postgresql://..."
 ## Security Best Practices
 
 **Currently implemented**:
-- ✅ Passwords hashed with bcrypt (10 rounds)
-- ✅ JWT sessions (stateless, no DB lookups)
-- ✅ 30-day session expiry
-- ✅ HTTPS enforced (production)
-- ✅ Role-based access control at middleware + API levels
-- ✅ Audit logging for auth events
-- ✅ Organization isolation (users can't access other orgs' data)
+- Passwords hashed with bcrypt (10 rounds)
+- JWT sessions (stateless, no DB lookups)
+- 30-day session expiry
+- HTTPS enforced (production)
+- Role-based access control at middleware + API levels
+- Audit logging for auth events
+- Organization isolation (users can't access other orgs' data)
 
 **NOT implemented** (consider for future):
-- ⚠️ Password reset flow
-- ⚠️ Email verification
-- ⚠️ 2FA/MFA
-- ⚠️ Rate limiting on login attempts
-- ⚠️ Session invalidation on password change
+- Password reset flow
+- Email verification
+- 2FA/MFA
+- Rate limiting on login attempts
+- Session invalidation on password change
 
 ## Common Patterns
 

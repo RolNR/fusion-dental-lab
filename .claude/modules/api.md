@@ -3,29 +3,33 @@
 **Framework**: Next.js 16 App Router API Routes
 **Pattern**: Role-based route segregation
 **Validation**: Zod schemas
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-30
 
 ## Route Structure
 
 ```
 /api/
-├── [role]/                      # Role-based route segregation
-│   ├── lab-admin/              # LAB_ADMIN routes
-│   ├── lab-collaborator/       # LAB_COLLABORATOR routes
-│   ├── clinic-admin/           # CLINIC_ADMIN routes
-│   ├── doctor/                 # DOCTOR routes
-│   └── assistant/              # CLINIC_ASSISTANT routes
+├── lab-admin/              # LAB_ADMIN routes
+│   ├── doctors/            # Manage doctors
+│   ├── orders/             # View/manage all orders
+│   ├── analytics/          # Analytics dashboard data
+│   └── alerts/             # Send alerts to doctors
+├── doctor/                 # DOCTOR routes
+│   ├── orders/             # CRUD on own orders
+│   └── alerts/             # View received alerts
 ├── auth/
-│   └── [...nextauth]/          # NextAuth.js endpoints
-└── alerts/
-    └── events/                 # SSE endpoint for real-time alerts
+│   └── [...nextauth]/      # NextAuth.js endpoints
+├── alerts/
+│   └── events/             # SSE endpoint for real-time alerts
+└── cron/
+    └── cleanup-orders/     # Scheduled cleanup endpoint
 ```
 
 ## Standard API Route Pattern
 
 **File location**: `src/app/api/[role]/[resource]/[id?]/[action?]/route.ts`
 
-### Example: GET Collection
+### Example: GET Collection (Doctor Orders)
 
 ```typescript
 // src/app/api/doctor/orders/route.ts
@@ -41,28 +45,54 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
-  // 3. Organization context check
-  const clinicId = session.user.doctorClinicId;
-  if (!clinicId) {
-    return NextResponse.json({ error: 'Usuario no asociado' }, { status: 400 });
-  }
-
-  // 4. Query with filters
+  // 3. Query with filters + soft-delete filter
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
 
-  // 5. Access control filter
   const orders = await prisma.order.findMany({
     where: {
-      clinicId,                           // Clinic isolation
-      doctorId: session.user.id,         // Doctor can only see their orders
-      ...(status && { status }),         // Optional filters
+      doctorId: session.user.id,   // Doctor sees only their orders
+      deletedAt: null,              // Exclude soft-deleted
+      ...(status && { status }),
     },
     include: {
       doctor: { select: { name: true, email: true } },
-      clinic: { select: { name: true } },
-      createdBy: { select: { name: true } },
       files: true,
+      teeth: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return NextResponse.json({ orders }, { status: 200 });
+}
+```
+
+### Example: GET Collection (Lab Admin Orders)
+
+```typescript
+// src/app/api/lab-admin/orders/route.ts
+export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || session.user.role !== Role.LAB_ADMIN) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get('status');
+  const includeDeleted = searchParams.get('includeDeleted') === 'true';
+
+  const orders = await prisma.order.findMany({
+    where: {
+      doctor: {
+        doctorLaboratoryId: session.user.laboratoryId,  // All doctors in lab
+      },
+      ...(status && { status }),
+      ...(includeDeleted ? {} : { deletedAt: null }),
+    },
+    include: {
+      doctor: { select: { name: true, email: true, clinicName: true } },
+      files: true,
+      teeth: true,
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -77,7 +107,7 @@ export async function GET(request: NextRequest) {
 
 ```typescript
 import { z } from 'zod';
-import { OrderStatus, ScanType } from '@prisma/client';
+import { OrderStatus, CaseType, RestorationType } from '@prisma/client';
 
 // ❌ WRONG - creates separate type
 const wrongSchema = z.object({
@@ -87,7 +117,7 @@ const wrongSchema = z.object({
 // ✅ CORRECT - uses Prisma enum
 const correctSchema = z.object({
   patientName: z.string().min(1, 'Nombre requerido'),
-  scanType: z.nativeEnum(ScanType).optional(),
+  tipoCaso: z.nativeEnum(CaseType).optional(),
   status: z.nativeEnum(OrderStatus),
   notes: z.string().optional(),
 });
@@ -119,13 +149,11 @@ try {
 ```typescript
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
 
-// Automatically checks access based on role and organization
 const result = await checkOrderAccess({
   orderId: params.orderId,
   userId: session.user.id,
   userRole: session.user.role,
   laboratoryId: session.user.laboratoryId,
-  clinicId: session.user.clinicId,
 });
 
 if (!result.hasAccess) {
@@ -146,12 +174,11 @@ import { createOrderWithRetry } from '@/lib/api/orderCreation';
 const order = await createOrderWithRetry({
   orderData: {
     ...validatedData,
-    clinic: { connect: { id: clinicId } },
     doctor: { connect: { id: doctorId } },
     createdBy: { connect: { id: session.user.id } },
     status: 'DRAFT',
   },
-  clinicId,
+  doctorId,
   patientName: validatedData.patientName,
 });
 ```
@@ -172,7 +199,7 @@ export async function POST(
   return submitOrderHandler({
     orderId: params.orderId,
     request,
-    allowedRoles: [Role.DOCTOR, Role.CLINIC_ASSISTANT, Role.CLINIC_ADMIN],
+    allowedRoles: [Role.DOCTOR, Role.LAB_ADMIN],
   });
 }
 ```
@@ -202,7 +229,7 @@ return NextResponse.json({
   error: 'Validación fallida',
   details: [
     { field: 'patientName', message: 'Nombre requerido' },
-    { field: 'scanType', message: 'Tipo de escaneo inválido' },
+    { field: 'tipoCaso', message: 'Tipo de caso inválido' },
   ]
 }, { status: 400 });
 ```
@@ -212,39 +239,25 @@ return NextResponse.json({
 ### LAB_ADMIN Routes
 **Base**: `/api/lab-admin/`
 
-- `/clinics` - Manage clinics (CRUD)
-- `/users` - Manage all users (create LAB_COLLABORATOR, CLINIC_ADMIN)
-- `/orders` - View/manage ALL orders from ALL clinics
-- `/alerts` - Send alerts to clinics
-
-### LAB_COLLABORATOR Routes
-**Base**: `/api/lab-collaborator/`
-
-- `/orders` - View ALL orders (read-only), update status (IN_PROGRESS, COMPLETED)
-- `/alerts` - Send alerts to clinics
-
-### CLINIC_ADMIN Routes
-**Base**: `/api/clinic-admin/`
-
-- `/doctors` - Manage doctors in their clinic
-- `/assistants` - Manage assistants in their clinic
-- `/assistants/{id}/doctors/{doctorId}` - Assign assistants to doctors
-- `/orders` - View ALL orders from their clinic, create orders for any doctor
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/doctors` | GET, POST | List/create doctors |
+| `/doctors/[id]` | GET, PUT, DELETE | Manage single doctor |
+| `/orders` | GET | View ALL orders (with `?includeDeleted=true` option) |
+| `/orders/[id]` | PUT | Update order status |
+| `/alerts` | POST | Send alerts to doctors |
+| `/analytics` | GET | Analytics dashboard data |
 
 ### DOCTOR Routes
 **Base**: `/api/doctor/`
 
-- `/orders` - CRUD on their own orders only
-- `/orders/{id}/files` - Upload files to their orders
-- `/orders/{id}/submit` - Submit order (DRAFT → PENDING_REVIEW)
-
-### CLINIC_ASSISTANT Routes
-**Base**: `/api/assistant/`
-
-- `/orders` - CRUD on orders for assigned doctors only
-- `/orders/{id}/files` - Upload files
-- `/orders/{id}/submit` - Submit order for assigned doctor
-- `/doctors` - List assigned doctors
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/orders` | GET, POST | List/create own orders |
+| `/orders/[id]` | GET, PUT, DELETE | Manage single order |
+| `/orders/[id]/files` | POST | Upload files to order |
+| `/orders/[id]/submit` | POST | Submit order (DRAFT → PENDING_REVIEW) |
+| `/alerts` | GET | View received alerts |
 
 ## Query Parameters
 
@@ -253,13 +266,13 @@ return NextResponse.json({
 ```typescript
 // Filtering
 GET /api/lab-admin/orders?status=PENDING_REVIEW
-GET /api/clinic-admin/orders?doctorId=123
-
-// Pagination (if implemented)
-GET /api/doctor/orders?page=1&limit=20
+GET /api/lab-admin/orders?includeDeleted=true
 
 // Search
-GET /api/lab-admin/clinics?search=dental
+GET /api/lab-admin/doctors?search=martinez
+
+// Date range (analytics)
+GET /api/lab-admin/analytics?startDate=2026-01-01&endDate=2026-01-31
 
 // Sorting
 GET /api/doctor/orders?sortBy=createdAt&order=desc
@@ -279,7 +292,13 @@ await logOrderEvent(
   orderId,
   { status: oldStatus },
   { status: newStatus },
-  getAuditContext(request)
+  {
+    ...getAuditContext(request),
+    metadata: {
+      aiGenerated: Boolean(order.aiPrompt),
+      teethCount: order.teeth.length,
+    },
+  }
 );
 ```
 
@@ -297,26 +316,40 @@ eventSource.onmessage = (event) => {
 };
 ```
 
+## Cron Endpoints
+
+**File**: `src/app/api/cron/cleanup-orders/route.ts`
+
+Scheduled cleanup of completed orders (soft-delete + R2 file deletion):
+
+```typescript
+// Requires CRON_SECRET header
+POST /api/cron/cleanup-orders
+POST /api/cron/cleanup-orders?dryRun=true  // Preview only
+```
+
+Configured in `vercel.json` for daily execution.
+
 ## Common API Patterns
 
 ### Creating Related Resources
 
 ```typescript
-// Create user with clinic relationship
+// Create doctor with laboratory relationship
 await prisma.user.create({
   data: {
     email: validatedData.email,
     name: validatedData.name,
-    role: Role.CLINIC_ADMIN,
-    clinic: { connect: { id: clinicId } },  // Establish relationship
+    role: Role.DOCTOR,
+    doctorLaboratory: { connect: { id: laboratoryId } },
+    clinicName: validatedData.clinicName,
   },
 });
 ```
 
-### Updating with Conditional Logic
+### Updating with State Machine Validation
 
 ```typescript
-// Only update if state transition is valid
 import { canUserTransition } from '@/lib/orderStateMachine';
 
 if (!canUserTransition(session.user.role, currentStatus, newStatus)) {
@@ -332,24 +365,14 @@ await prisma.order.update({
 });
 ```
 
-## Testing API Routes
-
-```bash
-# Using curl
-curl -X POST http://localhost:3000/api/doctor/orders \
-  -H "Content-Type: application/json" \
-  -d '{"patientName":"Juan Pérez","scanType":"DIGITAL_SCAN"}'
-
-# Check response status
-curl -i http://localhost:3000/api/doctor/orders
-```
-
 ## Key Files
 
-| File | Purpose | Lines |
-|------|---------|-------|
-| `src/lib/api/orderAuthorization.ts` | Order access control | ~150 |
-| `src/lib/api/orderCreation.ts` | Order creation with retry | ~100 |
-| `src/lib/api/submitOrderHandler.ts` | Shared submit logic | ~80 |
-| `src/lib/orderStateMachine.ts` | State transition validation | ~120 |
-| `src/lib/audit.ts` | Audit logging helpers | ~150 |
+| File | Purpose |
+|------|---------|
+| `src/lib/api/orderAuthorization.ts` | Order access control |
+| `src/lib/api/orderCreation.ts` | Order creation with retry |
+| `src/lib/api/submitOrderHandler.ts` | Shared submit logic |
+| `src/lib/api/orderStatusUpdate.ts` | Status update with audit |
+| `src/lib/orderStateMachine.ts` | State transition validation |
+| `src/lib/audit.ts` | Audit logging helpers |
+| `src/lib/analytics.ts` | Analytics query functions |

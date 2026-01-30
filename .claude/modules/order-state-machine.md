@@ -2,7 +2,7 @@
 
 **File**: `src/lib/orderStateMachine.ts`
 **Purpose**: Enforce valid order status transitions based on user role
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-30
 
 ## Status Flow Diagram
 
@@ -24,17 +24,17 @@ COMPLETED
 
 | Status | Description | Who can set |
 |--------|-------------|-------------|
-| `DRAFT` | Order being created | DOCTOR, ASSISTANT, CLINIC_ADMIN (auto) |
-| `PENDING_REVIEW` | Submitted to lab | Clinic users (submit action) |
-| `NEEDS_INFO` | Lab needs more info | LAB_COLLABORATOR, LAB_ADMIN |
-| `MATERIALS_SENT` | Physical materials sent | Clinic users (optional) |
-| `IN_PROGRESS` | Lab working on order | LAB_COLLABORATOR, LAB_ADMIN |
-| `COMPLETED` | Work finished | LAB_COLLABORATOR, LAB_ADMIN |
-| `CANCELLED` | Order cancelled | LAB_ADMIN (force), Clinic users (from DRAFT) |
+| `DRAFT` | Order being created | DOCTOR (auto on create) |
+| `PENDING_REVIEW` | Submitted to lab | DOCTOR (submit action) |
+| `NEEDS_INFO` | Lab needs more info | LAB_ADMIN |
+| `MATERIALS_SENT` | Physical materials sent | DOCTOR (optional) |
+| `IN_PROGRESS` | Lab working on order | LAB_ADMIN |
+| `COMPLETED` | Work finished | LAB_ADMIN |
+| `CANCELLED` | Order cancelled | LAB_ADMIN (any status), DOCTOR (from DRAFT only) |
 
-## Role-Based Transitions
+## Two-Role Transitions
 
-### Clinic Users (DOCTOR, CLINIC_ASSISTANT, CLINIC_ADMIN)
+### DOCTOR
 
 **Can transition:**
 - `DRAFT` → `PENDING_REVIEW` (submit order)
@@ -43,26 +43,19 @@ COMPLETED
 - `PENDING_REVIEW` → `MATERIALS_SENT` (optional)
 
 **Cannot transition:**
-- Cannot set `IN_PROGRESS` or `COMPLETED` (only lab can)
+- Cannot set `IN_PROGRESS` or `COMPLETED` (only lab admin can)
 - Cannot cancel after submission (only LAB_ADMIN can)
 
-### Lab Collaborators (LAB_COLLABORATOR)
+### LAB_ADMIN
 
 **Can transition:**
 - `PENDING_REVIEW` → `IN_PROGRESS` (start work)
 - `PENDING_REVIEW` → `NEEDS_INFO` (request more info)
 - `IN_PROGRESS` → `COMPLETED` (finish work)
+- `IN_PROGRESS` → `NEEDS_INFO` (need more info during work)
 - `NEEDS_INFO` → `IN_PROGRESS` (if info received)
-
-**Cannot transition:**
-- Cannot force cancel (only LAB_ADMIN can)
-- Cannot go backwards (e.g., COMPLETED → IN_PROGRESS)
-
-### Lab Admins (LAB_ADMIN)
-
-**Can transition:**
+- **Any status** → `CANCELLED` (admin override)
 - **All transitions allowed** (admin override)
-- Including force cancel from any status
 
 ## State Machine Implementation
 
@@ -105,7 +98,7 @@ const validStates = getValidNextStatesForRole(
 ### Usage in API Routes
 
 ```typescript
-// PUT /api/lab-collaborator/orders/[orderId]/route.ts
+// PUT /api/lab-admin/orders/[orderId]/route.ts
 export async function PUT(
   request: NextRequest,
   { params }: { params: { orderId: string } }
@@ -153,19 +146,19 @@ export async function PUT(
 
 ### Rule Matrix
 
-| From Status | To Status | Clinic Users | LAB_COLLAB | LAB_ADMIN |
-|-------------|-----------|--------------|------------|-----------|
-| DRAFT | PENDING_REVIEW | ✅ | ❌ | ✅ |
-| DRAFT | CANCELLED | ✅ | ❌ | ✅ |
-| PENDING_REVIEW | IN_PROGRESS | ❌ | ✅ | ✅ |
-| PENDING_REVIEW | NEEDS_INFO | ❌ | ✅ | ✅ |
-| PENDING_REVIEW | MATERIALS_SENT | ✅ | ❌ | ✅ |
-| NEEDS_INFO | PENDING_REVIEW | ✅ | ❌ | ✅ |
-| NEEDS_INFO | IN_PROGRESS | ❌ | ✅ | ✅ |
-| MATERIALS_SENT | IN_PROGRESS | ❌ | ✅ | ✅ |
-| IN_PROGRESS | COMPLETED | ❌ | ✅ | ✅ |
-| IN_PROGRESS | NEEDS_INFO | ❌ | ✅ | ✅ |
-| * | CANCELLED | ❌ | ❌ | ✅ |
+| From Status | To Status | DOCTOR | LAB_ADMIN |
+|-------------|-----------|--------|-----------|
+| DRAFT | PENDING_REVIEW | ✅ | ✅ |
+| DRAFT | CANCELLED | ✅ | ✅ |
+| PENDING_REVIEW | IN_PROGRESS | ❌ | ✅ |
+| PENDING_REVIEW | NEEDS_INFO | ❌ | ✅ |
+| PENDING_REVIEW | MATERIALS_SENT | ✅ | ✅ |
+| NEEDS_INFO | PENDING_REVIEW | ✅ | ✅ |
+| NEEDS_INFO | IN_PROGRESS | ❌ | ✅ |
+| MATERIALS_SENT | IN_PROGRESS | ❌ | ✅ |
+| IN_PROGRESS | COMPLETED | ❌ | ✅ |
+| IN_PROGRESS | NEEDS_INFO | ❌ | ✅ |
+| * | CANCELLED | ❌ | ✅ |
 
 ### Special Rules
 
@@ -233,27 +226,27 @@ const statusLabels = {
 
 ## Common Workflows
 
-### Order Submission (Clinic → Lab)
+### Order Submission (Doctor → Lab)
 
 ```
 1. Doctor creates order (status: DRAFT)
-2. Doctor uploads files
+2. Doctor fills order details, uploads files
 3. Doctor submits order
    ↓
    API checks: canUserTransition(DOCTOR, DRAFT, PENDING_REVIEW) ✅
    ↓
 4. Status → PENDING_REVIEW
 5. submittedAt timestamp set
-6. Lab sees order in queue
+6. Lab admin sees order in queue
 ```
 
 ### Lab Starts Work
 
 ```
-1. Lab collaborator views PENDING_REVIEW orders
+1. Lab admin views PENDING_REVIEW orders
 2. Clicks "Start Work"
    ↓
-   API checks: canUserTransition(LAB_COLLABORATOR, PENDING_REVIEW, IN_PROGRESS) ✅
+   API checks: canUserTransition(LAB_ADMIN, PENDING_REVIEW, IN_PROGRESS) ✅
    ↓
 3. Status → IN_PROGRESS
 4. Order visible in lab's active work queue
@@ -262,38 +255,38 @@ const statusLabels = {
 ### Lab Needs More Info
 
 ```
-1. Lab sees PENDING_REVIEW order is incomplete
+1. Lab admin sees PENDING_REVIEW order is incomplete
 2. Clicks "Request Info" with message
    ↓
-   API checks: canUserTransition(LAB_COLLABORATOR, PENDING_REVIEW, NEEDS_INFO) ✅
+   API checks: canUserTransition(LAB_ADMIN, PENDING_REVIEW, NEEDS_INFO) ✅
    ↓
 3. Status → NEEDS_INFO
-4. Alert sent to clinic users
-5. Clinic responds with info
-6. Clinic submits again → PENDING_REVIEW
+4. Alert sent to doctor
+5. Doctor responds with info
+6. Doctor submits again → PENDING_REVIEW
 ```
 
 ### Order Completion
 
 ```
-1. Lab finishes work (status: IN_PROGRESS)
-2. Lab marks complete
+1. Lab admin finishes work (status: IN_PROGRESS)
+2. Lab admin marks complete
    ↓
-   API checks: canUserTransition(LAB_COLLABORATOR, IN_PROGRESS, COMPLETED) ✅
+   API checks: canUserTransition(LAB_ADMIN, IN_PROGRESS, COMPLETED) ✅
    ↓
 3. Status → COMPLETED
 4. completedAt timestamp set
-5. Alert sent to clinic
+5. Alert sent to doctor
 ```
 
 ## Error Prevention
 
 **State machine prevents**:
-- ✅ Clinic users from marking orders completed
-- ✅ Lab users from submitting draft orders
-- ✅ Backwards transitions (COMPLETED → DRAFT)
-- ✅ Invalid status jumps (DRAFT → COMPLETED)
-- ✅ Unauthorized cancellations
+- Doctors from marking orders completed
+- Doctors from starting work on orders
+- Backwards transitions (COMPLETED → DRAFT)
+- Invalid status jumps (DRAFT → COMPLETED)
+- Unauthorized cancellations (doctors can't cancel submitted orders)
 
 **Audit trail captures**:
 - Who changed status
@@ -320,5 +313,6 @@ expect(canUserTransition(Role.LAB_ADMIN, 'COMPLETED', 'DRAFT')).toBe(true);
 |------|---------|
 | `src/lib/orderStateMachine.ts` | State machine logic |
 | `src/lib/api/submitOrderHandler.ts` | Shared submit logic |
+| `src/lib/api/orderStatusUpdate.ts` | Status update with audit |
 | `src/app/api/*/orders/[id]/route.ts` | API routes using validation |
 | `src/components/orders/OrderStatusBadge.tsx` | UI component |
