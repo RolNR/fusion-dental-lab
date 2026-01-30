@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Role } from '@prisma/client';
-import { getOrderAnalytics, getDailyOrderStats } from '@/lib/analytics';
+import {
+  getOrderAnalytics,
+  getDailyOrderStats,
+  getDoctorStats,
+  getNeedsInfoStats,
+  getUrgentOrderStats,
+} from '@/lib/analytics';
 
 /**
  * GET /api/lab-admin/analytics
@@ -37,25 +43,23 @@ export async function GET(request: NextRequest) {
       ? new Date(startDateStr)
       : new Date(endDate.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get overall analytics
-    const analytics = await getOrderAnalytics({
-      startDate,
-      endDate,
-    });
-
-    // Optionally include daily breakdown
-    let dailyStats = null;
-    if (includeDaily) {
-      dailyStats = await getDailyOrderStats(startDate, endDate);
-    }
+    // Get all analytics in parallel
+    const [analytics, doctorStats, needsInfoStats, urgentStats] = await Promise.all([
+      getOrderAnalytics({ startDate, endDate }),
+      getDoctorStats({ startDate, endDate }, 10),
+      getNeedsInfoStats({ startDate, endDate }),
+      getUrgentOrderStats(startDate, endDate),
+    ]);
 
     return NextResponse.json({
       analytics,
+      doctorStats,
+      needsInfoStats,
+      urgentStats,
       dateRange: {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
       },
-      ...(dailyStats && { dailyStats }),
     });
   } catch (error) {
     console.error('Error fetching analytics:', error);

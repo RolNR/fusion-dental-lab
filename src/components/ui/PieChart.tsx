@@ -78,12 +78,10 @@ export function PieChart({ segments, size = 200, showLegend = true }: PieChartPr
         <div className="flex flex-wrap justify-center gap-4">
           {segments.map((segment, index) => (
             <div key={index} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: segment.color }}
-              />
+              <div className="h-3 w-3 rounded-full" style={{ backgroundColor: segment.color }} />
               <span className="text-sm text-muted-foreground">
-                {segment.label}: {segment.value} ({total > 0 ? Math.round((segment.value / total) * 100) : 0}%)
+                {segment.label}: {segment.value} (
+                {total > 0 ? Math.round((segment.value / total) * 100) : 0}%)
               </span>
             </div>
           ))}

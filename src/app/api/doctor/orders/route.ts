@@ -175,14 +175,21 @@ export async function POST(request: NextRequest) {
 
     // Log order creation with AI analytics metadata
     const hasAiPrompt = Boolean(orderFields.aiPrompt);
-    await logOrderEvent('CREATE', doctorId, order.id, undefined, { status: 'DRAFT' }, {
-      ...getAuditContext(request),
-      metadata: {
-        aiGenerated: hasAiPrompt,
-        aiPromptLength: orderFields.aiPrompt?.length || 0,
-        teethCount: teeth?.length || 0,
-      },
-    });
+    await logOrderEvent(
+      'CREATE',
+      doctorId,
+      order.id,
+      undefined,
+      { status: 'DRAFT' },
+      {
+        ...getAuditContext(request),
+        metadata: {
+          aiGenerated: hasAiPrompt,
+          aiPromptLength: orderFields.aiPrompt?.length || 0,
+          teethCount: teeth?.length || 0,
+        },
+      }
+    );
 
     return NextResponse.json({ message: 'Orden creada exitosamente', order }, { status: 201 });
   } catch (error) {
