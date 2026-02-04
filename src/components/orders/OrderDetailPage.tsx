@@ -71,8 +71,9 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <div className="min-h-screen bg-background print:min-h-0 print:bg-white">
+      {/* Main content - hidden when printing */}
+      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 print:hidden">
         <OrderHeader
           orderNumber={order.orderNumber}
           status={order.status}
@@ -182,10 +183,10 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
             }}
           />
         )}
-
-        {/* Shipping Label for printing */}
-        <OrderShippingLabel order={order} />
       </div>
+
+      {/* Shipping Label for printing - outside the hidden content div */}
+      <OrderShippingLabel order={order} />
     </div>
   );
 }

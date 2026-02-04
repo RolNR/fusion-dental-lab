@@ -11,16 +11,16 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
   return (
     <div className="shipping-label hidden print:block print:m-0">
       {/* Header */}
-      <div className="bg-white p-3 flex items-center justify-between border-b-4 border-[#D40511] rounded-t-lg">
+      <div className="bg-white p-2 flex items-center justify-between border-b-4 border-[#D40511] rounded-t-lg">
         <div className="flex items-center gap-2">
-          <img src="/ftd_logo.svg" alt="Logo" className="h-6 w-auto" />
+          <img src="/ftd_logo.svg" alt="Logo" className="h-5 w-auto" />
           <div className="border-l-2 border-gray-400 pl-2">
-            <h1 className="text-xl font-bold text-black">CONTROL DE ENVÍO</h1>
+            <h1 className="text-sm font-bold text-black">CONTROL DE ENVÍO</h1>
           </div>
         </div>
-        <div className="text-right flex-1 ml-4">
-          <p className="text-xs font-semibold text-gray-600">Orden:</p>
-          <p className="text-xl font-bold text-[#D40511] break-words">{order.orderNumber}</p>
+        <div className="text-right">
+          <span className="text-xs text-gray-600">Orden: </span>
+          <span className="text-sm font-bold text-[#D40511]">{order.orderNumber}</span>
         </div>
       </div>
 
@@ -162,30 +162,11 @@ export function OrderShippingLabel({ order }: OrderShippingLabelProps) {
         @media print {
           @page {
             size: letter portrait;
-            margin: 0.5in;
-          }
-
-          /* Hide everything */
-          body * {
-            visibility: hidden !important;
-          }
-
-          /* Show only shipping label and its children */
-          .shipping-label,
-          .shipping-label * {
-            visibility: visible !important;
-          }
-
-          /* Position shipping label */
-          .shipping-label {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
+            margin: 0.3in;
           }
 
           /* Ensure colors print */
+          .shipping-label,
           .shipping-label * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
