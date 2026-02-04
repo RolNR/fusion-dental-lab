@@ -403,15 +403,35 @@ export function OdontogramWizard({
     [teethData, setTeethData]
   );
 
-  // Handle tooth remove
+  // Handle tooth remove (also handles bridge removal if tooth is part of a bridge)
   const handleToothRemove = useCallback(
     (toothNumber: string) => {
-      const newTeethData = new Map(teethData);
-      newTeethData.delete(toothNumber);
-      setTeethData(newTeethData);
+      // Check if this tooth is part of a bridge by computing the range for each bridge
+      const parentBridge = bridges.find((b) => {
+        const teethInRange = getTeethInRange(b.startTooth, b.endTooth, initialStates);
+        return teethInRange.includes(toothNumber);
+      });
+
+      if (parentBridge) {
+        // Remove entire bridge and ALL its teeth (using getTeethInRange to get all teeth)
+        const newTeethData = new Map(teethData);
+        const teethToRemove = getTeethInRange(
+          parentBridge.startTooth,
+          parentBridge.endTooth,
+          initialStates
+        );
+        teethToRemove.forEach((t) => newTeethData.delete(t));
+        setTeethData(newTeethData);
+        setBridges((prev) => prev.filter((b) => b.id !== parentBridge.id));
+      } else {
+        // Remove individual tooth
+        const newTeethData = new Map(teethData);
+        newTeethData.delete(toothNumber);
+        setTeethData(newTeethData);
+      }
       updateTeethInOrder();
     },
-    [teethData, setTeethData, updateTeethInOrder]
+    [teethData, bridges, initialStates, setTeethData, setBridges, updateTeethInOrder]
   );
 
   // Handle bridge update
@@ -428,9 +448,9 @@ export function OdontogramWizard({
       const bridge = bridges.find((b) => b.id === bridgeId);
       if (!bridge) return;
 
-      // Remove all bridge teeth from teethData
+      // Remove ALL bridge teeth from teethData (using getTeethInRange to get all teeth)
       const newTeethData = new Map(teethData);
-      const teethToRemove = [bridge.startTooth, bridge.endTooth, ...bridge.pontics];
+      const teethToRemove = getTeethInRange(bridge.startTooth, bridge.endTooth, initialStates);
       teethToRemove.forEach((t) => newTeethData.delete(t));
       setTeethData(newTeethData);
 
@@ -438,7 +458,7 @@ export function OdontogramWizard({
       setBridges((prev) => prev.filter((b) => b.id !== bridgeId));
       updateTeethInOrder();
     },
-    [bridges, teethData, setTeethData, setBridges, updateTeethInOrder]
+    [bridges, teethData, initialStates, setTeethData, setBridges, updateTeethInOrder]
   );
 
   // Navigation
