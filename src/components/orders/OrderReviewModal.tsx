@@ -12,7 +12,6 @@ import {
   AIPromptSection,
   AISuggestionsSection,
   DescriptionNotesSection,
-  DentalDetailsSection,
   ToothConfigSection,
   CaseTypeSection,
   SubmissionTypeSection,
@@ -42,7 +41,6 @@ interface OrderReviewModalProps {
   validationErrors?: {
     patientName?: string;
     fechaEntregaDeseada?: string;
-    description?: string;
     notes?: string;
   };
   // Actions
@@ -162,10 +160,6 @@ export function OrderReviewModal({
     onFormDataChange?.({ fechaEntregaDeseada: value });
   };
 
-  const handleDescriptionChange = (value: string) => {
-    onFormDataChange?.({ description: value });
-  };
-
   const handleNotesChange = (value: string) => {
     onFormDataChange?.({ notes: value });
   };
@@ -203,7 +197,15 @@ export function OrderReviewModal({
         {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-6 py-4">
           <div>
-            <h2 className="text-xl font-bold text-foreground">Revisar Orden</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl font-bold text-foreground">Revisar Orden</h2>
+              {formData.isUrgent && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1 text-sm font-semibold text-warning border border-warning/30">
+                  <Icons.zap className="h-4 w-4" />
+                  Urgente +30%
+                </span>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-1">
               Verifica que toda la información sea correcta. Podrás añadir archivos después de crear
               la orden.
@@ -269,17 +271,8 @@ export function OrderReviewModal({
           )}
 
           <DescriptionNotesSection
-            description={formData.description}
             notes={formData.notes}
-            isUrgent={formData.isUrgent}
-            onDescriptionChange={onFormDataChange ? handleDescriptionChange : undefined}
             onNotesChange={onFormDataChange ? handleNotesChange : undefined}
-          />
-
-          <DentalDetailsSection
-            teethNumbers={formData.teethNumbers}
-            isDigitalScan={formData.isDigitalScan}
-            initialToothStates={formData.initialToothStates}
           />
 
           <ToothConfigSection teeth={formData.teeth} />

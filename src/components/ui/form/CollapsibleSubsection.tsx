@@ -27,7 +27,7 @@ export function CollapsibleSubsection({
         type="button"
         variant="ghost"
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="!w-full !justify-between !p-4 !rounded-none hover:!bg-muted/30"
+        className="!w-full !justify-between !p-4 !rounded-none hover:!bg-muted/30 !ring-0 !ring-offset-0 focus:!ring-0 focus:!ring-offset-0"
       >
         <div className="flex items-center gap-2">
           <IconComponent className="h-5 w-5 text-muted-foreground" />

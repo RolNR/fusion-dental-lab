@@ -3,7 +3,6 @@ export { PatientInfoSection } from './PatientInfoSection';
 export { AIPromptSection } from './AIPromptSection';
 export { AISuggestionsSection } from './AISuggestionsSection';
 export { DescriptionNotesSection } from './DescriptionNotesSection';
-export { DentalDetailsSection } from './DentalDetailsSection';
 export { ToothConfigSection } from './ToothConfigSection';
 export { CaseTypeSection } from './CaseTypeSection';
 export { SubmissionTypeSection } from './SubmissionTypeSection';

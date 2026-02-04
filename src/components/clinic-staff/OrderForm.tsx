@@ -20,7 +20,6 @@ import { MaterialSentSection } from './order-form/MaterialSentSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { OrderFormProps, OrderFormState } from './order-form/OrderForm.types';
 import {
-  fetchCurrentDoctor,
   fetchDoctors,
   saveOrder as saveOrderUtil,
   initializeFormState,
@@ -96,7 +95,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [showErrorSummary, setShowErrorSummary] = useState(false);
   const [teethWithErrors, setTeethWithErrors] = useState<Set<string>>(new Set());
   const [doctors, setDoctors] = useState<Doctor[]>([]);
-  const [currentDoctorName, setCurrentDoctorName] = useState<string>('');
   const [isParsingAI, setIsParsingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -147,11 +145,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     digitalScanFiles?: string;
   }>({});
 
-  // Fetch current user info if doctor, or doctors list if assistant
+  // Fetch doctors list if assistant (needs to select which doctor the order is for)
   useEffect(() => {
-    if (role === 'doctor') {
-      fetchCurrentDoctor().then(setCurrentDoctorName);
-    } else if (role === 'assistant') {
+    if (role === 'assistant') {
       fetchDoctors().then((doctors) => {
         setDoctors(doctors);
         // Set first doctor as default if creating new order
@@ -957,12 +953,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         </div>
       )}
 
-      {showFullForm && role === 'doctor' && (
-        <Select label="Doctor" id="doctorId" value="" onChange={() => {}} disabled={true}>
-          <option value="">{currentDoctorName || 'Cargando...'}</option>
-        </Select>
-      )}
-
       {showFullForm && role === 'assistant' && (
         <div>
           <Select
@@ -1146,7 +1136,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 fullWidth
                 className="sm:w-auto"
               >
-                {orderId ? 'Guardar y Enviar' : 'Enviar para Revisión'}
+                {orderId ? 'Guardar y Enviar' : 'Vista Previa de Orden'}
               </Button>
             )}
             <Button
