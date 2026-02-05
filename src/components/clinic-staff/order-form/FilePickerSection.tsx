@@ -1,11 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { Button } from '@/components/ui/Button';
 import { ScanPreview } from '@/components/ui/ScanPreview';
 import { Inline3DPreview } from './Inline3DPreview';
 import { InlineImagePreview } from './InlineImagePreview';
+import { ScanCategory } from '@/types/file';
+
+// Inter-zone drag data
+export interface DraggedFileData {
+  file: File;
+  sourceCategory: ScanCategory;
+  fileIndex: number;
+}
 
 interface FilePickerSectionProps {
   title: string;
@@ -16,6 +24,12 @@ interface FilePickerSectionProps {
   files: File[];
   onFilesChange: (files: File[]) => void;
   icon?: 'upload' | 'camera';
+  // Drag and drop between zones
+  category?: ScanCategory;
+  onInterZoneDrop?: (draggedData: DraggedFileData, targetCategory: ScanCategory) => void;
+  onFileDragStart?: (draggedData: DraggedFileData) => void;
+  enableInterZoneDrag?: boolean;
+  hideAddButton?: boolean;
 }
 
 interface FileError {
@@ -32,11 +46,17 @@ export function FilePickerSection({
   files,
   onFilesChange,
   icon = 'upload',
+  category,
+  onInterZoneDrop,
+  onFileDragStart,
+  enableInterZoneDrag = false,
+  hideAddButton = false,
 }: FilePickerSectionProps) {
   const [fileErrors, setFileErrors] = useState<FileError[]>([]);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [showInlinePreview, setShowInlinePreview] = useState(true);
   const [showInlineImagePreview, setShowInlineImagePreview] = useState(true);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const is3DFile = (file: File) => {
     const extension = file.name.split('.').pop()?.toLowerCase();
@@ -99,10 +119,121 @@ export function FilePickerSection({
     }
   };
 
+  // Drag and drop handlers for the drop zone
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+
+      // Check if this is an inter-zone drag (from another FilePickerSection)
+      const interZoneData = e.dataTransfer.getData('application/x-scan-file');
+      if (interZoneData && category && onInterZoneDrop) {
+        try {
+          const draggedData = JSON.parse(interZoneData) as DraggedFileData;
+          // Only process if it's from a different zone
+          if (draggedData.sourceCategory !== category) {
+            onInterZoneDrop(draggedData, category);
+          }
+        } catch {
+          // Invalid data, ignore
+        }
+        return;
+      }
+
+      // Handle regular file drop from desktop
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      if (droppedFiles.length === 0) return;
+
+      // Handle locally
+      const remainingSlots = maxFiles - files.length;
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      const validFiles: File[] = [];
+      const errors: FileError[] = [];
+
+      // Filter by accepted types
+      const acceptedExtensions = acceptedTypes.split(',').map((t) => t.trim().toLowerCase());
+
+      droppedFiles.slice(0, remainingSlots).forEach((file) => {
+        const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+        if (!acceptedExtensions.includes(ext)) {
+          errors.push({
+            fileName: file.name,
+            error: `Tipo de archivo no permitido. Se aceptan: ${acceptedTypes}`,
+          });
+        } else if (file.size > maxSizeBytes) {
+          errors.push({
+            fileName: file.name,
+            error: `Tamaño excedido (${(file.size / 1024 / 1024).toFixed(2)} MB de ${maxSizeMB} MB máximo)`,
+          });
+        } else {
+          validFiles.push(file);
+        }
+      });
+
+      setFileErrors(errors);
+      if (validFiles.length > 0) {
+        onFilesChange([...files, ...validFiles]);
+      }
+    },
+    [category, onInterZoneDrop, files, maxFiles, maxSizeMB, acceptedTypes, onFilesChange]
+  );
+
+  // Handler for starting drag on a file item (inter-zone drag)
+  const handleFileDragStartInternal = useCallback(
+    (e: React.DragEvent, file: File, index: number) => {
+      if (!enableInterZoneDrag || !category) return;
+
+      const draggedData: DraggedFileData = {
+        file,
+        sourceCategory: category,
+        fileIndex: index,
+      };
+
+      // Set data for inter-zone transfer (serialize without the File object for dataTransfer)
+      e.dataTransfer.setData('application/x-scan-file', JSON.stringify(draggedData));
+      e.dataTransfer.effectAllowed = 'move';
+
+      // Notify parent that drag started (so it can track the file)
+      if (onFileDragStart) {
+        onFileDragStart(draggedData);
+      }
+    },
+    [enableInterZoneDrag, category, onFileDragStart]
+  );
+
   const IconComponent = icon === 'camera' ? Icons.camera : Icons.upload;
 
+  // Don't render if no files and add button is hidden
+  if (hideAddButton && files.length === 0) {
+    return null;
+  }
+
   return (
-    <div className="space-y-3">
+    <div
+      className={`space-y-3 rounded-lg p-3 transition-colors ${
+        isDragOver
+          ? 'bg-primary/10 border-2 border-dashed border-primary'
+          : enableInterZoneDrag
+            ? 'bg-muted/30 border-2 border-dashed border-border'
+            : 'bg-transparent border-2 border-transparent'
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-foreground">{title}</h3>
@@ -123,8 +254,18 @@ export function FilePickerSection({
             return (
               <div
                 key={index}
-                className="flex items-start gap-3 rounded-md bg-muted/50 p-3 text-sm"
+                className={`flex items-start gap-3 rounded-md bg-muted/50 p-3 text-sm ${
+                  enableInterZoneDrag ? 'cursor-grab active:cursor-grabbing' : ''
+                }`}
+                draggable={enableInterZoneDrag}
+                onDragStart={(e) => handleFileDragStartInternal(e, file, index)}
               >
+                {/* Drag Handle */}
+                {enableInterZoneDrag && (
+                  <div className="flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground self-center">
+                    <Icons.gripVertical className="h-5 w-5" />
+                  </div>
+                )}
                 {/* Thumbnail/Icon */}
                 {is3D || isImage ? (
                   <div
@@ -311,7 +452,7 @@ export function FilePickerSection({
       )}
 
       {/* Add Files Button */}
-      {files.length < maxFiles && (
+      {!hideAddButton && files.length < maxFiles && (
         <div>
           <input
             type="file"
