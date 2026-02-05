@@ -31,7 +31,7 @@ export function NavBar({ basePath, navItems, roleLabel, roleBadgeColor = 'primar
   };
 
   return (
-    <nav className="bg-white border-b border-border sticky top-0 z-50">
+    <nav className="bg-white border-b border-border sticky top-0 z-50 print:hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
