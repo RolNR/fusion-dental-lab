@@ -249,7 +249,7 @@ export const orderDraftSchema = z.object({
 
   // Case type
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
-  motivoGarantia: z.string().optional(),
+  motivoGarantia: z.string().nullable().optional(),
   seDevuelveTrabajoOriginal: z.boolean().optional(),
 
   // Digital scan details
@@ -364,7 +364,7 @@ export const orderUpdateSchema = z.object({
 
   // Case type fields
   tipoCaso: z.nativeEnum(CaseType).nullable().optional(),
-  motivoGarantia: z.string().optional(),
+  motivoGarantia: z.string().nullable().optional(),
 
   // Per-tooth configuration
   teeth: z
