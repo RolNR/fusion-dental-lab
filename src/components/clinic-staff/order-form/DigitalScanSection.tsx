@@ -386,14 +386,7 @@ export function DigitalScanSection({
         }
       }
     },
-    [
-      upperFiles,
-      lowerFiles,
-      biteFiles,
-      onUpperFilesChange,
-      onLowerFilesChange,
-      onBiteFilesChange,
-    ]
+    [upperFiles, lowerFiles, biteFiles, onUpperFilesChange, onLowerFilesChange, onBiteFilesChange]
   );
 
   return (

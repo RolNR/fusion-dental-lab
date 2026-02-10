@@ -1,5 +1,5 @@
 import { Order } from '@/types/order';
-import { CollapsibleToothList } from './CollapsibleToothCard';
+import { ToothConfigSection } from './review-sections/ToothConfigSection';
 import { getInitialStatesSummary, InitialToothStatesMap } from '@/types/initial-tooth-state';
 
 interface OrderDetailsProps {
@@ -127,73 +127,10 @@ export function OrderDetails({ order, showDoctorInfo = false }: OrderDetailsProp
         </div>
       )}
 
-      {/* Teeth Configuration */}
+      {/* Teeth Configuration - grouped by product type */}
       {order.teeth && order.teeth.length > 0 && (
         <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-          <h2 className="text-xl font-bold text-foreground mb-4">Configuración de Dientes</h2>
-          <CollapsibleToothList
-            teeth={order.teeth}
-            renderToothDetails={(tooth) => (
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {tooth.material && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Material</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tooth.material}</dd>
-                  </div>
-                )}
-                {tooth.tipoRestauracion && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">
-                      Tipo de Restauración
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground capitalize">
-                      {tooth.tipoRestauracion}
-                    </dd>
-                  </div>
-                )}
-                {tooth.trabajoSobreImplante && (
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">
-                      Trabajo sobre Implante
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground">Sí</dd>
-                  </div>
-                )}
-                {tooth.colorInfo && (
-                  <div className="col-span-2">
-                    <dt className="text-sm font-medium text-muted-foreground">
-                      Información de Color
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground">
-                      {(tooth.colorInfo as any).shadeType && (
-                        <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>
-                      )}
-                      {(tooth.colorInfo as any).shadeCode && (
-                        <span className="ml-2">Código: {(tooth.colorInfo as any).shadeCode}</span>
-                      )}
-                    </dd>
-                  </div>
-                )}
-                {tooth.informacionImplante && (
-                  <div className="col-span-2">
-                    <dt className="text-sm font-medium text-muted-foreground mb-2">
-                      Información de Implante
-                    </dt>
-                    <dd className="mt-1 text-sm text-foreground space-y-1">
-                      {(tooth.informacionImplante as any).marcaImplante && (
-                        <div>Marca: {(tooth.informacionImplante as any).marcaImplante}</div>
-                      )}
-                      {(tooth.informacionImplante as any).sistemaConexion && (
-                        <div>
-                          Sistema de Conexión: {(tooth.informacionImplante as any).sistemaConexion}
-                        </div>
-                      )}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            )}
-          />
+          <ToothConfigSection teeth={order.teeth} />
         </div>
       )}
 
