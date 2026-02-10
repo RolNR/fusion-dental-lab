@@ -6,7 +6,7 @@ import { Role } from '@prisma/client';
 export function getRoleBasedRedirect(role: Role): string {
   switch (role) {
     case 'LAB_ADMIN':
-      return '/lab-admin';
+      return '/lab-admin/orders';
     case 'DOCTOR':
       return '/doctor';
     default:
