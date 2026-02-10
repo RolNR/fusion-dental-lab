@@ -347,14 +347,53 @@ export function DigitalScanSection({
   // Handle unified drop zone - auto-categorize all files, default to 'upper'
   const handleUnifiedDrop = useCallback(
     (droppedFiles: File[]) => {
+      // Group files by category first to avoid stale state issues
+      const filesByCategory: Record<ScanCategory, File[]> = {
+        upper: [],
+        lower: [],
+        bite: [],
+      };
+
       for (const file of droppedFiles) {
         const detectedCategory = detectScanCategoryFromFilename(file.name);
         // Default to 'upper' if no pattern matches
         const targetCategory = detectedCategory || 'upper';
-        addFilesToCategory([file], targetCategory);
+        filesByCategory[targetCategory].push(file);
+      }
+
+      // Now add all files for each category in one batch
+      if (filesByCategory.upper.length > 0 && onUpperFilesChange) {
+        const remainingSlots = MAX_FILES_PER_CATEGORY - upperFiles.length;
+        const filesToAdd = filesByCategory.upper.slice(0, remainingSlots);
+        if (filesToAdd.length > 0) {
+          onUpperFilesChange([...upperFiles, ...filesToAdd]);
+        }
+      }
+
+      if (filesByCategory.lower.length > 0 && onLowerFilesChange) {
+        const remainingSlots = MAX_FILES_PER_CATEGORY - lowerFiles.length;
+        const filesToAdd = filesByCategory.lower.slice(0, remainingSlots);
+        if (filesToAdd.length > 0) {
+          onLowerFilesChange([...lowerFiles, ...filesToAdd]);
+        }
+      }
+
+      if (filesByCategory.bite.length > 0 && onBiteFilesChange) {
+        const remainingSlots = MAX_FILES_PER_CATEGORY - biteFiles.length;
+        const filesToAdd = filesByCategory.bite.slice(0, remainingSlots);
+        if (filesToAdd.length > 0) {
+          onBiteFilesChange([...biteFiles, ...filesToAdd]);
+        }
       }
     },
-    [addFilesToCategory]
+    [
+      upperFiles,
+      lowerFiles,
+      biteFiles,
+      onUpperFilesChange,
+      onLowerFilesChange,
+      onBiteFilesChange,
+    ]
   );
 
   return (
