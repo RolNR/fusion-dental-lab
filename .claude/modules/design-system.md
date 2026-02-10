@@ -3,7 +3,7 @@
 **Framework**: Tailwind CSS 4
 **Component Pattern**: Custom UI components with semantic colors
 **Language**: Spanish (all user-facing text)
-**Last Updated**: 2026-01-05
+**Last Updated**: 2026-01-30
 
 ## Core Principles
 
@@ -35,38 +35,24 @@ Allows easy theming and consistency. Instead of hardcoded colors, use semantic n
 ### Color Token Reference
 
 **Primary (brand actions, CTAs)**
-- `bg-primary` - Main brand color background
-- `text-primary` - Primary text/icons
-- `border-primary` - Primary borders
-- `bg-primary-hover` - Hover state
-- `text-primary-foreground` - Text on primary background (usually white)
-- `focus:ring-primary` - Focus rings
+- `bg-primary`, `text-primary`, `border-primary`, `focus:ring-primary`
+- `bg-primary-hover`, `text-primary-foreground`
 
 **Danger (errors, delete actions)**
-- `bg-danger` - Danger background
-- `text-danger` - Error text
-- `border-danger` - Error borders
-- `bg-danger-hover` - Hover state
-- `text-danger-foreground` - Text on danger background
-- `bg-danger/10` - Light danger background (10% opacity)
+- `bg-danger`, `text-danger`, `border-danger`
+- `bg-danger-hover`, `text-danger-foreground`
+- `bg-danger/10` (light error background)
 
 **Success**
-- `bg-success` - Success background
-- `text-success` - Success text
-- `bg-success/10` - Light success background
+- `bg-success`, `text-success`, `bg-success/10`
 
 **Warning**
-- `bg-warning` - Warning background
-- `text-warning` - Warning text
-- `bg-warning/10` - Light warning background
+- `bg-warning`, `text-warning`, `bg-warning/10`
 
 **UI/Neutral**
-- `bg-background` - Main page background
-- `text-foreground` - Primary text color
-- `bg-muted` - Secondary/muted background
-- `text-muted-foreground` - Secondary text color
-- `border-border` - Default border color
-- `border-border-input` - Input field borders
+- `bg-background`, `text-foreground` (main content)
+- `bg-muted`, `text-muted-foreground` (secondary)
+- `border-border`, `border-border-input`
 
 ## UI Components
 
@@ -98,12 +84,6 @@ import { Input } from '@/components/ui/Input';
 - `helperText?: string` - Helper text below input
 - All standard HTML input props
 
-**Features:**
-- Automatic error state styling
-- Label with required indicator
-- Semantic color system
-- Accessible markup
-
 ### PasswordInput Component
 
 **File**: `src/components/ui/PasswordInput.tsx`
@@ -124,7 +104,6 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 - Show/hide password toggle
 - Eye icon button
 - All Input component features
-- Semantic colors
 
 ### Select Component
 
@@ -134,22 +113,17 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Select } from '@/components/ui/Select';
 
 <Select
-  label="Rol"
+  label="Tipo de caso"
   required
-  value={formData.role}
-  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-  error={errors.role}
+  value={formData.tipoCaso}
+  onChange={(e) => setFormData({ ...formData, tipoCaso: e.target.value })}
+  error={errors.tipoCaso}
 >
   <option value="">Selecciona una opción</option>
-  <option value="DOCTOR">Doctor</option>
-  <option value="CLINIC_ASSISTANT">Asistente</option>
+  <option value="nuevo">Nuevo</option>
+  <option value="garantia">Garantía</option>
 </Select>
 ```
-
-**Features:**
-- Styled dropdown with semantic colors
-- Label and error handling
-- Accessible
 
 ### Button Component
 
@@ -174,10 +148,9 @@ import { Button } from '@/components/ui/Button';
 - `size`: `'sm'` | `'md'` | `'lg'`
 - `isLoading?: boolean` - Shows spinner, disables button
 - `disabled?: boolean`
-- All standard HTML button props
 
 **Variants:**
-- **primary**: Primary action (blue/brand color)
+- **primary**: Primary action (brand color)
 - **secondary**: Secondary action (neutral)
 - **danger**: Destructive action (red)
 - **ghost**: Minimal styling (transparent)
@@ -186,7 +159,6 @@ import { Button } from '@/components/ui/Button';
 
 **File**: `src/components/ui/Icons.tsx`
 
-**Available icons:**
 ```tsx
 import { Icons } from '@/components/ui/Icons';
 
@@ -211,6 +183,36 @@ import { Icons } from '@/components/ui/Icons';
 4. Use semantic colors for styling
 
 **Never inline SVG icons** - always add to Icons.tsx
+
+### Chart Components
+
+**File**: `src/components/ui/PieChart.tsx`
+
+```tsx
+import { PieChart } from '@/components/ui/PieChart';
+
+<PieChart
+  segments={[
+    { value: 75, color: 'hsl(var(--primary))', label: 'Con IA' },
+    { value: 25, color: 'hsl(var(--muted))', label: 'Manual' },
+  ]}
+  size={220}
+/>
+```
+
+**File**: `src/components/ui/HorizontalBarChart.tsx`
+
+```tsx
+import { HorizontalBarChart } from '@/components/ui/HorizontalBarChart';
+
+<HorizontalBarChart
+  items={[
+    { label: 'Dr. García', value: 45 },
+    { label: 'Dr. Martínez', value: 32 },
+  ]}
+  showPercentage={true}
+/>
+```
 
 ## Common UI Patterns
 
@@ -292,18 +294,10 @@ import { Icons } from '@/components/ui/Icons';
   </Select>
 
   <div className="flex gap-4">
-    <Button
-      type="button"
-      variant="secondary"
-      onClick={onCancel}
-    >
+    <Button type="button" variant="secondary" onClick={onCancel}>
       Cancelar
     </Button>
-    <Button
-      type="submit"
-      variant="primary"
-      isLoading={isSubmitting}
-    >
+    <Button type="submit" variant="primary" isLoading={isSubmitting}>
       Guardar
     </Button>
   </div>
@@ -443,17 +437,17 @@ error: "Field is required"
 
 ```
 src/components/
-├── ui/                      # Shared UI primitives (ALWAYS use these)
+├── ui/                  # Shared UI primitives (ALWAYS use these)
 │   ├── Input.tsx
 │   ├── PasswordInput.tsx
 │   ├── Select.tsx
 │   ├── Button.tsx
-│   └── Icons.tsx
-├── lab-admin/              # Lab admin specific
-├── lab-collaborator/       # Lab collaborator specific
-├── clinic-admin/           # Clinic admin specific
-├── clinic-staff/           # Shared by DOCTOR + CLINIC_ASSISTANT
-└── orders/                 # Order-related (shared)
+│   ├── Icons.tsx
+│   ├── PieChart.tsx
+│   └── HorizontalBarChart.tsx
+├── lab-admin/          # Lab admin specific components
+├── doctor/             # Doctor specific components
+└── orders/             # Order-related (shared by both roles)
 ```
 
 ## Code Quality Checklist
@@ -477,6 +471,8 @@ Before committing:
 | `src/components/ui/Select.tsx` | Dropdown select |
 | `src/components/ui/Button.tsx` | Button with variants |
 | `src/components/ui/Icons.tsx` | Centralized icon library |
+| `src/components/ui/PieChart.tsx` | SVG pie chart |
+| `src/components/ui/HorizontalBarChart.tsx` | Horizontal bar chart |
 | `tailwind.config.ts` | Tailwind configuration with semantic colors |
 | `src/app/globals.css` | Global styles and CSS variables |
 

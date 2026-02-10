@@ -15,7 +15,7 @@ import { FileList } from '@/components/orders/FileList';
 import { OcclusionPreview } from '@/components/ui/OcclusionPreview';
 import { FileCategory } from '@/types/file';
 import { useSession } from 'next-auth/react';
-import { CollapsibleToothList } from '@/components/orders/CollapsibleToothCard';
+import { ToothConfigSection } from '@/components/orders/review-sections/ToothConfigSection';
 import { generateCaseSummary } from '@/lib/orderSummaryGenerator';
 import { getInitialStatesSummary, InitialToothStatesMap } from '@/types/initial-tooth-state';
 
@@ -231,99 +231,10 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
             )}
           </div>
 
-          {/* Teeth Configuration */}
+          {/* Teeth Configuration - grouped by product type */}
           {order.teeth && order.teeth.length > 0 && (
             <div className="rounded-xl bg-background p-6 shadow-md border border-border">
-              <h2 className="mb-4 text-xl font-semibold text-foreground">
-                Configuración de Dientes
-              </h2>
-              <CollapsibleToothList
-                teeth={order.teeth}
-                renderToothDetails={(tooth) => (
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {tooth.material && (
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">Material</dt>
-                        <dd className="text-sm text-foreground flex items-center">
-                          {tooth.material}
-                          <CopyButton value={tooth.material} label="material" />
-                        </dd>
-                      </div>
-                    )}
-                    {tooth.tipoRestauracion && (
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">
-                          Tipo de Restauración
-                        </dt>
-                        <dd className="text-sm text-foreground capitalize flex items-center">
-                          {tooth.tipoRestauracion}
-                          <CopyButton value={tooth.tipoRestauracion} label="tipo de restauración" />
-                        </dd>
-                      </div>
-                    )}
-                    {tooth.trabajoSobreImplante && (
-                      <div>
-                        <dt className="text-sm font-medium text-muted-foreground">
-                          Trabajo sobre Implante
-                        </dt>
-                        <dd className="text-sm text-foreground flex items-center">
-                          Sí
-                          <CopyButton value="Sí" label="trabajo sobre implante" />
-                        </dd>
-                      </div>
-                    )}
-                    {tooth.colorInfo && (
-                      <div className="col-span-2">
-                        <dt className="text-sm font-medium text-muted-foreground">
-                          Información de Color
-                        </dt>
-                        <dd className="text-sm text-foreground">
-                          <div className="flex items-center flex-wrap gap-2">
-                            {(tooth.colorInfo as any).shadeType && (
-                              <span>Sistema: {(tooth.colorInfo as any).shadeType}</span>
-                            )}
-                            {(tooth.colorInfo as any).shadeCode && (
-                              <span>Código: {(tooth.colorInfo as any).shadeCode}</span>
-                            )}
-                            <CopyButton
-                              value={`${(tooth.colorInfo as any).shadeType || ''} ${(tooth.colorInfo as any).shadeCode || ''}`.trim()}
-                              label="información de color"
-                            />
-                          </div>
-                        </dd>
-                      </div>
-                    )}
-                    {tooth.informacionImplante && (
-                      <div className="col-span-2">
-                        <dt className="text-sm font-medium text-muted-foreground mb-2">
-                          Información de Implante
-                        </dt>
-                        <dd className="text-sm text-foreground space-y-1">
-                          {(tooth.informacionImplante as any).marcaImplante && (
-                            <div className="flex items-center">
-                              Marca: {(tooth.informacionImplante as any).marcaImplante}
-                              <CopyButton
-                                value={(tooth.informacionImplante as any).marcaImplante}
-                                label="marca de implante"
-                              />
-                            </div>
-                          )}
-                          {(tooth.informacionImplante as any).sistemaConexion && (
-                            <div className="flex items-center">
-                              Sistema de Conexión:{' '}
-                              {(tooth.informacionImplante as any).sistemaConexion}
-                              <CopyButton
-                                value={(tooth.informacionImplante as any).sistemaConexion}
-                                label="sistema de conexión"
-                              />
-                            </div>
-                          )}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
-                )}
-              />
+              <ToothConfigSection teeth={order.teeth} />
             </div>
           )}
 

@@ -45,7 +45,7 @@ export function generateCaseSummary(order: OrderDetail): string {
 
   // Opening - Patient and case type
   const caseType = order.tipoCaso ? CASE_TYPE_LABELS[order.tipoCaso] || order.tipoCaso : 'un caso';
-  let opening = `El paciente ${order.patientName} necesita ${caseType}`;
+  let opening = `Se requiere para paciente ${order.patientName} ${caseType}`;
 
   if (order.isUrgent) {
     opening += ' (URGENTE - 30% recargo)';

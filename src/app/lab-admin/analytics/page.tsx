@@ -130,7 +130,8 @@ export default function AnalyticsPage() {
 
   // Calculate overall urgent percentage
   const totalUrgent = analytics?.urgentStats.reduce((sum, s) => sum + s.urgentOrders, 0) || 0;
-  const totalFromUrgentStats = analytics?.urgentStats.reduce((sum, s) => sum + s.totalOrders, 0) || 0;
+  const totalFromUrgentStats =
+    analytics?.urgentStats.reduce((sum, s) => sum + s.totalOrders, 0) || 0;
   const overallUrgentPercentage =
     totalFromUrgentStats > 0 ? Math.round((totalUrgent / totalFromUrgentStats) * 100) : 0;
 
@@ -301,12 +302,17 @@ export default function AnalyticsPage() {
                       {/* Total orders bar */}
                       <div
                         className="w-full max-w-[30px] bg-muted rounded-t relative"
-                        style={{ height: `${totalHeight}%`, minHeight: stat.totalOrders > 0 ? '4px' : '0' }}
+                        style={{
+                          height: `${totalHeight}%`,
+                          minHeight: stat.totalOrders > 0 ? '4px' : '0',
+                        }}
                       >
                         {/* Urgent orders overlay */}
                         <div
                           className="absolute bottom-0 left-0 right-0 bg-danger rounded-t"
-                          style={{ height: `${(stat.urgentOrders / stat.totalOrders) * 100 || 0}%` }}
+                          style={{
+                            height: `${(stat.urgentOrders / stat.totalOrders) * 100 || 0}%`,
+                          }}
                         />
                       </div>
                     </div>

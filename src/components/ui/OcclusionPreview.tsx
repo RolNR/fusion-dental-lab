@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useEffect, useState, useRef } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import * as THREE from 'three';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
@@ -99,6 +99,67 @@ function ArchModel({
   );
 }
 
+// Animated group that rotates around a pivot point (simulating jaw hinge)
+function AnimatedLowerJaw({
+  children,
+  biteOpen,
+}: {
+  children: React.ReactNode;
+  biteOpen: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const targetRotation = biteOpen ? 0.35 : 0; // ~20 degrees rotation when open
+  const targetY = biteOpen ? -8 : 0; // Slight downward movement
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      // Smooth interpolation for rotation (jaw hinge effect)
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(
+        groupRef.current.rotation.x,
+        targetRotation,
+        delta * 3 // Animation speed
+      );
+      // Smooth interpolation for position
+      groupRef.current.position.y = THREE.MathUtils.lerp(
+        groupRef.current.position.y,
+        targetY,
+        delta * 3
+      );
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, 0, -25]}>
+      {/* Offset to simulate pivot point at the back of the jaw */}
+      <group position={[0, 0, 25]}>{children}</group>
+    </group>
+  );
+}
+
+// Animated group for upper arch (slight movement for realism)
+function AnimatedUpperJaw({
+  children,
+  biteOpen,
+}: {
+  children: React.ReactNode;
+  biteOpen: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null);
+  const targetY = biteOpen ? 5 : 0; // Slight upward movement when open
+
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      groupRef.current.position.y = THREE.MathUtils.lerp(
+        groupRef.current.position.y,
+        targetY,
+        delta * 3
+      );
+    }
+  });
+
+  return <group ref={groupRef}>{children}</group>;
+}
+
 function Scene({
   upperUrl,
   upperExtension,
@@ -120,35 +181,34 @@ function Scene({
   onUpperLoadingChange?: (isLoading: boolean) => void;
   onLowerLoadingChange?: (isLoading: boolean) => void;
 }) {
-  // Calculate positions based on bite open/close
-  // When bite is open, separate the arches vertically
-  const upperPosition: [number, number, number] = biteOpen ? [0, 15, 0] : [0, 0, 0];
-  const lowerPosition: [number, number, number] = biteOpen ? [0, -15, 0] : [0, 0, 0];
-
   return (
     <Center>
       <group>
         {upperUrl && upperExtension && (
-          <ArchModel
-            url={upperUrl}
-            fileExtension={upperExtension}
-            shouldRevokeUrl={shouldRevokeUpperUrl}
-            position={upperPosition}
-            color="#9ca3af"
-            label="arcada superior"
-            onLoadingChange={onUpperLoadingChange}
-          />
+          <AnimatedUpperJaw biteOpen={biteOpen}>
+            <ArchModel
+              url={upperUrl}
+              fileExtension={upperExtension}
+              shouldRevokeUrl={shouldRevokeUpperUrl}
+              position={[0, 0, 0]}
+              color="#9ca3af"
+              label="arcada superior"
+              onLoadingChange={onUpperLoadingChange}
+            />
+          </AnimatedUpperJaw>
         )}
         {lowerUrl && lowerExtension && (
-          <ArchModel
-            url={lowerUrl}
-            fileExtension={lowerExtension}
-            shouldRevokeUrl={shouldRevokeLowerUrl}
-            position={lowerPosition}
-            color="#6b7280"
-            label="arcada inferior"
-            onLoadingChange={onLowerLoadingChange}
-          />
+          <AnimatedLowerJaw biteOpen={biteOpen}>
+            <ArchModel
+              url={lowerUrl}
+              fileExtension={lowerExtension}
+              shouldRevokeUrl={shouldRevokeLowerUrl}
+              position={[0, 0, 0]}
+              color="#6b7280"
+              label="arcada inferior"
+              onLoadingChange={onLowerLoadingChange}
+            />
+          </AnimatedLowerJaw>
         )}
       </group>
     </Center>

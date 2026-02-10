@@ -117,20 +117,22 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
           />
         </div>
 
-        {/* Print Shipping Label Button */}
-        <div className="mt-6 print:hidden">
-          <Button
-            variant="secondary"
-            onClick={handlePrintShippingLabel}
-            className="w-full sm:w-auto"
-          >
-            <Icons.printer className="h-4 w-4 mr-2" />
-            Imprimir Guía de Envío
-          </Button>
-          <p className="text-sm text-muted-foreground mt-2">
-            Imprima esta guía y coloque en su caja para facilitar la recolección y entrega.
-          </p>
-        </div>
+        {/* Print Shipping Label Button - only show for non-draft orders */}
+        {order.status !== OrderStatus.DRAFT && (
+          <div className="mt-6 print:hidden">
+            <Button
+              variant="secondary"
+              onClick={handlePrintShippingLabel}
+              className="w-full sm:w-auto"
+            >
+              <Icons.printer className="h-4 w-4 mr-2" />
+              Imprimir Guía de Envío
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">
+              Imprima esta guía y coloque en su caja para facilitar la recolección y entrega.
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-4 print:hidden">
           {(order.status === 'DRAFT' || order.status === 'NEEDS_INFO') && (
