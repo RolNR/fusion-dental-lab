@@ -17,6 +17,7 @@ import {
   SCAN_CATEGORY_LABELS,
   detectScanCategoryFromFilename,
 } from '@/types/file';
+import { detectScannerFromFiles } from '@/lib/scannerDetection';
 
 // Unified Drop Zone Component
 interface UnifiedDropZoneProps {
@@ -346,7 +347,15 @@ export function DigitalScanSection({
 
   // Handle unified drop zone - auto-categorize all files, default to 'upper'
   const handleUnifiedDrop = useCallback(
-    (droppedFiles: File[]) => {
+    async (droppedFiles: File[]) => {
+      // Try to detect scanner from files if not already selected
+      if (!escanerUtilizado) {
+        const detectedScanner = await detectScannerFromFiles(droppedFiles);
+        if (detectedScanner) {
+          onChange({ escanerUtilizado: detectedScanner });
+        }
+      }
+
       // Group files by category first to avoid stale state issues
       const filesByCategory: Record<ScanCategory, File[]> = {
         upper: [],
@@ -386,7 +395,16 @@ export function DigitalScanSection({
         }
       }
     },
-    [upperFiles, lowerFiles, biteFiles, onUpperFilesChange, onLowerFilesChange, onBiteFilesChange]
+    [
+      upperFiles,
+      lowerFiles,
+      biteFiles,
+      onUpperFilesChange,
+      onLowerFilesChange,
+      onBiteFilesChange,
+      escanerUtilizado,
+      onChange,
+    ]
   );
 
   return (
@@ -420,6 +438,7 @@ export function DigitalScanSection({
               <option value={ScannerType.Medit}>Medit</option>
               <option value={ScannerType.ThreeShape}>3Shape</option>
               <option value={ScannerType.Carestream}>Carestream</option>
+              <option value={ScannerType.DentalWings}>Dental Wings</option>
               <option value={ScannerType.Otro}>Otro</option>
             </Select>
 
