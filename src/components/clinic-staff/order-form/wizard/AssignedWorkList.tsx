@@ -22,12 +22,29 @@ interface AssignedWorkListProps {
 }
 
 const WORK_TYPE_LABELS: Record<RestorationType, string> = {
+  // Restauraciones por diente
   corona: 'Coronas',
   puente: 'Puentes',
   inlay: 'Inlays',
   onlay: 'Onlays',
   carilla: 'Carillas',
   provisional: 'Provisionales',
+  // Sobre implantes
+  pilar: 'Pilares',
+  barra: 'Barras',
+  hibrida: 'Híbridas',
+  toronto: 'Toronto',
+  // Prótesis removible
+  removible: 'Removibles',
+  parcial: 'Parciales',
+  total: 'Totales',
+  sobredentadura: 'Sobredentaduras',
+  // Diagnóstico/Planificación
+  encerado: 'Encerados',
+  mockup: 'Mockups',
+  guia_quirurgica: 'Guías Quirúrgicas',
+  prototipo: 'Prototipos',
+  guarda_oclusal: 'Guardas Oclusales',
 };
 
 export function AssignedWorkList({

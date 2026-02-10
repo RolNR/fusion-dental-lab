@@ -2,9 +2,11 @@ import {
   OrderStatus,
   CaseType,
   RestorationType,
+  RestorationCategory,
   ScannerType,
   SubmissionType,
   ArticulatedBy,
+  ProvisionalMaterial,
   Prisma,
 } from '@prisma/client';
 import { z } from 'zod';
@@ -287,12 +289,17 @@ export const orderDraftSchema = z.object({
           .union([colorInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
+        categoriaRestauracion: z.nativeEnum(RestorationCategory).nullable().optional(),
         tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
         trabajoSobreImplante: z.boolean().optional(),
         informacionImplante: z
           .union([implantInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
+        // Productos adicionales
+        solicitarProvisional: z.boolean().optional(),
+        materialProvisional: z.nativeEnum(ProvisionalMaterial).nullable().optional(),
+        solicitarJig: z.boolean().optional(),
       })
     )
     .optional(),
@@ -314,6 +321,7 @@ const toothSubmitSchema = z.object({
     .union([colorInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
+  categoriaRestauracion: z.nativeEnum(RestorationCategory).nullable().optional(),
   tipoRestauracion: z.any().refine((val) => Object.values(RestorationType).includes(val), {
     message: 'Tipo de restauración requerido',
   }),
@@ -322,6 +330,10 @@ const toothSubmitSchema = z.object({
     .union([implantInfoSchema, z.null()])
     .optional()
     .transform((val) => val as Prisma.InputJsonValue | undefined),
+  // Productos adicionales
+  solicitarProvisional: z.boolean().optional(),
+  materialProvisional: z.nativeEnum(ProvisionalMaterial).nullable().optional(),
+  solicitarJig: z.boolean().optional(),
 });
 
 // Schema for submitting orders for review (stricter validation on teeth)
@@ -376,12 +388,17 @@ export const orderUpdateSchema = z.object({
           .union([colorInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
+        categoriaRestauracion: z.nativeEnum(RestorationCategory).nullable().optional(),
         tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
         trabajoSobreImplante: z.boolean().optional(),
         informacionImplante: z
           .union([implantInfoSchema, z.null()])
           .optional()
           .transform((val) => val as Prisma.InputJsonValue | undefined),
+        // Productos adicionales
+        solicitarProvisional: z.boolean().optional(),
+        materialProvisional: z.nativeEnum(ProvisionalMaterial).nullable().optional(),
+        solicitarJig: z.boolean().optional(),
       })
     )
     .optional(),

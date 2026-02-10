@@ -17,6 +17,19 @@ const RESTORATION_TYPE_LABELS: Record<string, string> = {
   onlay: 'onlay',
   carilla: 'carilla',
   provisional: 'provisional',
+  pilar: 'pilar',
+  barra: 'barra',
+  hibrida: 'híbrida',
+  toronto: 'toronto',
+  removible: 'removible',
+  parcial: 'parcial',
+  total: 'total',
+  sobredentadura: 'sobredentadura',
+  encerado: 'encerado',
+  mockup: 'mockup',
+  guia_quirurgica: 'guía quirúrgica',
+  prototipo: 'prototipo',
+  guarda_oclusal: 'guarda oclusal',
 };
 
 const ARTICULATED_BY_LABELS: Record<string, string> = {

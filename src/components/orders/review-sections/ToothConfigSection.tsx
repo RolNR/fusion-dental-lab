@@ -17,6 +17,19 @@ const RESTORATION_TYPE_LABELS: Record<RestorationType, string> = {
   onlay: 'Onlays',
   carilla: 'Carillas',
   provisional: 'Provisionales',
+  pilar: 'Pilares',
+  barra: 'Barras',
+  hibrida: 'Híbridas',
+  toronto: 'Toronto',
+  removible: 'Removibles',
+  parcial: 'Parciales',
+  total: 'Totales',
+  sobredentadura: 'Sobredentaduras',
+  encerado: 'Encerados',
+  mockup: 'Mockups',
+  guia_quirurgica: 'Guías Quirúrgicas',
+  prototipo: 'Prototipos',
+  guarda_oclusal: 'Guardas Oclusales',
 };
 
 // Singular form for display
@@ -27,6 +40,19 @@ const RESTORATION_TYPE_SINGULAR: Record<RestorationType, string> = {
   onlay: 'Onlay',
   carilla: 'Carilla',
   provisional: 'Provisional',
+  pilar: 'Pilar',
+  barra: 'Barra',
+  hibrida: 'Híbrida',
+  toronto: 'Toronto',
+  removible: 'Removible',
+  parcial: 'Parcial',
+  total: 'Total',
+  sobredentadura: 'Sobredentadura',
+  encerado: 'Encerado',
+  mockup: 'Mockup',
+  guia_quirurgica: 'Guía Quirúrgica',
+  prototipo: 'Prototipo',
+  guarda_oclusal: 'Guarda Oclusal',
 };
 
 interface ToothGroup {

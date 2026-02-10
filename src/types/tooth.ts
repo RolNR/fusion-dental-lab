@@ -1,4 +1,4 @@
-import { RestorationType } from '@prisma/client';
+import { RestorationType, RestorationCategory, ProvisionalMaterial } from '@prisma/client';
 import { z } from 'zod';
 import { implantInfoSchema, colorInfoSchema, ImplantInfo, ColorInfo } from './order';
 
@@ -22,9 +22,15 @@ export interface Tooth {
 
   material?: string;
   colorInfo?: ColorInfo;
+  categoriaRestauracion?: RestorationCategory;
   tipoRestauracion?: RestorationType;
   trabajoSobreImplante?: boolean;
   informacionImplante?: ImplantInfo;
+
+  // Productos adicionales
+  solicitarProvisional?: boolean;
+  materialProvisional?: ProvisionalMaterial;
+  solicitarJig?: boolean;
 
   createdAt: string;
   updatedAt: string;
@@ -35,9 +41,14 @@ export const toothDataSchema = z.object({
   toothNumber: z.string().min(1, 'Número de diente requerido'),
   material: z.string().optional(),
   colorInfo: z.union([colorInfoSchema, z.null()]).optional(),
+  categoriaRestauracion: z.nativeEnum(RestorationCategory).nullable().optional(),
   tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
   trabajoSobreImplante: z.boolean().optional(),
   informacionImplante: z.union([implantInfoSchema, z.null()]).optional(),
+  // Productos adicionales
+  solicitarProvisional: z.boolean().optional(),
+  materialProvisional: z.nativeEnum(ProvisionalMaterial).nullable().optional(),
+  solicitarJig: z.boolean().optional(),
 });
 
 export type ToothData = z.infer<typeof toothDataSchema>;
