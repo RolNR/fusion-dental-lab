@@ -222,6 +222,11 @@ export const colorInfoSchema = z.object({
   colorimeter: z.string().optional(),
   texture: z.array(z.string()).optional(),
   gloss: z.array(z.string()).optional(),
+  // Zone shading (cervical, medio, incisal)
+  useZoneShading: z.boolean().optional(),
+  cervicalShade: z.string().nullable().optional(),
+  medioShade: z.string().nullable().optional(),
+  incisalShade: z.string().nullable().optional(),
 });
 
 // TypeScript types for the schemas

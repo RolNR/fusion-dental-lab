@@ -72,7 +72,16 @@ export type ToothConfigStatus = 'complete' | 'incomplete' | 'none';
 export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigStatus {
   if (!tooth) return 'none';
 
-  const colorInfo = tooth.colorInfo as { shadeCode?: string; shadeType?: string } | undefined;
+  const colorInfo = tooth.colorInfo as
+    | {
+        shadeCode?: string;
+        shadeType?: string;
+        useZoneShading?: boolean;
+        cervicalShade?: string;
+        medioShade?: string;
+        incisalShade?: string;
+      }
+    | undefined;
   const implantInfo = tooth.informacionImplante as { marcaImplante?: string } | undefined;
 
   // Check if tooth has any data at all
@@ -81,6 +90,9 @@ export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigS
     tooth.material ||
     colorInfo?.shadeCode ||
     colorInfo?.shadeType ||
+    colorInfo?.cervicalShade ||
+    colorInfo?.medioShade ||
+    colorInfo?.incisalShade ||
     tooth.trabajoSobreImplante;
 
   if (!hasAnyData) return 'none';
@@ -88,8 +100,15 @@ export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigS
   // Check required fields for completeness
   const hasTipoRestauracion = !!tooth.tipoRestauracion;
   const hasMaterial = !!tooth.material;
-  const hasColor = !!colorInfo?.shadeCode;
   const hasColorSystem = !!colorInfo?.shadeType;
+
+  // Color completeness depends on zone shading mode
+  let hasColor: boolean;
+  if (colorInfo?.useZoneShading) {
+    hasColor = !!colorInfo.cervicalShade && !!colorInfo.medioShade && !!colorInfo.incisalShade;
+  } else {
+    hasColor = !!colorInfo?.shadeCode;
+  }
 
   // If implant work, check implant info
   const implantComplete =

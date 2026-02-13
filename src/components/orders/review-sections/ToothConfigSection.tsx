@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { DetailRow, SectionTitle } from './ReviewSectionComponents';
+import { SectionTitle } from './ReviewSectionComponents';
 import { Odontogram } from '@/components/clinic-staff/order-form/Odontogram';
 import { Icons } from '@/components/ui/Icons';
-import { getToothConfigStatus, type ToothData, type ToothConfigStatus } from '@/types/tooth';
+import { getToothConfigStatus, type ToothData } from '@/types/tooth';
+import { SHADE_SYSTEMS } from '@/types/order';
 import type { RestorationType } from '@prisma/client';
 
 interface ToothConfigSectionProps {
@@ -13,8 +14,8 @@ interface ToothConfigSectionProps {
 const RESTORATION_TYPE_LABELS: Record<RestorationType, string> = {
   corona: 'Coronas',
   puente: 'Puentes',
-  inlay: 'Inlays',
-  onlay: 'Onlays',
+  incrustacion: 'Incrustaciones',
+  maryland: 'Maryland',
   carilla: 'Carillas',
   provisional: 'Provisionales',
   pilar: 'Pilares',
@@ -36,8 +37,8 @@ const RESTORATION_TYPE_LABELS: Record<RestorationType, string> = {
 const RESTORATION_TYPE_SINGULAR: Record<RestorationType, string> = {
   corona: 'Corona',
   puente: 'Puente',
-  inlay: 'Inlay',
-  onlay: 'Onlay',
+  incrustacion: 'Incrustación',
+  maryland: 'Maryland',
   carilla: 'Carilla',
   provisional: 'Provisional',
   pilar: 'Pilar',
@@ -176,8 +177,23 @@ interface ToothDetailRowProps {
   showRestorationType: boolean;
 }
 
+/** Get the display label for a shade system value */
+function getShadeSystemLabel(value: string): string | null {
+  const system = SHADE_SYSTEMS.find((s) => s.value === value);
+  return system?.label ?? null;
+}
+
 function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
-  const colorInfo = tooth.colorInfo as { shadeCode?: string; shadeType?: string } | undefined;
+  const colorInfo = tooth.colorInfo as
+    | {
+        shadeCode?: string;
+        shadeType?: string;
+        useZoneShading?: boolean;
+        cervicalShade?: string;
+        medioShade?: string;
+        incisalShade?: string;
+      }
+    | undefined;
   const implantInfo = tooth.informacionImplante as
     | {
         marcaImplante?: string;
@@ -185,6 +201,8 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
         numeroImplantes?: number;
       }
     | undefined;
+
+  const shadeSystemLabel = colorInfo?.shadeType ? getShadeSystemLabel(colorInfo.shadeType) : null;
 
   return (
     <div className="px-4 py-3">
@@ -196,7 +214,7 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
 
         {/* Details */}
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             {/* Restoration type (only shown in implant group) */}
             {showRestorationType && tooth.tipoRestauracion && (
               <div>
@@ -215,15 +233,36 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
               </div>
             )}
 
-            {/* Color */}
-            {colorInfo?.shadeCode && (
-              <div>
-                <span className="text-muted-foreground">Color: </span>
-                <span className="text-foreground font-medium">
-                  {colorInfo.shadeCode}
-                  {colorInfo.shadeType && ` (${colorInfo.shadeType})`}
-                </span>
-              </div>
+            {/* Shade system badge */}
+            {shadeSystemLabel && (
+              <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-primary/10 text-primary">
+                {shadeSystemLabel}
+              </span>
+            )}
+
+            {/* Color - zone or single */}
+            {colorInfo?.useZoneShading ? (
+              (colorInfo.cervicalShade || colorInfo.medioShade || colorInfo.incisalShade) && (
+                <div>
+                  <span className="text-muted-foreground">Color: </span>
+                  <span className="text-foreground font-medium">
+                    {[
+                      colorInfo.cervicalShade && `C: ${colorInfo.cervicalShade}`,
+                      colorInfo.medioShade && `M: ${colorInfo.medioShade}`,
+                      colorInfo.incisalShade && `I: ${colorInfo.incisalShade}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </span>
+                </div>
+              )
+            ) : (
+              colorInfo?.shadeCode && (
+                <div>
+                  <span className="text-muted-foreground">Color: </span>
+                  <span className="text-foreground font-medium">{colorInfo.shadeCode}</span>
+                </div>
+              )
             )}
           </div>
 

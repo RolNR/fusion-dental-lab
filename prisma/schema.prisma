@@ -268,8 +268,8 @@ enum RestorationType {
   // Restauraciones por diente
   corona
   puente
-  inlay
-  onlay
+  incrustacion
+  maryland
   carilla
   provisional
   // Sobre implantes

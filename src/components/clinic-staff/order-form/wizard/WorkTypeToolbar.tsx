@@ -38,8 +38,8 @@ const WORK_TYPES: WorkTypeDefinition[] = [
   // Restauraciones por diente
   { id: 'corona', label: 'Corona', icon: 'crown', category: 'restauracion' },
   { id: 'puente', label: 'Puente', icon: 'bridge', category: 'restauracion' },
-  { id: 'inlay', label: 'Inlay', icon: 'inlay', category: 'restauracion' },
-  { id: 'onlay', label: 'Onlay', icon: 'inlay', category: 'restauracion' },
+  { id: 'incrustacion', label: 'Incrustación', icon: 'inlay', category: 'restauracion' },
+  { id: 'maryland', label: 'Maryland', icon: 'bridge', category: 'restauracion' },
   { id: 'carilla', label: 'Carilla', icon: 'veneer', category: 'restauracion' },
   { id: 'provisional', label: 'Provisional', icon: 'alertCircle', category: 'restauracion' },
 

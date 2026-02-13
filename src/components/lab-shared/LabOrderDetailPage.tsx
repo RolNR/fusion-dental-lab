@@ -205,7 +205,15 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
           <div className="rounded-xl bg-background p-6 shadow-md border border-border">
             <h2 className="mb-4 text-xl font-semibold text-foreground">Detalles Dentales</h2>
             <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <CopyableField label="Números de Dientes" value={order.teethNumbers} />
+              <CopyableField
+                label="Números de Dientes"
+                value={
+                  order.teethNumbers ||
+                  (order.teeth?.length > 0
+                    ? order.teeth.map((t) => t.toothNumber).join(', ')
+                    : null)
+                }
+              />
               {getInitialStatesSummary(order.initialToothStates as InitialToothStatesMap) && (
                 <CopyableField
                   label="Situación Inicial"

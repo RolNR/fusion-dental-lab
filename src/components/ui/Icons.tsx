@@ -1221,4 +1221,25 @@ export const Icons = {
       <path d="M4 12v2c0 2 3 4 8 4s8-2 8-4v-2" />
     </svg>
   ),
+
+  toothZones: ({ size = 24, ...props }: IconProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      {/* Tooth shape */}
+      <path d="M9 2c-1.5 0-3 1-3 3v4c0 2 .5 4 1 6s1.5 5 2 6c.3.6.6 1 1 1s.7-.4 1-1c.5-1 1.5-4 2-6s1-4 1-6V5c0-2-1.5-3-3-3z" />
+      {/* Horizontal zone dividers */}
+      <path d="M6.5 8h7" />
+      <path d="M6.2 14h7.6" />
+    </svg>
+  ),
 };

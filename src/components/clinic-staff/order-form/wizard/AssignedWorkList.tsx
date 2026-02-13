@@ -25,8 +25,8 @@ const WORK_TYPE_LABELS: Record<RestorationType, string> = {
   // Restauraciones por diente
   corona: 'Coronas',
   puente: 'Puentes',
-  inlay: 'Inlays',
-  onlay: 'Onlays',
+  incrustacion: 'Incrustaciones',
+  maryland: 'Maryland',
   carilla: 'Carillas',
   provisional: 'Provisionales',
   // Sobre implantes
@@ -94,7 +94,13 @@ export function AssignedWorkList({
 
   // Handler for bulk applying color to teeth
   const handleApplyToTeeth = useCallback(
-    (material: string, shadeType: string, shadeCode: string, filter: 'all' | RestorationType) => {
+    (
+      material: string,
+      shadeType: string,
+      shadeCode: string,
+      filter: 'all' | RestorationType,
+      zoneShading?: { useZoneShading: boolean; cervicalShade: string; medioShade: string; incisalShade: string }
+    ) => {
       const bulkUpdates = new Map<string, Partial<ToothData>>();
 
       for (const [toothNumber, data] of teethData) {
@@ -110,11 +116,21 @@ export function AssignedWorkList({
         if (material) {
           updates.material = material;
         }
-        if (shadeType || shadeCode) {
+        if (shadeType || shadeCode || zoneShading) {
           updates.colorInfo = {
             ...data.colorInfo,
             ...(shadeType && { shadeType }),
-            ...(shadeCode && { shadeCode }),
+            ...(zoneShading
+              ? {
+                  useZoneShading: true,
+                  cervicalShade: zoneShading.cervicalShade || null,
+                  medioShade: zoneShading.medioShade || null,
+                  incisalShade: zoneShading.incisalShade || null,
+                  shadeCode: null,
+                }
+              : shadeCode
+                ? { shadeCode, useZoneShading: false }
+                : {}),
           };
         }
 
@@ -132,17 +148,32 @@ export function AssignedWorkList({
 
   // Handler for bulk applying color to bridges
   const handleApplyToBridges = useCallback(
-    (material: string, shadeType: string, shadeCode: string) => {
+    (
+      material: string,
+      shadeType: string,
+      shadeCode: string,
+      zoneShading?: { useZoneShading: boolean; cervicalShade: string; medioShade: string; incisalShade: string }
+    ) => {
       bridges.forEach((bridge) => {
         const updates: Partial<BridgeDefinition> = {};
         if (material) {
           updates.material = material;
         }
-        if (shadeType || shadeCode) {
+        if (shadeType || shadeCode || zoneShading) {
           updates.colorInfo = {
             ...bridge.colorInfo,
             ...(shadeType && { shadeType }),
-            ...(shadeCode && { shadeCode }),
+            ...(zoneShading
+              ? {
+                  useZoneShading: true,
+                  cervicalShade: zoneShading.cervicalShade || null,
+                  medioShade: zoneShading.medioShade || null,
+                  incisalShade: zoneShading.incisalShade || null,
+                  shadeCode: null,
+                }
+              : shadeCode
+                ? { shadeCode, useZoneShading: false }
+                : {}),
           };
         }
 
