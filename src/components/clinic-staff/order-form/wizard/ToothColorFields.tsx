@@ -51,7 +51,7 @@ export function ToothColorFields({
   onIncisalShadeChange,
 }: ToothColorFieldsProps) {
   const handleShadeCodeWithInference = (value: string) => {
-    const inferred = !shadeType && value ? inferShadeSystem(value) ?? undefined : undefined;
+    const inferred = !shadeType && value ? (inferShadeSystem(value) ?? undefined) : undefined;
     onShadeCodeChange(value, inferred);
   };
 
@@ -59,7 +59,7 @@ export function ToothColorFields({
     value: string,
     onChange: ((v: string, inferredShadeType?: string) => void) | undefined
   ) => {
-    const inferred = !shadeType && value ? inferShadeSystem(value) ?? undefined : undefined;
+    const inferred = !shadeType && value ? (inferShadeSystem(value) ?? undefined) : undefined;
     onChange?.(value, inferred);
   };
 

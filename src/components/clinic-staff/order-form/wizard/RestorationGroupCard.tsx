@@ -113,7 +113,11 @@ export function RestorationGroupCard({
   );
 
   const handleZoneShadeChange = useCallback(
-    (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string, inferredShadeType?: string) => {
+    (
+      zone: 'cervicalShade' | 'medioShade' | 'incisalShade',
+      value: string,
+      inferredShadeType?: string
+    ) => {
       const bulkUpdates = new Map<string, Partial<ToothData>>();
       for (const tooth of teeth) {
         const currentColor = tooth.colorInfo as ColorInfo | undefined;
@@ -186,9 +190,13 @@ export function RestorationGroupCard({
             cervicalShade={groupState.cervicalShade}
             medioShade={groupState.medioShade}
             incisalShade={groupState.incisalShade}
-            onCervicalShadeChange={(v, inferred) => handleZoneShadeChange('cervicalShade', v, inferred)}
+            onCervicalShadeChange={(v, inferred) =>
+              handleZoneShadeChange('cervicalShade', v, inferred)
+            }
             onMedioShadeChange={(v, inferred) => handleZoneShadeChange('medioShade', v, inferred)}
-            onIncisalShadeChange={(v, inferred) => handleZoneShadeChange('incisalShade', v, inferred)}
+            onIncisalShadeChange={(v, inferred) =>
+              handleZoneShadeChange('incisalShade', v, inferred)
+            }
           />
         </div>
 
