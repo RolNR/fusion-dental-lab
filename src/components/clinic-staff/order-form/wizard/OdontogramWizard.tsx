@@ -379,17 +379,6 @@ export function OdontogramWizard({
     ]
   );
 
-  // Handle tooth data update
-  const handleToothUpdate = useCallback(
-    (toothNumber: string, updates: Partial<ToothData>) => {
-      const newTeethData = new Map(teethData);
-      const currentData = newTeethData.get(toothNumber) || { toothNumber };
-      newTeethData.set(toothNumber, { ...currentData, ...updates });
-      setTeethData(newTeethData);
-    },
-    [teethData, setTeethData]
-  );
-
   // Handle bulk tooth data update (for applying to multiple teeth at once)
   const handleBulkToothUpdate = useCallback(
     (updates: Map<string, Partial<ToothData>>) => {
@@ -541,7 +530,6 @@ export function OdontogramWizard({
           shouldShowTooltip={shouldShowTooltip}
           dismissTooltip={dismissTooltip}
           dismissedTooltips={dismissedTooltips}
-          onToothUpdate={handleToothUpdate}
           onBulkToothUpdate={handleBulkToothUpdate}
           onToothRemove={handleToothRemove}
           onBridgeUpdate={handleBridgeUpdate}

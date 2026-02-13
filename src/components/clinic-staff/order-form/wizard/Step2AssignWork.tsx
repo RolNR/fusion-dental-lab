@@ -25,7 +25,6 @@ interface Step2AssignWorkProps {
   bridgeStart: string | null;
   onToolChange: (tool: RestorationType | null) => void;
   onToothClick: (toothNumber: string) => void;
-  onToothUpdate: (toothNumber: string, updates: Partial<ToothData>) => void;
   onBulkToothUpdate: (updates: Map<string, Partial<ToothData>>) => void;
   onToothRemove: (toothNumber: string) => void;
   onBridgeUpdate: (bridgeId: string, updates: Partial<BridgeDefinition>) => void;
@@ -46,7 +45,6 @@ export function Step2AssignWork({
   bridgeStart,
   onToolChange,
   onToothClick,
-  onToothUpdate,
   onBulkToothUpdate,
   onToothRemove,
   onBridgeUpdate,
@@ -231,7 +229,6 @@ export function Step2AssignWork({
             teethData={teethData}
             bridges={bridges}
             initialStates={initialStates}
-            onToothUpdate={onToothUpdate}
             onBulkToothUpdate={onBulkToothUpdate}
             onToothRemove={onToothRemove}
             onBridgeUpdate={onBridgeUpdate}
