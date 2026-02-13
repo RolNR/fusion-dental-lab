@@ -54,12 +54,17 @@ export function ToothWorkItem({
         ...currentColor,
         useZoneShading: value,
         // Clear single shade when enabling zones, clear zones when disabling
-        ...(value ? { shadeCode: null } : { cervicalShade: null, medioShade: null, incisalShade: null }),
+        ...(value
+          ? { shadeCode: null }
+          : { cervicalShade: null, medioShade: null, incisalShade: null }),
       },
     });
   };
 
-  const handleZoneShadeChange = (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string) => {
+  const handleZoneShadeChange = (
+    zone: 'cervicalShade' | 'medioShade' | 'incisalShade',
+    value: string
+  ) => {
     const currentColor = toothData.colorInfo as ColorInfo | undefined;
     onUpdate(toothNumber, {
       colorInfo: {

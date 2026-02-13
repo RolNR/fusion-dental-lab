@@ -46,9 +46,7 @@ export function OrderValidationChecklist({
               <Icons.clipboardCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Revisión de Orden
-              </h2>
+              <h2 className="text-lg font-semibold text-foreground">Revisión de Orden</h2>
               <p className="text-sm text-muted-foreground">
                 {hasBlockingAlerts
                   ? 'Hay problemas que debes corregir antes de enviar'
@@ -76,9 +74,7 @@ export function OrderValidationChecklist({
                     <div className="flex-1">
                       <p className="text-sm text-danger">{alert.message}</p>
                       {alert.action && (
-                        <p className="text-xs text-danger/70 mt-0.5">
-                          {alert.action}
-                        </p>
+                        <p className="text-xs text-danger/70 mt-0.5">{alert.action}</p>
                       )}
                     </div>
                   </li>
@@ -92,9 +88,7 @@ export function OrderValidationChecklist({
             <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Icons.alertTriangle className="h-5 w-5 text-warning" />
-                <span className="font-semibold text-warning">
-                  Revisar ({warningAlerts.length})
-                </span>
+                <span className="font-semibold text-warning">Revisar ({warningAlerts.length})</span>
               </div>
               <ul className="space-y-2">
                 {warningAlerts.map((alert) => (
@@ -103,9 +97,7 @@ export function OrderValidationChecklist({
                     <div className="flex-1">
                       <p className="text-sm text-foreground">{alert.message}</p>
                       {alert.action && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {alert.action}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{alert.action}</p>
                       )}
                     </div>
                   </li>
@@ -130,9 +122,7 @@ export function OrderValidationChecklist({
                     <div className="flex-1">
                       <p className="text-sm text-foreground">{alert.message}</p>
                       {alert.action && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {alert.action}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{alert.action}</p>
                       )}
                     </div>
                   </li>
@@ -144,12 +134,7 @@ export function OrderValidationChecklist({
 
         {/* Footer Actions */}
         <div className="px-6 py-4 border-t border-border bg-muted/30 flex gap-3">
-          <Button
-            variant="secondary"
-            onClick={onGoBack}
-            disabled={isLoading}
-            className="flex-1"
-          >
+          <Button variant="secondary" onClick={onGoBack} disabled={isLoading} className="flex-1">
             <Icons.arrowLeft className="h-4 w-4 mr-2" />
             Corregir
           </Button>

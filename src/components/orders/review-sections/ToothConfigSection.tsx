@@ -241,29 +241,27 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
             )}
 
             {/* Color - zone or single */}
-            {colorInfo?.useZoneShading ? (
-              (colorInfo.cervicalShade || colorInfo.medioShade || colorInfo.incisalShade) && (
-                <div>
-                  <span className="text-muted-foreground">Color: </span>
-                  <span className="text-foreground font-medium">
-                    {[
-                      colorInfo.cervicalShade && `C: ${colorInfo.cervicalShade}`,
-                      colorInfo.medioShade && `M: ${colorInfo.medioShade}`,
-                      colorInfo.incisalShade && `I: ${colorInfo.incisalShade}`,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </span>
-                </div>
-              )
-            ) : (
-              colorInfo?.shadeCode && (
-                <div>
-                  <span className="text-muted-foreground">Color: </span>
-                  <span className="text-foreground font-medium">{colorInfo.shadeCode}</span>
-                </div>
-              )
-            )}
+            {colorInfo?.useZoneShading
+              ? (colorInfo.cervicalShade || colorInfo.medioShade || colorInfo.incisalShade) && (
+                  <div>
+                    <span className="text-muted-foreground">Color: </span>
+                    <span className="text-foreground font-medium">
+                      {[
+                        colorInfo.cervicalShade && `C: ${colorInfo.cervicalShade}`,
+                        colorInfo.medioShade && `M: ${colorInfo.medioShade}`,
+                        colorInfo.incisalShade && `I: ${colorInfo.incisalShade}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </span>
+                  </div>
+                )
+              : colorInfo?.shadeCode && (
+                  <div>
+                    <span className="text-muted-foreground">Color: </span>
+                    <span className="text-foreground font-medium">{colorInfo.shadeCode}</span>
+                  </div>
+                )}
           </div>
 
           {/* Implant details */}

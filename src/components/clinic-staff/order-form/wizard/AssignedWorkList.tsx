@@ -99,7 +99,12 @@ export function AssignedWorkList({
       shadeType: string,
       shadeCode: string,
       filter: 'all' | RestorationType,
-      zoneShading?: { useZoneShading: boolean; cervicalShade: string; medioShade: string; incisalShade: string }
+      zoneShading?: {
+        useZoneShading: boolean;
+        cervicalShade: string;
+        medioShade: string;
+        incisalShade: string;
+      }
     ) => {
       const bulkUpdates = new Map<string, Partial<ToothData>>();
 
@@ -152,7 +157,12 @@ export function AssignedWorkList({
       material: string,
       shadeType: string,
       shadeCode: string,
-      zoneShading?: { useZoneShading: boolean; cervicalShade: string; medioShade: string; incisalShade: string }
+      zoneShading?: {
+        useZoneShading: boolean;
+        cervicalShade: string;
+        medioShade: string;
+        incisalShade: string;
+      }
     ) => {
       bridges.forEach((bridge) => {
         const updates: Partial<BridgeDefinition> = {};

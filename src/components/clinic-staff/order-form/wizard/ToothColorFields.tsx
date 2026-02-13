@@ -110,9 +110,7 @@ export function ToothColorFields({
         <div className="flex items-center gap-1 flex-1 min-w-[200px]">
           <Input
             value={cervicalShade}
-            onChange={(e) =>
-              handleZoneShadeWithInference(e.target.value, onCervicalShadeChange)
-            }
+            onChange={(e) => handleZoneShadeWithInference(e.target.value, onCervicalShadeChange)}
             disabled={disabled}
             placeholder="Cervical"
             className="text-sm !h-8 !py-1"
@@ -120,9 +118,7 @@ export function ToothColorFields({
           />
           <Input
             value={medioShade}
-            onChange={(e) =>
-              handleZoneShadeWithInference(e.target.value, onMedioShadeChange)
-            }
+            onChange={(e) => handleZoneShadeWithInference(e.target.value, onMedioShadeChange)}
             disabled={disabled}
             placeholder="Medio"
             className="text-sm !h-8 !py-1"
@@ -130,9 +126,7 @@ export function ToothColorFields({
           />
           <Input
             value={incisalShade}
-            onChange={(e) =>
-              handleZoneShadeWithInference(e.target.value, onIncisalShadeChange)
-            }
+            onChange={(e) => handleZoneShadeWithInference(e.target.value, onIncisalShadeChange)}
             disabled={disabled}
             placeholder="Incisal"
             className="text-sm !h-8 !py-1"
@@ -179,7 +173,9 @@ export function ToothColorFields({
               ? 'bg-primary/10 border-primary/30 text-primary'
               : 'bg-muted border-border text-muted-foreground hover:text-foreground hover:border-border-input'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
-          title={useZoneShading ? 'Cambiar a tono único' : 'Tonos por zona (cervical, medio, incisal)'}
+          title={
+            useZoneShading ? 'Cambiar a tono único' : 'Tonos por zona (cervical, medio, incisal)'
+          }
         >
           <Icons.toothZones className="h-4 w-4" />
         </button>

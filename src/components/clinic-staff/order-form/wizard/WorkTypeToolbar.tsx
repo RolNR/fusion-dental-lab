@@ -58,7 +58,12 @@ const WORK_TYPES: WorkTypeDefinition[] = [
   // Diagnóstico/Planificación
   { id: 'encerado', label: 'Encerado', icon: 'waxup', category: 'diagnostico' },
   { id: 'mockup', label: 'Mock-up', icon: 'mockup', category: 'diagnostico' },
-  { id: 'guia_quirurgica', label: 'Guía quirúrgica', icon: 'surgicalGuide', category: 'diagnostico' },
+  {
+    id: 'guia_quirurgica',
+    label: 'Guía quirúrgica',
+    icon: 'surgicalGuide',
+    category: 'diagnostico',
+  },
   { id: 'prototipo', label: 'Prototipo', icon: 'cube', category: 'diagnostico' },
   { id: 'guarda_oclusal', label: 'Guarda oclusal', icon: 'guard', category: 'diagnostico' },
 ];

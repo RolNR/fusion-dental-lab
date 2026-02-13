@@ -99,7 +99,7 @@ export function BulkColorConfig({
     if (bridges.length > 0 && !types.includes('puente')) {
       types.push('puente');
     }
-    if (filter !== 'all' ) {
+    if (filter !== 'all') {
       return undefined; // let ToothColorFields resolve from restorationType
     }
     return getMaterialsForRestorationTypes(types);
@@ -123,9 +123,7 @@ export function BulkColorConfig({
   const hasAnyWork = workTypeCounts.size > 0 || bridges.length > 0;
 
   const handleApply = () => {
-    const hasShadeData = useZoneShading
-      ? cervicalShade || medioShade || incisalShade
-      : shadeCode;
+    const hasShadeData = useZoneShading ? cervicalShade || medioShade || incisalShade : shadeCode;
     if (!material && !shadeType && !hasShadeData) return;
 
     const zoneData: ZoneShadingData | undefined = useZoneShading
@@ -153,9 +151,7 @@ export function BulkColorConfig({
     setUseZoneShading(false);
   };
 
-  const hasShadeInput = useZoneShading
-    ? cervicalShade || medioShade || incisalShade
-    : shadeCode;
+  const hasShadeInput = useZoneShading ? cervicalShade || medioShade || incisalShade : shadeCode;
   const canApply = (material || shadeType || hasShadeInput) && totalAffected > 0;
 
   if (!hasAnyWork) return null;
@@ -200,7 +196,8 @@ export function BulkColorConfig({
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              Todos ({Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
+              Todos (
+              {Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
             </button>
             {Array.from(workTypeCounts.entries()).map(([workType, count]) => (
               <button

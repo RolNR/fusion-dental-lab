@@ -155,7 +155,9 @@ function formatOrderDataForValidation(data: Record<string, unknown>): string {
       sections.push(`Materiales: ${materiales.join(', ') || '(no especificado)'}`);
       sections.push(`Dientes: ${puentes.map((t) => t.toothNumber).join(', ')}`);
       // Calculate span
-      const toothNums = puentes.map((t) => parseInt(t.toothNumber as string, 10)).sort((a, b) => a - b);
+      const toothNums = puentes
+        .map((t) => parseInt(t.toothNumber as string, 10))
+        .sort((a, b) => a - b);
       if (toothNums.length >= 2) {
         sections.push(`Extensión del puente: ${toothNums.length} unidades`);
       }
@@ -237,10 +239,7 @@ export async function POST(request: NextRequest) {
 
     // Check if Anthropic API key is configured
     if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'API key de Anthropic no configurada' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'API key de Anthropic no configurada' }, { status: 500 });
     }
 
     // Format order data for AI analysis

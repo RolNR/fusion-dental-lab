@@ -33,7 +33,9 @@ const MATERIALS_MAP: Partial<Record<RestorationType, string[]>> = {
  * Returns available materials for a given restoration type.
  * Returns an empty array if no materials are defined for the type.
  */
-export function getMaterialsForRestoration(restorationType: RestorationType | undefined | null): string[] {
+export function getMaterialsForRestoration(
+  restorationType: RestorationType | undefined | null
+): string[] {
   if (!restorationType) return [];
   return MATERIALS_MAP[restorationType] ?? [];
 }
@@ -45,7 +47,7 @@ export function getMaterialsForRestoration(restorationType: RestorationType | un
 export function getMaterialsForRestorationTypes(types: RestorationType[]): string[] {
   const all = new Set<string>();
   for (const type of types) {
-    for (const m of (MATERIALS_MAP[type] ?? [])) {
+    for (const m of MATERIALS_MAP[type] ?? []) {
       all.add(m);
     }
   }
