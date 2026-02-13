@@ -60,11 +60,12 @@ export function BridgeGroupCard({
   );
 
   const handleShadeCodeChange = useCallback(
-    (value: string) => {
+    (value: string, inferredShadeType?: string) => {
       updateAllBridges((bridge) => ({
         colorInfo: {
           ...bridge.colorInfo,
           shadeCode: value || null,
+          ...(inferredShadeType && { shadeType: inferredShadeType }),
         },
       }));
     },
@@ -87,11 +88,12 @@ export function BridgeGroupCard({
   );
 
   const handleZoneShadeChange = useCallback(
-    (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string) => {
+    (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string, inferredShadeType?: string) => {
       updateAllBridges((bridge) => ({
         colorInfo: {
           ...bridge.colorInfo,
           [zone]: value || null,
+          ...(inferredShadeType && { shadeType: inferredShadeType }),
         },
       }));
     },
@@ -152,9 +154,9 @@ export function BridgeGroupCard({
             cervicalShade={groupState.cervicalShade}
             medioShade={groupState.medioShade}
             incisalShade={groupState.incisalShade}
-            onCervicalShadeChange={(v) => handleZoneShadeChange('cervicalShade', v)}
-            onMedioShadeChange={(v) => handleZoneShadeChange('medioShade', v)}
-            onIncisalShadeChange={(v) => handleZoneShadeChange('incisalShade', v)}
+            onCervicalShadeChange={(v, inferred) => handleZoneShadeChange('cervicalShade', v, inferred)}
+            onMedioShadeChange={(v, inferred) => handleZoneShadeChange('medioShade', v, inferred)}
+            onIncisalShadeChange={(v, inferred) => handleZoneShadeChange('incisalShade', v, inferred)}
           />
         </div>
 
