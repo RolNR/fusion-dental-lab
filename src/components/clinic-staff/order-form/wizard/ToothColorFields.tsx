@@ -14,7 +14,7 @@ interface ToothColorFieldsProps {
   shadeCode: string;
   onMaterialChange: (value: string) => void;
   onShadeTypeChange: (value: string) => void;
-  onShadeCodeChange: (value: string) => void;
+  onShadeCodeChange: (value: string, inferredShadeType?: string) => void;
   disabled?: boolean;
   /** Restoration type — used to populate material dropdown */
   restorationType?: RestorationType | null;
@@ -26,9 +26,9 @@ interface ToothColorFieldsProps {
   cervicalShade?: string;
   medioShade?: string;
   incisalShade?: string;
-  onCervicalShadeChange?: (value: string) => void;
-  onMedioShadeChange?: (value: string) => void;
-  onIncisalShadeChange?: (value: string) => void;
+  onCervicalShadeChange?: (value: string, inferredShadeType?: string) => void;
+  onMedioShadeChange?: (value: string, inferredShadeType?: string) => void;
+  onIncisalShadeChange?: (value: string, inferredShadeType?: string) => void;
 }
 
 export function ToothColorFields({
@@ -51,26 +51,16 @@ export function ToothColorFields({
   onIncisalShadeChange,
 }: ToothColorFieldsProps) {
   const handleShadeCodeWithInference = (value: string) => {
-    onShadeCodeChange(value);
-    if (!shadeType && value) {
-      const inferred = inferShadeSystem(value);
-      if (inferred) {
-        onShadeTypeChange(inferred);
-      }
-    }
+    const inferred = !shadeType && value ? inferShadeSystem(value) ?? undefined : undefined;
+    onShadeCodeChange(value, inferred);
   };
 
   const handleZoneShadeWithInference = (
     value: string,
-    onChange: ((v: string) => void) | undefined
+    onChange: ((v: string, inferredShadeType?: string) => void) | undefined
   ) => {
-    onChange?.(value);
-    if (!shadeType && value) {
-      const inferred = inferShadeSystem(value);
-      if (inferred) {
-        onShadeTypeChange(inferred);
-      }
-    }
+    const inferred = !shadeType && value ? inferShadeSystem(value) ?? undefined : undefined;
+    onChange?.(value, inferred);
   };
 
   const availableMaterials = materialOptions ?? getMaterialsForRestoration(restorationType);

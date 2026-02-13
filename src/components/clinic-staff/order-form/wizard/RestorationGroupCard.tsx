@@ -75,7 +75,7 @@ export function RestorationGroupCard({
   );
 
   const handleShadeCodeChange = useCallback(
-    (value: string) => {
+    (value: string, inferredShadeType?: string) => {
       const bulkUpdates = new Map<string, Partial<ToothData>>();
       for (const tooth of teeth) {
         const currentColor = tooth.colorInfo as ColorInfo | undefined;
@@ -83,6 +83,7 @@ export function RestorationGroupCard({
           colorInfo: {
             ...currentColor,
             shadeCode: value || null,
+            ...(inferredShadeType && { shadeType: inferredShadeType }),
           },
         });
       }
@@ -112,7 +113,7 @@ export function RestorationGroupCard({
   );
 
   const handleZoneShadeChange = useCallback(
-    (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string) => {
+    (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string, inferredShadeType?: string) => {
       const bulkUpdates = new Map<string, Partial<ToothData>>();
       for (const tooth of teeth) {
         const currentColor = tooth.colorInfo as ColorInfo | undefined;
@@ -120,6 +121,7 @@ export function RestorationGroupCard({
           colorInfo: {
             ...currentColor,
             [zone]: value || null,
+            ...(inferredShadeType && { shadeType: inferredShadeType }),
           },
         });
       }
@@ -184,9 +186,9 @@ export function RestorationGroupCard({
             cervicalShade={groupState.cervicalShade}
             medioShade={groupState.medioShade}
             incisalShade={groupState.incisalShade}
-            onCervicalShadeChange={(v) => handleZoneShadeChange('cervicalShade', v)}
-            onMedioShadeChange={(v) => handleZoneShadeChange('medioShade', v)}
-            onIncisalShadeChange={(v) => handleZoneShadeChange('incisalShade', v)}
+            onCervicalShadeChange={(v, inferred) => handleZoneShadeChange('cervicalShade', v, inferred)}
+            onMedioShadeChange={(v, inferred) => handleZoneShadeChange('medioShade', v, inferred)}
+            onIncisalShadeChange={(v, inferred) => handleZoneShadeChange('incisalShade', v, inferred)}
           />
         </div>
 
