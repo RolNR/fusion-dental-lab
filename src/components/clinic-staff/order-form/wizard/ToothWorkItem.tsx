@@ -47,43 +47,77 @@ export function ToothWorkItem({
     });
   };
 
+  const handleUseZoneShadingChange = (value: boolean) => {
+    const currentColor = toothData.colorInfo as ColorInfo | undefined;
+    onUpdate(toothNumber, {
+      colorInfo: {
+        ...currentColor,
+        useZoneShading: value,
+        // Clear single shade when enabling zones, clear zones when disabling
+        ...(value ? { shadeCode: null } : { cervicalShade: null, medioShade: null, incisalShade: null }),
+      },
+    });
+  };
+
+  const handleZoneShadeChange = (zone: 'cervicalShade' | 'medioShade' | 'incisalShade', value: string) => {
+    const currentColor = toothData.colorInfo as ColorInfo | undefined;
+    onUpdate(toothNumber, {
+      colorInfo: {
+        ...currentColor,
+        [zone]: value || null,
+      },
+    });
+  };
+
   const colorInfo = toothData.colorInfo as ColorInfo | undefined;
   const implantInfo = toothData.informacionImplante as ImplantInfo | undefined;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 py-2 px-3 bg-muted/30 rounded-lg">
-      {/* Tooth Number */}
-      <div className="flex items-center gap-1 min-w-[50px]">
-        <span className="font-bold text-primary">#{toothNumber}</span>
-        {isImplante && (
-          <span title={`Implante: ${implantInfo?.marcaImplante || 'Sin marca'}`}>
-            <Icons.implant className="h-3 w-3 text-primary" />
-          </span>
-        )}
+    <div className="py-2 px-3 bg-muted/30 rounded-lg space-y-2">
+      {/* Main row */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Tooth Number */}
+        <div className="flex items-center gap-1 min-w-[50px]">
+          <span className="font-bold text-primary">#{toothNumber}</span>
+          {isImplante && (
+            <span title={`Implante: ${implantInfo?.marcaImplante || 'Sin marca'}`}>
+              <Icons.implant className="h-3 w-3 text-primary" />
+            </span>
+          )}
+        </div>
+
+        <ToothColorFields
+          material={toothData.material || ''}
+          shadeType={colorInfo?.shadeType || ''}
+          shadeCode={colorInfo?.shadeCode || ''}
+          onMaterialChange={handleMaterialChange}
+          onShadeTypeChange={handleColorSystemChange}
+          onShadeCodeChange={handleShadeChange}
+          disabled={disabled}
+          restorationType={toothData.tipoRestauracion}
+          useZoneShading={colorInfo?.useZoneShading || false}
+          onUseZoneShadingChange={handleUseZoneShadingChange}
+          cervicalShade={colorInfo?.cervicalShade || ''}
+          medioShade={colorInfo?.medioShade || ''}
+          incisalShade={colorInfo?.incisalShade || ''}
+          onCervicalShadeChange={(v) => handleZoneShadeChange('cervicalShade', v)}
+          onMedioShadeChange={(v) => handleZoneShadeChange('medioShade', v)}
+          onIncisalShadeChange={(v) => handleZoneShadeChange('incisalShade', v)}
+        />
+
+        {/* Remove Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onRemove(toothNumber)}
+          disabled={disabled}
+          className="!p-1.5 !text-muted-foreground hover:!bg-danger/10 hover:!text-danger shrink-0"
+          title="Quitar trabajo"
+        >
+          <Icons.x className="h-4 w-4" />
+        </Button>
       </div>
-
-      <ToothColorFields
-        material={toothData.material || ''}
-        shadeType={colorInfo?.shadeType || ''}
-        shadeCode={colorInfo?.shadeCode || ''}
-        onMaterialChange={handleMaterialChange}
-        onShadeTypeChange={handleColorSystemChange}
-        onShadeCodeChange={handleShadeChange}
-        disabled={disabled}
-      />
-
-      {/* Remove Button */}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => onRemove(toothNumber)}
-        disabled={disabled}
-        className="!p-1.5 !text-muted-foreground hover:!bg-danger/10 hover:!text-danger shrink-0"
-        title="Quitar trabajo"
-      >
-        <Icons.x className="h-4 w-4" />
-      </Button>
     </div>
   );
 }

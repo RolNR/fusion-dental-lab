@@ -46,7 +46,7 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   "teeth": [
     {
       "toothNumber": "Número de diente (ej: 11, 12, 21)",
-      "tipoRestauracion": "corona", "puente", "inlay", "onlay", "carilla", o "provisional",
+      "tipoRestauracion": "corona", "puente", "incrustacion", "maryland", "carilla", o "provisional",
       "material": "Material como Zirconia, Porcelana, Disilicato de litio, etc",
       "trabajoSobreImplante": true o false,
       "informacionImplante": {

@@ -34,6 +34,10 @@ import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
 import { FileUploadProgressModal } from '@/components/orders/FileUploadProgressModal';
 import { ValidationErrorSummary } from '@/components/orders/ValidationErrorSummary';
 import {
+  OrderValidationChecklist,
+  ValidationAlert,
+} from '@/components/orders/OrderValidationChecklist';
+import {
   parseValidationError,
   groupErrorsBySection,
   ValidationErrorDetail,
@@ -144,6 +148,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     teethIncomplete?: string[];
     digitalScanFiles?: string;
   }>({});
+
+  // AI validation checklist state
+  const [showValidationChecklist, setShowValidationChecklist] = useState(false);
+  const [validationAlerts, setValidationAlerts] = useState<ValidationAlert[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
 
   // Fetch doctors list if assistant (needs to select which doctor the order is for)
   useEffect(() => {
@@ -511,13 +520,76 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     lowerFiles,
   ]);
 
+  // Validate order with AI before showing review modal
+  const validateOrderWithAI = async (): Promise<ValidationAlert[]> => {
+    try {
+      const teethArray = mergeTeethWithBridgeData(teethData, bridges);
+
+      const dataToValidate = {
+        ...formData,
+        teeth: teethArray,
+        hasUpperFile: upperFiles.length > 0,
+        hasLowerFile: lowerFiles.length > 0,
+        hasBiteFile: biteFiles.length > 0,
+      };
+
+      const response = await fetch('/api/orders/validate-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(dataToValidate),
+      });
+
+      if (!response.ok) {
+        console.error('Validation request failed');
+        return [];
+      }
+
+      const result = await response.json();
+      return result.data?.alerts || [];
+    } catch (error) {
+      console.error('Error validating order:', error);
+      return [];
+    }
+  };
+
   const handleSubmitForReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Compute and set validation errors before showing modal
+
+    // Compute basic validation errors
     const errors = computePreSubmitValidation();
     setPreSubmitErrors(errors);
-    // Show review modal
+
+    // Run AI validation
+    setIsValidating(true);
+    try {
+      const alerts = await validateOrderWithAI();
+      setValidationAlerts(alerts);
+
+      if (alerts.length > 0) {
+        // Show validation checklist if there are alerts
+        setShowValidationChecklist(true);
+      } else {
+        // No alerts, go directly to review modal
+        setShowReviewModal(true);
+      }
+    } catch (error) {
+      // If validation fails, still show review modal
+      console.error('Validation error:', error);
+      setShowReviewModal(true);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  const handleValidationContinue = () => {
+    // User acknowledged alerts and wants to continue
+    setShowValidationChecklist(false);
     setShowReviewModal(true);
+  };
+
+  const handleValidationGoBack = () => {
+    // User wants to go back and fix issues
+    setShowValidationChecklist(false);
   };
 
   const handleConfirmSubmit = async () => {
@@ -1132,11 +1204,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 type="button"
                 variant="primary"
                 onClick={handleSubmitForReview}
-                isLoading={isLoading}
+                isLoading={isLoading || isValidating}
                 fullWidth
                 className="sm:w-auto"
               >
-                {orderId ? 'Guardar y Enviar' : 'Vista Previa de Orden'}
+                {isValidating
+                  ? 'Validando...'
+                  : orderId
+                    ? 'Guardar y Enviar'
+                    : 'Vista Previa de Orden'}
               </Button>
             )}
             <Button
@@ -1151,6 +1227,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             </Button>
           </div>
         </>
+      )}
+
+      {/* AI Validation Checklist */}
+      {showValidationChecklist && (
+        <OrderValidationChecklist
+          alerts={validationAlerts}
+          onContinue={handleValidationContinue}
+          onGoBack={handleValidationGoBack}
+        />
       )}
 
       {/* Order Review Modal */}

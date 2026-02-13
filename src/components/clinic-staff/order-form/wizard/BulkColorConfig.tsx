@@ -2,11 +2,18 @@
 
 import { useState, useMemo } from 'react';
 import { RestorationType } from '@prisma/client';
-import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { ToothData, BridgeDefinition } from '@/types/tooth';
 import { ToothColorFields } from './ToothColorFields';
+import { getMaterialsForRestorationTypes } from '@/lib/materialsByRestoration';
+
+interface ZoneShadingData {
+  useZoneShading: boolean;
+  cervicalShade: string;
+  medioShade: string;
+  incisalShade: string;
+}
 
 interface BulkColorConfigProps {
   teethData: Map<string, ToothData>;
@@ -15,19 +22,42 @@ interface BulkColorConfigProps {
     material: string,
     shadeType: string,
     shadeCode: string,
-    filter: 'all' | RestorationType
+    filter: 'all' | RestorationType,
+    zoneShading?: ZoneShadingData
   ) => void;
-  onApplyToBridges: (material: string, shadeType: string, shadeCode: string) => void;
+  onApplyToBridges: (
+    material: string,
+    shadeType: string,
+    shadeCode: string,
+    zoneShading?: ZoneShadingData
+  ) => void;
   disabled?: boolean;
 }
 
 const WORK_TYPE_LABELS: Record<RestorationType, string> = {
+  // Restauraciones por diente
   corona: 'Coronas',
   puente: 'Puentes',
-  inlay: 'Inlays',
-  onlay: 'Onlays',
+  incrustacion: 'Incrustaciones',
+  maryland: 'Maryland',
   carilla: 'Carillas',
   provisional: 'Provisionales',
+  // Sobre implantes
+  pilar: 'Pilares',
+  barra: 'Barras',
+  hibrida: 'Híbridas',
+  toronto: 'Toronto',
+  // Prótesis removible
+  removible: 'Removibles',
+  parcial: 'Parciales',
+  total: 'Totales',
+  sobredentadura: 'Sobredentaduras',
+  // Diagnóstico/Planificación
+  encerado: 'Encerados',
+  mockup: 'Mockups',
+  guia_quirurgica: 'Guías Quirúrgicas',
+  prototipo: 'Prototipos',
+  guarda_oclusal: 'Guardas Oclusales',
 };
 
 export function BulkColorConfig({
@@ -42,6 +72,10 @@ export function BulkColorConfig({
   const [shadeType, setShadeType] = useState('');
   const [shadeCode, setShadeCode] = useState('');
   const [filter, setFilter] = useState<'all' | RestorationType>('all');
+  const [useZoneShading, setUseZoneShading] = useState(false);
+  const [cervicalShade, setCervicalShade] = useState('');
+  const [medioShade, setMedioShade] = useState('');
+  const [incisalShade, setIncisalShade] = useState('');
 
   // Calculate counts by work type (excluding bridge teeth)
   const workTypeCounts = useMemo(() => {
@@ -58,6 +92,18 @@ export function BulkColorConfig({
 
     return counts;
   }, [teethData]);
+
+  // Materials based on actual restoration types in the order
+  const bulkMaterialOptions = useMemo(() => {
+    const types: RestorationType[] = Array.from(workTypeCounts.keys());
+    if (bridges.length > 0 && !types.includes('puente')) {
+      types.push('puente');
+    }
+    if (filter !== 'all' ) {
+      return undefined; // let ToothColorFields resolve from restorationType
+    }
+    return getMaterialsForRestorationTypes(types);
+  }, [workTypeCounts, bridges.length, filter]);
 
   // Calculate total items that would be affected
   const totalAffected = useMemo(() => {
@@ -77,29 +123,40 @@ export function BulkColorConfig({
   const hasAnyWork = workTypeCounts.size > 0 || bridges.length > 0;
 
   const handleApply = () => {
-    if (!material && !shadeType && !shadeCode) return;
+    const hasShadeData = useZoneShading
+      ? cervicalShade || medioShade || incisalShade
+      : shadeCode;
+    if (!material && !shadeType && !hasShadeData) return;
+
+    const zoneData: ZoneShadingData | undefined = useZoneShading
+      ? { useZoneShading: true, cervicalShade, medioShade, incisalShade }
+      : undefined;
 
     if (filter === 'all') {
-      // Apply to all teeth and bridges
-      onApplyToTeeth(material, shadeType, shadeCode, 'all');
+      onApplyToTeeth(material, shadeType, shadeCode, 'all', zoneData);
       if (bridges.length > 0) {
-        onApplyToBridges(material, shadeType, shadeCode);
+        onApplyToBridges(material, shadeType, shadeCode, zoneData);
       }
     } else if (filter === 'puente') {
-      // Apply only to bridges
-      onApplyToBridges(material, shadeType, shadeCode);
+      onApplyToBridges(material, shadeType, shadeCode, zoneData);
     } else {
-      // Apply to specific work type
-      onApplyToTeeth(material, shadeType, shadeCode, filter);
+      onApplyToTeeth(material, shadeType, shadeCode, filter, zoneData);
     }
 
     // Clear form after applying
     setMaterial('');
     setShadeType('');
     setShadeCode('');
+    setCervicalShade('');
+    setMedioShade('');
+    setIncisalShade('');
+    setUseZoneShading(false);
   };
 
-  const canApply = (material || shadeType || shadeCode) && totalAffected > 0;
+  const hasShadeInput = useZoneShading
+    ? cervicalShade || medioShade || incisalShade
+    : shadeCode;
+  const canApply = (material || shadeType || hasShadeInput) && totalAffected > 0;
 
   if (!hasAnyWork) return null;
 
@@ -128,6 +185,60 @@ export function BulkColorConfig({
             Configura el material y color una vez y aplícalo a múltiples dientes.
           </p>
 
+          {/* Filter pills */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFilter('all');
+                setMaterial('');
+              }}
+              disabled={disabled}
+              className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                filter === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Todos ({Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
+            </button>
+            {Array.from(workTypeCounts.entries()).map(([workType, count]) => (
+              <button
+                key={workType}
+                type="button"
+                onClick={() => {
+                  setFilter(workType);
+                  setMaterial('');
+                }}
+                disabled={disabled}
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  filter === workType
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {WORK_TYPE_LABELS[workType]} ({count})
+              </button>
+            ))}
+            {bridges.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter('puente');
+                  setMaterial('');
+                }}
+                disabled={disabled}
+                className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  filter === 'puente'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                Puentes ({bridges.length})
+              </button>
+            )}
+          </div>
+
           {/* Form Fields - using shared ToothColorFields component */}
           <div className="flex flex-wrap items-center gap-2">
             <ToothColorFields
@@ -138,31 +249,21 @@ export function BulkColorConfig({
               onShadeTypeChange={setShadeType}
               onShadeCodeChange={setShadeCode}
               disabled={disabled}
+              restorationType={filter !== 'all' ? filter : undefined}
+              materialOptions={bulkMaterialOptions}
+              useZoneShading={useZoneShading}
+              onUseZoneShadingChange={setUseZoneShading}
+              cervicalShade={cervicalShade}
+              medioShade={medioShade}
+              incisalShade={incisalShade}
+              onCervicalShadeChange={setCervicalShade}
+              onMedioShadeChange={setMedioShade}
+              onIncisalShadeChange={setIncisalShade}
             />
           </div>
 
-          {/* Filter and Apply */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted-foreground">Aplicar a:</span>
-            <Select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as 'all' | RestorationType)}
-              disabled={disabled}
-              className="text-sm flex-1 min-w-[150px]"
-            >
-              <option value="all">
-                Todos los dientes (
-                {Array.from(workTypeCounts.values()).reduce((a, b) => a + b, 0) + bridges.length})
-              </option>
-              {bridges.length > 0 && (
-                <option value="puente">Solo Puentes ({bridges.length})</option>
-              )}
-              {Array.from(workTypeCounts.entries()).map(([workType, count]) => (
-                <option key={workType} value={workType}>
-                  Solo {WORK_TYPE_LABELS[workType]} ({count})
-                </option>
-              ))}
-            </Select>
+          {/* Apply button */}
+          <div className="flex justify-end">
             <Button
               type="button"
               variant="primary"

@@ -73,7 +73,7 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
   return (
     <div className="min-h-screen bg-background print:min-h-0 print:bg-white">
       {/* Main content - hidden when printing */}
-      <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 print:hidden">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 print:hidden">
         <OrderHeader
           orderNumber={order.orderNumber}
           status={order.status}

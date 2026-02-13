@@ -152,17 +152,21 @@ model Order {
 }
 
 model Tooth {
-  id                      String              @id @default(cuid())
+  id                      String                @id @default(cuid())
   orderId                 String
   toothNumber             String
   material                String?
   colorInfo               Json?
+  categoriaRestauracion   RestorationCategory?
   tipoRestauracion        RestorationType?
-  trabajoSobreImplante    Boolean?            @default(false)
+  trabajoSobreImplante    Boolean?              @default(false)
   informacionImplante     Json?
-  createdAt               DateTime            @default(now())
-  updatedAt               DateTime            @updatedAt
-  order                   Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  solicitarProvisional    Boolean?              @default(false)
+  materialProvisional     ProvisionalMaterial?
+  solicitarJig            Boolean?              @default(false)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  order                   Order                 @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@unique([orderId, toothNumber])
   @@index([orderId])
@@ -261,12 +265,36 @@ enum OrderStatus {
 }
 
 enum RestorationType {
+  // Restauraciones por diente
   corona
   puente
-  inlay
-  onlay
+  incrustacion
+  maryland
   carilla
   provisional
+  // Sobre implantes
+  pilar
+  barra
+  hibrida
+  toronto
+  // Prótesis removible
+  removible
+  parcial
+  total
+  sobredentadura
+  // Diagnóstico/Planificación
+  encerado
+  mockup
+  guia_quirurgica
+  prototipo
+  guarda_oclusal
+}
+
+enum RestorationCategory {
+  restauracion
+  implante
+  removible
+  diagnostico
 }
 
 enum Role {
@@ -294,5 +322,11 @@ enum ToothInitialState {
   NORMAL
   AUSENTE
   PILAR
+}
+
+enum ProvisionalMaterial {
+  acrilico
+  bis_acrilico
+  pmma
 }
 

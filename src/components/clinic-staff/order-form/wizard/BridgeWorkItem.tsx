@@ -63,6 +63,7 @@ export function BridgeWorkItem({
         onShadeTypeChange={handleColorSystemChange}
         onShadeCodeChange={handleShadeChange}
         disabled={disabled}
+        restorationType="puente"
       />
 
       {/* Remove Button */}

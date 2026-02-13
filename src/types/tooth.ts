@@ -1,4 +1,4 @@
-import { RestorationType } from '@prisma/client';
+import { RestorationType, RestorationCategory, ProvisionalMaterial } from '@prisma/client';
 import { z } from 'zod';
 import { implantInfoSchema, colorInfoSchema, ImplantInfo, ColorInfo } from './order';
 
@@ -22,9 +22,15 @@ export interface Tooth {
 
   material?: string;
   colorInfo?: ColorInfo;
+  categoriaRestauracion?: RestorationCategory;
   tipoRestauracion?: RestorationType;
   trabajoSobreImplante?: boolean;
   informacionImplante?: ImplantInfo;
+
+  // Productos adicionales
+  solicitarProvisional?: boolean;
+  materialProvisional?: ProvisionalMaterial;
+  solicitarJig?: boolean;
 
   createdAt: string;
   updatedAt: string;
@@ -35,9 +41,14 @@ export const toothDataSchema = z.object({
   toothNumber: z.string().min(1, 'Número de diente requerido'),
   material: z.string().optional(),
   colorInfo: z.union([colorInfoSchema, z.null()]).optional(),
+  categoriaRestauracion: z.nativeEnum(RestorationCategory).nullable().optional(),
   tipoRestauracion: z.nativeEnum(RestorationType).nullable().optional(),
   trabajoSobreImplante: z.boolean().optional(),
   informacionImplante: z.union([implantInfoSchema, z.null()]).optional(),
+  // Productos adicionales
+  solicitarProvisional: z.boolean().optional(),
+  materialProvisional: z.nativeEnum(ProvisionalMaterial).nullable().optional(),
+  solicitarJig: z.boolean().optional(),
 });
 
 export type ToothData = z.infer<typeof toothDataSchema>;
@@ -61,7 +72,16 @@ export type ToothConfigStatus = 'complete' | 'incomplete' | 'none';
 export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigStatus {
   if (!tooth) return 'none';
 
-  const colorInfo = tooth.colorInfo as { shadeCode?: string; shadeType?: string } | undefined;
+  const colorInfo = tooth.colorInfo as
+    | {
+        shadeCode?: string;
+        shadeType?: string;
+        useZoneShading?: boolean;
+        cervicalShade?: string;
+        medioShade?: string;
+        incisalShade?: string;
+      }
+    | undefined;
   const implantInfo = tooth.informacionImplante as { marcaImplante?: string } | undefined;
 
   // Check if tooth has any data at all
@@ -70,6 +90,9 @@ export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigS
     tooth.material ||
     colorInfo?.shadeCode ||
     colorInfo?.shadeType ||
+    colorInfo?.cervicalShade ||
+    colorInfo?.medioShade ||
+    colorInfo?.incisalShade ||
     tooth.trabajoSobreImplante;
 
   if (!hasAnyData) return 'none';
@@ -77,8 +100,15 @@ export function getToothConfigStatus(tooth: ToothData | undefined): ToothConfigS
   // Check required fields for completeness
   const hasTipoRestauracion = !!tooth.tipoRestauracion;
   const hasMaterial = !!tooth.material;
-  const hasColor = !!colorInfo?.shadeCode;
   const hasColorSystem = !!colorInfo?.shadeType;
+
+  // Color completeness depends on zone shading mode
+  let hasColor: boolean;
+  if (colorInfo?.useZoneShading) {
+    hasColor = !!colorInfo.cervicalShade && !!colorInfo.medioShade && !!colorInfo.incisalShade;
+  } else {
+    hasColor = !!colorInfo?.shadeCode;
+  }
 
   // If implant work, check implant info
   const implantComplete =

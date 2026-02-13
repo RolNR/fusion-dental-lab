@@ -19,8 +19,8 @@ type WorkTypeSectionProps = {
 const RESTORATION_TYPE_OPTIONS: ToggleOption<RestorationType>[] = [
   { value: 'corona', label: 'Corona', icon: 'settings' },
   { value: 'puente', label: 'Puente', icon: 'copy' },
-  { value: 'inlay', label: 'Inlay', icon: 'upload' },
-  { value: 'onlay', label: 'Onlay', icon: 'file' },
+  { value: 'incrustacion', label: 'Incrustación', icon: 'upload' },
+  { value: 'maryland', label: 'Maryland', icon: 'file' },
   { value: 'carilla', label: 'Carilla', icon: 'user' },
   { value: 'provisional', label: 'Provisional', icon: 'alertCircle' },
 ];

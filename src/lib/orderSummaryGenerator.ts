@@ -13,10 +13,23 @@ const CASE_TYPE_LABELS: Record<string, string> = {
 const RESTORATION_TYPE_LABELS: Record<string, string> = {
   corona: 'corona',
   puente: 'puente',
-  inlay: 'inlay',
-  onlay: 'onlay',
+  incrustacion: 'incrustación',
+  maryland: 'maryland',
   carilla: 'carilla',
   provisional: 'provisional',
+  pilar: 'pilar',
+  barra: 'barra',
+  hibrida: 'híbrida',
+  toronto: 'toronto',
+  removible: 'removible',
+  parcial: 'parcial',
+  total: 'total',
+  sobredentadura: 'sobredentadura',
+  encerado: 'encerado',
+  mockup: 'mockup',
+  guia_quirurgica: 'guía quirúrgica',
+  prototipo: 'prototipo',
+  guarda_oclusal: 'guarda oclusal',
 };
 
 const ARTICULATED_BY_LABELS: Record<string, string> = {
