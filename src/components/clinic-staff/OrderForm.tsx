@@ -559,6 +559,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     const errors = computePreSubmitValidation();
     setPreSubmitErrors(errors);
 
+    // Check if AI validation is enabled via feature flag
+    const isAIValidationEnabled = process.env.NEXT_PUBLIC_ENABLE_ORDER_AI_VALIDATION !== 'false';
+
+    if (!isAIValidationEnabled) {
+      // Skip AI validation, go directly to review modal
+      setShowReviewModal(true);
+      return;
+    }
+
     // Run AI validation
     setIsValidating(true);
     try {
