@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { RestorationType } from '@prisma/client';
 import { WizardStepIndicator } from './WizardStepIndicator';
 import { Step1InitialStates } from './Step1InitialStates';
@@ -28,6 +28,7 @@ interface OdontogramWizardProps {
   onBridgesChange: (bridges: BridgeDefinition[]) => void;
   onTeethInOrderChange: (teeth: string[]) => void;
   disabled?: boolean;
+  initialStep?: 1 | 2;
 }
 
 // Generate unique ID for bridges
@@ -110,6 +111,7 @@ export function OdontogramWizard({
   onBridgesChange,
   onTeethInOrderChange,
   disabled = false,
+  initialStep = 1,
 }: OdontogramWizardProps) {
   // Toast notifications
   const { addToast } = useToast();
@@ -119,11 +121,43 @@ export function OdontogramWizard({
     useGuidedTooltips();
 
   // State
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
+  const [currentStep, setCurrentStep] = useState<1 | 2>(initialStep);
   const [step1Tool, setStep1Tool] = useState<InitialStateTool>(null);
   const [step2Tool, setStep2Tool] = useState<RestorationType | null>(null);
   const [bridgeStart, setBridgeStart] = useState<string | null>(null);
   const [implantData, setImplantData] = useState<Map<string, ImplantData>>(new Map());
+
+  // Sync currentStep when parent changes initialStep (e.g., AI fills teeth data)
+  useEffect(() => {
+    setCurrentStep(initialStep);
+  }, [initialStep]);
+
+  // Initialize implantData from external teethData when it has implant info
+  useEffect(() => {
+    if (!externalTeethData || externalTeethData.size === 0) return;
+    const newImplantData = new Map<string, ImplantData>();
+    for (const [toothNumber, tooth] of externalTeethData) {
+      if (tooth.trabajoSobreImplante && tooth.informacionImplante) {
+        newImplantData.set(toothNumber, {
+          toothNumber,
+          marcaImplante: tooth.informacionImplante.marcaImplante,
+          sistemaConexion: tooth.informacionImplante.sistemaConexion,
+        });
+      }
+    }
+    if (newImplantData.size > 0) {
+      setImplantData((prev) => {
+        // Only update if there's new data not already in state
+        const merged = new Map(prev);
+        for (const [key, value] of newImplantData) {
+          if (!merged.has(key)) {
+            merged.set(key, value);
+          }
+        }
+        return merged;
+      });
+    }
+  }, [externalTeethData]);
 
   // Use external state if provided, otherwise use internal
   const [internalTeethData, setInternalTeethData] = useState<Map<string, ToothData>>(new Map());

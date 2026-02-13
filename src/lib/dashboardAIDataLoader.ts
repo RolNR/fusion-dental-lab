@@ -85,6 +85,10 @@ export function loadDashboardAIData(): LoadedAIData | null {
         aiPrompt,
         // Preserve patient name if AI provided it
         patientName: otherData.patientName,
+        // Include teethNumbers string so formData.teethNumbers stays in sync
+        ...(teethNumbersArray.length > 0 && {
+          teethNumbers: teethNumbersArray.join(', '),
+        }),
       },
       teethData: teethMap,
       teethNumbers: teethNumbersArray,

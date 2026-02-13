@@ -112,18 +112,27 @@ function filterEmptyValues<T extends Record<string, any>>(obj: T): Partial<T> {
 }
 
 /**
- * Parses AI prompt and returns structured order data with suggestions
+ * Parses AI prompt and returns structured order data with suggestions.
+ * Optionally accepts iteration context for follow-up prompts.
  */
-export async function parseAIPrompt(prompt: string): Promise<{
+export async function parseAIPrompt(
+  prompt: string,
+  context?: { previousValues: Record<string, unknown>; promptHistory: string[] }
+): Promise<{
   confirmedValues: Partial<OrderFormState>;
   suggestions: AISuggestion[];
 }> {
+  const body: Record<string, unknown> = { prompt };
+  if (context) {
+    body.context = context;
+  }
+
   const response = await fetch('/api/orders/parse-ai-prompt', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify(body),
   });
 
   const result = await response.json();

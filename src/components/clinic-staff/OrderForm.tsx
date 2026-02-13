@@ -46,6 +46,7 @@ import {
 import { ToothData, BridgeDefinition } from '@/types/tooth';
 import { OdontogramWizard } from './order-form/wizard';
 import { AIPromptInput } from './order-form/AIPromptInput';
+import { AIResultsSummary } from './order-form/AIResultsSummary';
 import type { AISuggestion } from '@/types/ai-suggestions';
 import { InitialToothStatesMap, getToothInitialState } from '@/types/initial-tooth-state';
 import { useToast } from '@/contexts/ToastContext';
@@ -121,9 +122,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [teethNumbers, setTeethNumbers] = useState<string[]>([]); // All teeth in the order
   const [selectedForConfig, setSelectedForConfig] = useState<string[]>([]); // Teeth currently selected for bulk config
   const [bridges, setBridges] = useState<BridgeDefinition[]>([]); // Bridge definitions
+  const [odontogramInitialStep, setOdontogramInitialStep] = useState<1 | 2>(1); // Start on Step 2 when AI fills teeth
 
   // AI suggestions state
   const [aiSuggestions, setAiSuggestions] = useState<AISuggestion[]>([]);
+
+  // Iterative AI prompt state
+  const [accumulatedAIValues, setAccumulatedAIValues] = useState<Record<string, unknown> | null>(
+    null
+  );
+  const [accumulatedAISuggestions, setAccumulatedAISuggestions] = useState<AISuggestion[]>([]);
+  const [aiPromptHistory, setAiPromptHistory] = useState<string[]>([]);
+  const [showAISummary, setShowAISummary] = useState(false);
 
   // File upload state (max 3 per category)
   const [upperFiles, setUpperFiles] = useState<File[]>([]);
@@ -281,6 +291,28 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
 
         if (dashboardData.selectedToothNumber) {
           setSelectedToothNumber(dashboardData.selectedToothNumber);
+        }
+
+        // Derive initialToothStates for implant teeth
+        const implantStates: Record<string, 'IMPLANTE'> = {};
+        for (const [toothNumber, tooth] of dashboardData.teethData) {
+          if (tooth.trabajoSobreImplante) {
+            implantStates[toothNumber] = 'IMPLANTE';
+          }
+        }
+        if (Object.keys(implantStates).length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            initialToothStates: { ...prev.initialToothStates, ...implantStates },
+          }));
+        }
+
+        // Auto-advance wizard to Step 2 since AI already assigned work
+        const hasWorkAssigned = Array.from(dashboardData.teethData.values()).some(
+          (t) => t.tipoRestauracion
+        );
+        if (hasWorkAssigned) {
+          setOdontogramInitialStep(2);
         }
       }
 
@@ -817,55 +849,11 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     try {
       const { confirmedValues, suggestions } = await parseAIPrompt(formData.aiPrompt);
 
-      // Extract teeth array if present (AI response may include teeth)
-      const parsedData = confirmedValues as Partial<OrderFormState> & { teeth?: ToothData[] };
-      const { teeth, ...otherData } = parsedData;
-
-      // Auto-fill form fields with parsed data (excluding teeth)
-      setFormData((prev) => ({
-        ...prev,
-        ...otherData,
-        // Keep existing values if AI didn't provide them
-        patientName: otherData.patientName || prev.patientName,
-        doctorId: prev.doctorId, // Don't override doctor selection
-      }));
-
-      // If teeth array exists, convert it to Map and update teethData
-      if (teeth && Array.isArray(teeth) && teeth.length > 0) {
-        const teethMap = new Map<string, ToothData>();
-        const toothNumbersArray: string[] = [];
-
-        teeth.forEach((tooth: ToothData) => {
-          if (tooth.toothNumber) {
-            teethMap.set(tooth.toothNumber, tooth);
-            toothNumbersArray.push(tooth.toothNumber);
-          }
-        });
-
-        setTeethData(teethMap);
-        setTeethNumbers(toothNumbersArray); // Update the array state for odontogram
-
-        // Auto-select the first tooth if none selected
-        if (!selectedToothNumber && toothNumbersArray.length > 0) {
-          setSelectedToothNumber(toothNumbersArray[0]);
-        }
-
-        // Also extract tooth numbers to teethNumbers field (comma-separated string)
-        const toothNumbers = toothNumbersArray.join(', ');
-        setFormData((prev) => ({
-          ...prev,
-          teethNumbers: toothNumbers,
-        }));
-      }
-
-      // Store AI suggestions
-      setAiSuggestions(suggestions);
-
-      // Show full form after successful AI processing
-      setShowFullForm(true);
-
-      // Open review modal immediately after successful AI processing
-      setShowReviewModal(true);
+      // Store raw accumulated values for iterative flow
+      setAccumulatedAIValues(confirmedValues as Record<string, unknown>);
+      setAccumulatedAISuggestions(suggestions);
+      setAiPromptHistory([formData.aiPrompt]);
+      setShowAISummary(true);
     } catch (err) {
       setAiError(err instanceof Error ? err.message : 'Error al procesar con IA');
       // Show full form even on error so user can manually fill it
@@ -873,6 +861,113 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     } finally {
       setIsParsingAI(false);
     }
+  };
+
+  // Follow-up AI prompt handler (iterative)
+  const handleAIFollowUp = async (followUpPrompt: string) => {
+    if (!accumulatedAIValues) return;
+
+    setAiError(null);
+    setIsParsingAI(true);
+
+    try {
+      const { confirmedValues, suggestions } = await parseAIPrompt(followUpPrompt, {
+        previousValues: accumulatedAIValues,
+        promptHistory: aiPromptHistory,
+      });
+
+      setAccumulatedAIValues(confirmedValues as Record<string, unknown>);
+      setAccumulatedAISuggestions(suggestions);
+      setAiPromptHistory((prev) => [...prev, followUpPrompt]);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'Error al procesar con IA');
+      // Keep previous accumulated values intact
+    } finally {
+      setIsParsingAI(false);
+    }
+  };
+
+  // Apply accumulated AI values to the form
+  const handleApplyAIValues = () => {
+    if (!accumulatedAIValues) return;
+
+    const parsedData = accumulatedAIValues as Partial<OrderFormState> & { teeth?: ToothData[] };
+    const { teeth, ...otherData } = parsedData;
+
+    // Auto-fill form fields with parsed data (excluding teeth)
+    setFormData((prev) => ({
+      ...prev,
+      ...otherData,
+      patientName: (otherData.patientName as string) || prev.patientName,
+      doctorId: prev.doctorId, // Don't override doctor selection
+    }));
+
+    // If teeth array exists, convert it to Map and update teethData
+    if (teeth && Array.isArray(teeth) && teeth.length > 0) {
+      const teethMap = new Map<string, ToothData>();
+      const toothNumbersArray: string[] = [];
+
+      teeth.forEach((tooth: ToothData) => {
+        if (tooth.toothNumber) {
+          teethMap.set(tooth.toothNumber, tooth);
+          toothNumbersArray.push(tooth.toothNumber);
+        }
+      });
+
+      setTeethData(teethMap);
+      setTeethNumbers(toothNumbersArray);
+
+      if (!selectedToothNumber && toothNumbersArray.length > 0) {
+        setSelectedToothNumber(toothNumbersArray[0]);
+      }
+
+      const toothNumbers = toothNumbersArray.join(', ');
+
+      // Derive initialToothStates for implant teeth
+      const implantStates: Record<string, 'IMPLANTE'> = {};
+      for (const [toothNumber, tooth] of teethMap) {
+        if (tooth.trabajoSobreImplante) {
+          implantStates[toothNumber] = 'IMPLANTE';
+        }
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        teethNumbers: toothNumbers,
+        ...(Object.keys(implantStates).length > 0 && {
+          initialToothStates: { ...prev.initialToothStates, ...implantStates },
+        }),
+      }));
+
+      // Auto-advance wizard to Step 2 since AI already assigned work
+      const hasWorkAssigned = Array.from(teethMap.values()).some((t) => t.tipoRestauracion);
+      if (hasWorkAssigned) {
+        setOdontogramInitialStep(2);
+      }
+    }
+
+    // Store AI suggestions
+    setAiSuggestions(accumulatedAISuggestions);
+
+    // Reset iterative state
+    setShowAISummary(false);
+    setAccumulatedAIValues(null);
+    setAccumulatedAISuggestions([]);
+    setAiPromptHistory([]);
+
+    // Show full form and review modal
+    setShowFullForm(true);
+    setShowReviewModal(true);
+  };
+
+  // Reset AI iteration and go back to initial prompt
+  const handleAIStartOver = () => {
+    setAccumulatedAIValues(null);
+    setAccumulatedAISuggestions([]);
+    setAiPromptHistory([]);
+    setShowAISummary(false);
+    setAiError(null);
+    setFormData((prev) => ({ ...prev, aiPrompt: '' }));
   };
 
   const handleApplySuggestion = (suggestion: AISuggestion) => {
@@ -1061,19 +1156,36 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       )}
 
       {/* AI Prompt - Highlighted Section */}
-      <AIPromptInput
-        value={formData.aiPrompt}
-        onChange={(value) => setFormData((prev) => ({ ...prev, aiPrompt: value }))}
-        onParse={handleParseAIPrompt}
-        isParsingAI={isParsingAI}
-        isLoading={isLoading}
-        aiError={aiError}
-        speechSupported={speechSupported}
-        isListening={isListening}
-        onToggleSpeechRecognition={handleToggleSpeechRecognition}
-        showFullForm={showFullForm}
-        onShowFullForm={() => setShowFullForm(true)}
-      />
+      {showAISummary && accumulatedAIValues ? (
+        <>
+          <AIResultsSummary
+            confirmedValues={accumulatedAIValues}
+            suggestions={accumulatedAISuggestions}
+            onFollowUp={handleAIFollowUp}
+            onApply={handleApplyAIValues}
+            onStartOver={handleAIStartOver}
+            isProcessing={isParsingAI}
+            speechSupported={speechSupported}
+            isListening={isListening}
+            onToggleSpeechRecognition={handleToggleSpeechRecognition}
+          />
+          {aiError && <p className="mt-2 text-sm text-danger font-medium">{aiError}</p>}
+        </>
+      ) : (
+        <AIPromptInput
+          value={formData.aiPrompt}
+          onChange={(value) => setFormData((prev) => ({ ...prev, aiPrompt: value }))}
+          onParse={handleParseAIPrompt}
+          isParsingAI={isParsingAI}
+          isLoading={isLoading}
+          aiError={aiError}
+          speechSupported={speechSupported}
+          isListening={isListening}
+          onToggleSpeechRecognition={handleToggleSpeechRecognition}
+          showFullForm={showFullForm}
+          onShowFullForm={() => setShowFullForm(true)}
+        />
+      )}
 
       {/* Show full form only after AI processing or when editing */}
       {showFullForm && (
@@ -1115,6 +1227,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                   onBridgesChange={setBridges}
                   onTeethInOrderChange={setTeethNumbers}
                   disabled={isLoading}
+                  initialStep={odontogramInitialStep}
                 />
               </div>
 
