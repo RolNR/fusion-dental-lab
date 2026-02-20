@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ScannerType } from '@prisma/client';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
@@ -164,6 +164,168 @@ function UnifiedDropZone({
   );
 }
 
+const SCANNER_LABELS: Record<ScannerType, string> = {
+  [ScannerType.iTero]: 'iTero',
+  [ScannerType.Medit]: 'Medit',
+  [ScannerType.ThreeShape]: '3Shape',
+  [ScannerType.Carestream]: 'Carestream',
+  [ScannerType.DentalWings]: 'Dental Wings',
+  [ScannerType.Otro]: 'Otro',
+};
+
+// Inline scanner selector with confirm/edit pattern
+function InlineScannerSelector({
+  value,
+  otroEscaner,
+  onChange,
+  onOtroChange,
+  error,
+  disabled,
+  forceShowSelect,
+}: {
+  value?: ScannerType;
+  otroEscaner?: string;
+  onChange: (value: ScannerType | null) => void;
+  onOtroChange: (value: string) => void;
+  error?: string;
+  disabled?: boolean;
+  forceShowSelect?: boolean;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  // When value is cleared externally, reset state
+  useEffect(() => {
+    if (!value) {
+      setIsConfirmed(false);
+      setIsEditing(false);
+    }
+  }, [value]);
+
+  // No value and not in edit/manual mode: hide completely
+  if (!value && !isEditing && !forceShowSelect) {
+    return null;
+  }
+
+  // Auto-detected: show inline display
+  if (value && !isEditing) {
+    const displayLabel =
+      value === ScannerType.Otro && otroEscaner ? otroEscaner : SCANNER_LABELS[value] || value;
+
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm font-semibold text-foreground">
+          Escáner Utilizado <span className="text-danger ml-1">*</span>
+        </label>
+        <div
+          className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 transition-all ${
+            isConfirmed ? 'border-success/50 bg-success/5' : 'border-primary/50 bg-primary/5'
+          }`}
+        >
+          <Icons.cube className="h-5 w-5 text-primary shrink-0" />
+          <span className="flex-1 font-medium text-foreground">{displayLabel}</span>
+
+          {!isConfirmed ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirmed(true);
+                }}
+                disabled={disabled}
+                className="rounded-md p-1.5 text-success hover:bg-success/10 transition-colors"
+                title="Confirmar escáner"
+              >
+                <Icons.check className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                disabled={disabled}
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                title="Cambiar escáner"
+              >
+                <Icons.edit className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-success font-medium">Confirmado</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsConfirmed(false);
+                  setIsEditing(true);
+                }}
+                disabled={disabled}
+                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                title="Cambiar escáner"
+              >
+                <Icons.edit className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+        {error && <p className="text-sm text-danger font-medium">{error}</p>}
+      </div>
+    );
+  }
+
+  // Edit mode or no value: show Select
+  return (
+    <div className="space-y-2">
+      <Select
+        label="Escáner Utilizado"
+        value={value || ''}
+        onChange={(e) => {
+          const newValue = e.target.value === '' ? null : (e.target.value as ScannerType);
+          onChange(newValue);
+          if (newValue && newValue !== ScannerType.Otro) {
+            setIsEditing(false);
+            setIsConfirmed(false);
+          }
+        }}
+        error={error}
+        disabled={disabled}
+        required
+      >
+        <option value="">Selecciona un escáner</option>
+        <option value={ScannerType.iTero}>iTero</option>
+        <option value={ScannerType.Medit}>Medit</option>
+        <option value={ScannerType.ThreeShape}>3Shape</option>
+        <option value={ScannerType.Carestream}>Carestream</option>
+        <option value={ScannerType.DentalWings}>Dental Wings</option>
+        <option value={ScannerType.Otro}>Otro</option>
+      </Select>
+
+      {value === ScannerType.Otro && (
+        <Input
+          label="Especifica el Escáner"
+          type="text"
+          value={otroEscaner || ''}
+          onChange={(e) => onOtroChange(e.target.value)}
+          placeholder="Nombre del escáner..."
+          required
+          disabled={disabled}
+        />
+      )}
+
+      {value && isEditing && (
+        <button
+          type="button"
+          onClick={() => {
+            setIsEditing(false);
+            setIsConfirmed(false);
+          }}
+          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Cancelar
+        </button>
+      )}
+    </div>
+  );
+}
+
 type DigitalScanSectionProps = {
   isDigitalScan?: boolean;
   escanerUtilizado?: ScannerType;
@@ -211,6 +373,7 @@ export function DigitalScanSection({
   const [mismatchConfirmation, setMismatchConfirmation] = useState<MismatchConfirmation | null>(
     null
   );
+  const [showManualScanner, setShowManualScanner] = useState(false);
 
   const handleToggle = (checked: boolean) => {
     if (checked) {
@@ -222,16 +385,6 @@ export function DigitalScanSection({
         escanerUtilizado: null,
         otroEscaner: undefined,
       });
-    }
-  };
-
-  const handleEscanerChange = (value: string) => {
-    const scannerValue = value === '' ? null : (value as ScannerType);
-    onChange({ escanerUtilizado: scannerValue ?? undefined });
-
-    // Clear "other scanner" field if not "Otro"
-    if (value !== ScannerType.Otro) {
-      onChange({ otroEscaner: undefined });
     }
   };
 
@@ -425,44 +578,42 @@ export function DigitalScanSection({
         {/* Conditionally render scanner and file upload fields */}
         {isDigitalScan && (
           <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-            <Select
-              label="Escáner Utilizado"
-              value={escanerUtilizado || ''}
-              onChange={(e) => handleEscanerChange(e.target.value)}
-              error={errors?.escanerUtilizado}
-              disabled={disabled}
-              required
-            >
-              <option value="">Selecciona un escáner</option>
-              <option value={ScannerType.iTero}>iTero</option>
-              <option value={ScannerType.Medit}>Medit</option>
-              <option value={ScannerType.ThreeShape}>3Shape</option>
-              <option value={ScannerType.Carestream}>Carestream</option>
-              <option value={ScannerType.DentalWings}>Dental Wings</option>
-              <option value={ScannerType.Otro}>Otro</option>
-            </Select>
-
-            {/* Other Scanner Name */}
-            {escanerUtilizado === ScannerType.Otro && (
-              <Input
-                label="Especifica el Escáner"
-                type="text"
-                value={otroEscaner || ''}
-                onChange={(e) => onChange({ otroEscaner: e.target.value })}
-                placeholder="Nombre del escáner..."
-                error={errors?.otroEscaner}
-                required
-                disabled={disabled}
-              />
-            )}
-
-            {/* Unified Drop Zone */}
+            {/* Unified Drop Zone - first so scanner is detected from files */}
             <UnifiedDropZone
               onFilesDrop={handleUnifiedDrop}
               acceptedTypes={ALLOWED_SCAN_TYPES}
               maxSizeMB={MAX_FILE_SIZE_MB}
               disabled={disabled}
             />
+
+            {/* Scanner selector - shown when auto-detected or manually triggered */}
+            <InlineScannerSelector
+              value={escanerUtilizado}
+              otroEscaner={otroEscaner}
+              onChange={(value) => {
+                const scannerValue = value ?? undefined;
+                onChange({ escanerUtilizado: scannerValue });
+                if (value !== ScannerType.Otro) {
+                  onChange({ otroEscaner: undefined });
+                }
+              }}
+              onOtroChange={(value) => onChange({ otroEscaner: value })}
+              error={errors?.escanerUtilizado}
+              disabled={disabled}
+              forceShowSelect={showManualScanner}
+            />
+
+            {/* Manual scanner link - only when no scanner selected and not already showing select */}
+            {!escanerUtilizado && !showManualScanner && (
+              <button
+                type="button"
+                onClick={() => setShowManualScanner(true)}
+                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover transition-colors"
+              >
+                <Icons.edit className="h-3.5 w-3.5" />
+                <span>Seleccionar escáner manualmente</span>
+              </button>
+            )}
 
             {/* File Sections - Display only with inter-zone drag */}
             {(upperFiles.length > 0 || lowerFiles.length > 0 || biteFiles.length > 0) && (

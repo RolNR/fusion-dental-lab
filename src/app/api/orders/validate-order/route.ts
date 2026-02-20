@@ -195,6 +195,14 @@ function formatOrderDataForValidation(data: Record<string, unknown>): string {
         sections.push(`Diente ${tooth.toothNumber}:`);
         sections.push(`  - Marca: ${implantInfo?.marcaImplante || '(no especificada)'}`);
         sections.push(`  - Conexión: ${implantInfo?.sistemaConexion || '(no especificado)'}`);
+        sections.push(`  - Scanbody: ${implantInfo?.scanbody || '(no especificado)'}`);
+        sections.push(`  - Tipo aditamento: ${implantInfo?.tipoAditamento || '(no especificado)'}`);
+        sections.push(
+          `  - Perfil emergencia: ${implantInfo?.perfilEmergencia || '(no especificado)'}`
+        );
+        sections.push(
+          `  - Tipo restauración: ${implantInfo?.tipoRestauracion || '(no especificado)'}`
+        );
       });
     }
   } else if (data.tipoCaso !== 'garantia') {

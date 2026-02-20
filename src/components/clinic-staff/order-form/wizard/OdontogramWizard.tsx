@@ -142,6 +142,10 @@ export function OdontogramWizard({
           toothNumber,
           marcaImplante: tooth.informacionImplante.marcaImplante,
           sistemaConexion: tooth.informacionImplante.sistemaConexion,
+          scanbody: tooth.informacionImplante.scanbody,
+          tipoAditamento: tooth.informacionImplante.tipoAditamento,
+          perfilEmergencia: tooth.informacionImplante.perfilEmergencia,
+          tipoRestauracion: tooth.informacionImplante.tipoRestauracion,
         });
       }
     }
@@ -351,6 +355,12 @@ export function OdontogramWizard({
                   ? {
                       marcaImplante: implantInfo.marcaImplante,
                       sistemaConexion: implantInfo.sistemaConexion,
+                      scanbody: implantInfo.scanbody,
+                      tipoAditamento: implantInfo.tipoAditamento as ImplantInfo['tipoAditamento'],
+                      perfilEmergencia:
+                        implantInfo.perfilEmergencia as ImplantInfo['perfilEmergencia'],
+                      tipoRestauracion:
+                        implantInfo.tipoRestauracion as ImplantInfo['tipoRestauracion'],
                     }
                   : undefined,
             });
@@ -390,6 +400,12 @@ export function OdontogramWizard({
                 ? {
                     marcaImplante: implantInfo.marcaImplante,
                     sistemaConexion: implantInfo.sistemaConexion,
+                    scanbody: implantInfo.scanbody,
+                    tipoAditamento: implantInfo.tipoAditamento as ImplantInfo['tipoAditamento'],
+                    perfilEmergencia:
+                      implantInfo.perfilEmergencia as ImplantInfo['perfilEmergencia'],
+                    tipoRestauracion:
+                      implantInfo.tipoRestauracion as ImplantInfo['tipoRestauracion'],
                   }
                 : undefined,
             ...currentData,

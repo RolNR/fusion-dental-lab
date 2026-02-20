@@ -183,6 +183,7 @@ export interface OrderDetail {
 export const implantInfoSchema = z.object({
   marcaImplante: z.string().optional(),
   sistemaConexion: z.string().optional(),
+  scanbody: z.string().optional(),
   numeroImplantes: z.number().optional(),
   tipoRestauracion: z.enum(['individual', 'ferulizada', 'hibrida']).optional(),
   tipoAditamento: z.enum(['estandar', 'personalizado', 'multi_unit']).optional(),

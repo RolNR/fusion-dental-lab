@@ -198,7 +198,11 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
     | {
         marcaImplante?: string;
         sistemaConexion?: string;
+        scanbody?: string;
         numeroImplantes?: number;
+        tipoAditamento?: string;
+        perfilEmergencia?: string;
+        tipoRestauracion?: string;
       }
     | undefined;
 
@@ -279,6 +283,44 @@ function ToothDetailRow({ tooth, showRestorationType }: ToothDetailRowProps) {
                     <span className="text-muted-foreground">Sistema: </span>
                     <span className="text-foreground font-medium">
                       {implantInfo.sistemaConexion}
+                    </span>
+                  </div>
+                )}
+                {implantInfo.scanbody && (
+                  <div>
+                    <span className="text-muted-foreground">Scanbody: </span>
+                    <span className="text-foreground font-medium">{implantInfo.scanbody}</span>
+                  </div>
+                )}
+                {implantInfo.tipoAditamento && (
+                  <div>
+                    <span className="text-muted-foreground">Aditamento: </span>
+                    <span className="text-foreground font-medium">
+                      {{
+                        estandar: 'Estándar',
+                        personalizado: 'Personalizado',
+                        multi_unit: 'Multi-unit',
+                      }[implantInfo.tipoAditamento] || implantInfo.tipoAditamento}
+                    </span>
+                  </div>
+                )}
+                {implantInfo.perfilEmergencia && (
+                  <div>
+                    <span className="text-muted-foreground">Perfil: </span>
+                    <span className="text-foreground font-medium">
+                      {{ recto: 'Recto', concavo: 'Cóncavo', convexo: 'Convexo' }[
+                        implantInfo.perfilEmergencia
+                      ] || implantInfo.perfilEmergencia}
+                    </span>
+                  </div>
+                )}
+                {implantInfo.tipoRestauracion && (
+                  <div>
+                    <span className="text-muted-foreground">Tipo rest.: </span>
+                    <span className="text-foreground font-medium">
+                      {{ individual: 'Individual', ferulizada: 'Ferulizada', hibrida: 'Híbrida' }[
+                        implantInfo.tipoRestauracion
+                      ] || implantInfo.tipoRestauracion}
                     </span>
                   </div>
                 )}
