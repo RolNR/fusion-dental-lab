@@ -13,6 +13,7 @@ import { UploadModal } from '@/components/orders/UploadModal';
 import { OrderShippingLabel } from '@/components/orders/OrderShippingLabel';
 import { useOrderDetail } from '@/hooks/useOrderDetail';
 import { useSubmitOrder } from '@/hooks/useSubmitOrder';
+import { PruebasEvaluacion } from '@/components/clinic-staff/PruebasEvaluacion';
 
 interface OrderDetailPageProps {
   role: 'doctor';
@@ -103,6 +104,11 @@ export function OrderDetailPage({ role, showDoctorInfo = false }: OrderDetailPag
         )}
 
         <OrderDetails order={order} showDoctorInfo={showDoctorInfo} />
+
+        {/* Pruebas pendientes de evaluación */}
+        {order.pruebas && order.pruebas.length > 0 && (
+          <PruebasEvaluacion orderId={orderId} pruebas={order.pruebas} onResponded={refetch} />
+        )}
 
         {/* Files Section */}
         <div className="mt-6 rounded-xl bg-background p-6 shadow-md border border-border">

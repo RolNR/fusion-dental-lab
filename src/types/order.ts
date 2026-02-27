@@ -7,6 +7,7 @@ import {
   SubmissionType,
   ArticulatedBy,
   ProvisionalMaterial,
+  TrialType,
   Prisma,
 } from '@prisma/client';
 import { z } from 'zod';
@@ -83,6 +84,7 @@ export interface Order {
       role: string;
     };
   }[];
+  pruebas?: PruebaRecord[];
 }
 
 // Order interface for table views (shared across dashboards)
@@ -94,6 +96,10 @@ export interface OrderWithRelations {
   createdAt: string;
   isUrgent: boolean;
   deletedAt?: string | null;
+  tipoCaso?: CaseType | null;
+  motivoGarantia?: string | null;
+  submissionType?: SubmissionType | null;
+  description?: string | null;
   doctor?: {
     id: string;
     name: string;
@@ -104,6 +110,36 @@ export interface OrderWithRelations {
     id: string;
     name: string;
     role: string;
+  };
+  // For mini-summary in list view
+  teeth?: Array<{
+    toothNumber: string;
+    tipoRestauracion: string | null;
+    material: string | null;
+  }>;
+  // For "En prueba" badge
+  pruebas?: Array<{
+    id: string;
+    tipo: TrialType;
+    completada: boolean;
+  }>;
+}
+
+// Prueba (try-in) record interface
+export interface PruebaRecord {
+  id: string;
+  orderId?: string;
+  tipo: TrialType;
+  nota: string | null;
+  completada: boolean;
+  registradaAt: string | null;
+  aprobada: boolean | null;
+  notasCliente: string | null;
+  respondidaAt: string | null;
+  createdAt: string;
+  createdBy?: {
+    id: string;
+    name: string;
   };
 }
 
@@ -177,6 +213,7 @@ export interface OrderDetail {
     category: string | null;
     createdAt: string;
   }>;
+  pruebas: PruebaRecord[];
 }
 
 // Implant information schema

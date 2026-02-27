@@ -141,6 +141,7 @@ model Order {
   createdBy                    User             @relation("CreatorOrders", fields: [createdById], references: [id], onDelete: Cascade)
   doctor                       User             @relation("DoctorOrders", fields: [doctorId], references: [id], onDelete: Cascade)
   comments                     OrderComment[]
+  pruebas                      PruebaRecord[]
 
   @@index([createdAt])
   @@index([createdById])
@@ -190,6 +191,26 @@ model OrderComment {
   @@index([orderId])
 }
 
+model PruebaRecord {
+  id            String      @id @default(cuid())
+  orderId       String
+  tipo          TrialType
+  nota          String?
+  completada    Boolean        @default(false)
+  registradaAt  DateTime?
+  aprobada      Boolean?
+  notasCliente  String?
+  respondidaAt  DateTime?
+  createdById   String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy     User           @relation("PruebasCreadas", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
 model User {
   id                                                String            @id @default(cuid())
   email                                             String            @unique
@@ -212,6 +233,7 @@ model User {
   ordersCreated                                     Order[]           @relation("CreatorOrders")
   ordersByDoctor                                    Order[]           @relation("DoctorOrders")
   orderComments                                     OrderComment[]
+  pruebasCreadas                                    PruebaRecord[]    @relation("PruebasCreadas")
   laboratory                                        Laboratory?       @relation("LaboratoryAdmins", fields: [laboratoryId], references: [id], onDelete: Cascade)
   doctorLaboratory                                  Laboratory?       @relation("LaboratoryDoctors", fields: [doctorLaboratoryId], references: [id], onDelete: Cascade)
 
@@ -328,5 +350,22 @@ enum ProvisionalMaterial {
   acrilico
   bis_acrilico
   pmma
+}
+
+enum TrialType {
+  estructura       // Prueba de Estructura (metal/zirconia)
+  biscocho         // Prueba de Biscocho (porcelana sin glasear)
+  estetica         // Prueba Estética (completa, sin cementar)
+  encerado         // Prueba de Encerado
+  oclusion         // Prueba de Oclusión
+  altura_dvo       // Prueba de Altura / DVO
+  color            // Verificación de Color
+  encaje           // Prueba de Encaje / Asentamiento
+  rodetes          // Prueba de Rodetes (dentadura completa)
+  dientes          // Prueba de Dientes (dentadura)
+  provisional      // Prueba de Provisional
+  alineacion       // Prueba de Alineación
+  metal            // Prueba de Metal (antes de porcelana)
+  implante         // Verificación de Componentes de Implante
 }
 

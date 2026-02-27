@@ -18,6 +18,7 @@ import { useSession } from 'next-auth/react';
 import { ToothConfigSection } from '@/components/orders/review-sections/ToothConfigSection';
 import { generateCaseSummary } from '@/lib/orderSummaryGenerator';
 import { getInitialStatesSummary, InitialToothStatesMap } from '@/types/initial-tooth-state';
+import { HistoricoPruebas } from '@/components/lab-admin/HistoricoPruebas';
 
 interface CopyButtonProps {
   value: string;
@@ -271,6 +272,17 @@ export function LabOrderDetailPage({ role }: LabOrderDetailPageProps) {
               userRole={session.user.role as Role}
               onStatusChange={fetchOrder}
             />
+          )}
+
+          {/* Histórico de Pruebas - solo lab-admin */}
+          {role === 'lab-admin' && (
+            <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+              <div className="flex items-center gap-2 mb-4">
+                <Icons.clipboardList className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold text-foreground">Histórico de Pruebas</h2>
+              </div>
+              <HistoricoPruebas orderId={order.id} />
+            </div>
           )}
 
           {/* Doctor Info */}

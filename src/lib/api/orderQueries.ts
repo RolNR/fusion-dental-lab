@@ -49,4 +49,20 @@ export const orderDetailInclude = {
       createdAt: 'desc' as const,
     },
   },
+  pruebas: {
+    select: {
+      id: true,
+      tipo: true,
+      nota: true,
+      completada: true,
+      aprobada: true,
+      notasCliente: true,
+      registradaAt: true,
+      respondidaAt: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: 'asc' as const,
+    },
+  },
 } as const;

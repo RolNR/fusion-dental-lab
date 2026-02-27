@@ -89,6 +89,20 @@ export async function GET(request: NextRequest) {
             role: true,
           },
         },
+        teeth: {
+          select: {
+            toothNumber: true,
+            tipoRestauracion: true,
+            material: true,
+          },
+        },
+        pruebas: {
+          select: {
+            id: true,
+            tipo: true,
+            completada: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',

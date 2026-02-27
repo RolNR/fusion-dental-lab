@@ -2,12 +2,20 @@
  * Generates a human-readable case summary from order data for lab staff
  */
 
-import { OrderDetail } from '@/types/order';
+import { OrderDetail, OrderWithRelations } from '@/types/order';
 
-// Translation maps for enum values
 const CASE_TYPE_LABELS: Record<string, string> = {
-  nuevo: 'un caso nuevo',
-  garantia: 'un caso de garantía',
+  nuevo: 'caso nuevo',
+  garantia: 'garantía',
+  regreso_prueba: 'regreso a prueba',
+  reparacion_ajuste: 'reparación/ajuste',
+};
+
+const SUBMISSION_TYPE_LABELS: Record<string, string> = {
+  prueba_estructura: 'para prueba de estructura',
+  prueba_estetica: 'para prueba estética',
+  prueba: 'para prueba',
+  terminado: 'terminado',
 };
 
 const RESTORATION_TYPE_LABELS: Record<string, string> = {
@@ -43,31 +51,40 @@ const ARTICULATED_BY_LABELS: Record<string, string> = {
 export function generateCaseSummary(order: OrderDetail): string {
   const sections: string[] = [];
 
-  // Opening - Patient and case type
-  const caseType = order.tipoCaso ? CASE_TYPE_LABELS[order.tipoCaso] || order.tipoCaso : 'un caso';
-  let opening = `Se requiere para paciente ${order.patientName} ${caseType}`;
+  // Opening — who requests it, for whom, what type of case
+  const doctorName = order.doctor?.name ? `Dr. ${order.doctor.name}` : 'El doctor';
+  const clinic = order.doctor?.clinicName ? ` (${order.doctor.clinicName})` : '';
+  const caseTypeLabel = order.tipoCaso ? CASE_TYPE_LABELS[order.tipoCaso] || order.tipoCaso : null;
+  const submissionLabel = order.submissionType
+    ? SUBMISSION_TYPE_LABELS[order.submissionType] || null
+    : null;
 
+  let opening = `${doctorName}${clinic} solicita para el paciente ${order.patientName}`;
+
+  if (caseTypeLabel) {
+    opening += ` — ${caseTypeLabel}`;
+  }
+  if (submissionLabel) {
+    opening += `, ${submissionLabel}`;
+  }
   if (order.isUrgent) {
-    opening += ' (URGENTE - 30% recargo)';
+    opening += ' ⚠ URGENTE (+30%)';
   }
   opening += '.';
   sections.push(opening);
 
-  // Warranty reason if applicable
+  // Warranty reason
   if (order.tipoCaso === 'garantia' && order.motivoGarantia) {
     sections.push(`Motivo de garantía: ${order.motivoGarantia}.`);
   }
 
-  // Return original work if applicable
+  // Return original work
   if (order.seDevuelveTrabajoOriginal) {
-    sections.push('Se debe devolver el trabajo original.');
+    sections.push('Se devuelve el trabajo original.');
   }
 
-  // Teeth and work details - show each tooth individually
+  // Teeth — show each tooth's work
   if (order.teeth && order.teeth.length > 0) {
-    const toothSummaries: string[] = [];
-
-    // Sort teeth numerically
     const sortedTeeth = [...order.teeth].sort(
       (a, b) => parseInt(a.toothNumber) - parseInt(b.toothNumber)
     );
@@ -83,14 +100,12 @@ export function generateCaseSummary(order: OrderDetail): string {
       if (restType) {
         toothDesc += restType;
       }
-
       if (material) {
         toothDesc += restType ? ` en ${material}` : material;
       }
 
-      // Color information
       if (tooth.colorInfo) {
-        const colorInfo = tooth.colorInfo as any;
+        const colorInfo = tooth.colorInfo as Record<string, unknown>;
         if (colorInfo.shadeCode) {
           toothDesc += `, color ${colorInfo.shadeCode}`;
         }
@@ -99,9 +114,8 @@ export function generateCaseSummary(order: OrderDetail): string {
         }
       }
 
-      // Implant information
       if (tooth.trabajoSobreImplante && tooth.informacionImplante) {
-        const implantInfo = tooth.informacionImplante as any;
+        const implantInfo = tooth.informacionImplante as Record<string, unknown>;
         toothDesc += '. Sobre implante';
         if (implantInfo.marcaImplante) {
           toothDesc += ` ${implantInfo.marcaImplante}`;
@@ -112,28 +126,29 @@ export function generateCaseSummary(order: OrderDetail): string {
       }
 
       toothDesc += '.';
-      toothSummaries.push(toothDesc);
+      sections.push(toothDesc);
     });
-
-    sections.push(...toothSummaries);
   }
 
-  // Digital scan details
+  // Digital scan
   if (order.isDigitalScan) {
-    sections.push('Tipo de impresión: escaneo digital.');
+    let scanLine = 'Impresión: escaneo digital';
     if (order.escanerUtilizado) {
-      sections.push(`Escáner utilizado: ${order.escanerUtilizado}.`);
+      scanLine += ` (${order.escanerUtilizado}`;
       if (order.otroEscaner) {
-        sections.push(`Detalle del escáner: ${order.otroEscaner}.`);
+        scanLine += ` — ${order.otroEscaner}`;
       }
+      scanLine += ')';
     }
+    scanLine += '.';
+    sections.push(scanLine);
   }
 
-  // Occlusion design
+  // Occlusion
   if (order.oclusionDiseno) {
-    const occlusion = order.oclusionDiseno as any;
+    const occlusion = order.oclusionDiseno as Record<string, unknown>;
     if (occlusion.tipoOclusion) {
-      sections.push(`Tipo de oclusión: ${occlusion.tipoOclusion}.`);
+      sections.push(`Oclusión: ${occlusion.tipoOclusion}.`);
     }
   }
 
@@ -146,7 +161,7 @@ export function generateCaseSummary(order: OrderDetail): string {
   // Materials sent
   if (order.materialSent) {
     const materials = Object.entries(order.materialSent)
-      .filter(([_, sent]) => sent)
+      .filter(([, sent]) => sent)
       .map(([material]) => material);
     if (materials.length > 0) {
       sections.push(`Materiales enviados: ${materials.join(', ')}.`);
@@ -161,18 +176,65 @@ export function generateCaseSummary(order: OrderDetail): string {
       month: 'long',
       day: 'numeric',
     });
-    sections.push(`Fecha de entrega deseada: ${formattedDate}.`);
+    sections.push(`Entrega deseada: ${formattedDate}.`);
   }
 
-  // Description
+  // Description / Notes
   if (order.description) {
     sections.push(`Descripción: ${order.description}`);
   }
-
-  // Notes
   if (order.notes) {
-    sections.push(`Notas adicionales: ${order.notes}`);
+    sections.push(`Notas: ${order.notes}`);
   }
 
   return sections.join(' ');
+}
+
+/**
+ * Generates a compact single-line summary for the orders list view.
+ * Priority: teeth work > warranty reason > description > case type
+ */
+export function generateMiniSummary(order: OrderWithRelations): string | null {
+  // 1. Teeth work — group by restoration type and count
+  if (order.teeth && order.teeth.length > 0) {
+    // Group by (tipoRestauracion, material)
+    const groups = new Map<string, number>();
+    order.teeth.forEach((tooth) => {
+      const restLabel = tooth.tipoRestauracion
+        ? RESTORATION_TYPE_LABELS[tooth.tipoRestauracion] || tooth.tipoRestauracion
+        : 'trabajo';
+      const mat = tooth.material ? ` en ${tooth.material}` : '';
+      const key = `${restLabel}${mat}`;
+      groups.set(key, (groups.get(key) ?? 0) + 1);
+    });
+
+    const parts = Array.from(groups.entries()).map(([key, count]) =>
+      count === 1 ? key : `${key} ×${count}`
+    );
+
+    const toothNums = order.teeth
+      .map((t) => t.toothNumber)
+      .sort((a, b) => parseInt(a) - parseInt(b))
+      .join(', ');
+
+    const work = parts.join(' · ');
+    return `${work} — diente${order.teeth.length > 1 ? 's' : ''} ${toothNums}`;
+  }
+
+  // 2. Warranty reason
+  if (order.tipoCaso === 'garantia' && order.motivoGarantia) {
+    return `Garantía: ${order.motivoGarantia}`;
+  }
+
+  // 3. Case type label
+  if (order.tipoCaso && order.tipoCaso !== 'nuevo') {
+    return CASE_TYPE_LABELS[order.tipoCaso] ?? null;
+  }
+
+  // 4. Description truncated
+  if (order.description) {
+    return order.description.length > 80 ? order.description.slice(0, 80) + '…' : order.description;
+  }
+
+  return null;
 }
