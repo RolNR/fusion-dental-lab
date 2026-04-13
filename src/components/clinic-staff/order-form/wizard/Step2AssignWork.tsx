@@ -148,7 +148,9 @@ export function Step2AssignWork({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">Paso 2: Selección de tipo de trabajo</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          Paso 2: Selección de tipo de trabajo
+        </h3>
         <p className="text-sm text-muted-foreground">
           Selecciona un tipo de trabajo y haz clic en los dientes para asignarlo.
         </p>

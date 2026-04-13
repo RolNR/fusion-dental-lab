@@ -98,7 +98,9 @@ export function Step1InitialStates({
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">Paso 1: Situación actual del paciente</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          Paso 1: Situación actual del paciente
+        </h3>
         <p className="text-sm text-muted-foreground">
           Marca los dientes ausentes, pilares e implantes antes de asignar trabajos.
         </p>
