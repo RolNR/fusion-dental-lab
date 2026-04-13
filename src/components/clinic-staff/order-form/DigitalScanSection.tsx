@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
-import { CollapsibleSubsection } from '@/components/ui/form';
 import { FilePickerSection, DraggedFileData } from './FilePickerSection';
 import {
   ALLOWED_SCAN_TYPES,
@@ -561,8 +560,7 @@ export function DigitalScanSection({
   );
 
   return (
-    <CollapsibleSubsection icon="upload" title="Escaneo Digital">
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="rounded-lg border border-border bg-muted/30 p-4">
           <Checkbox
             label="¿Es un escaneo digital?"
@@ -722,7 +720,6 @@ export function DigitalScanSection({
             </div>
           </div>
         )}
-      </div>
-    </CollapsibleSubsection>
+    </div>
   );
 }

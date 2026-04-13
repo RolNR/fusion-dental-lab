@@ -199,7 +199,6 @@ export function Step1InitialStates({
           )}
         </div>
       )}
-
     </div>
   );
 }

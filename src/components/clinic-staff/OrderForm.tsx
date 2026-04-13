@@ -12,11 +12,9 @@ import { Doctor } from '@/types/user';
 import type { SpeechRecognition } from '@/types/speech-recognition';
 import { loadDashboardAIData } from '@/lib/dashboardAIDataLoader';
 import { OrderInfoSection } from './order-form/OrderInfoSection';
-import { MouthPhotosSection } from './order-form/MouthPhotosSection';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
-import { DigitalScanSection } from './order-form/DigitalScanSection';
 import { OcclusionSection } from './order-form/OcclusionSection';
-import { MaterialSentSection } from './order-form/MaterialSentSection';
+import { AnexosYMaterialesSection } from './order-form/AnexosYMaterialesSection';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { OrderFormProps, OrderFormState } from './order-form/OrderForm.types';
 import {
@@ -1231,8 +1229,21 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 />
               </div>
 
-              {/* 4. Digital Scan Section */}
-              <DigitalScanSection
+              {/* 4. Occlusion Section */}
+              <OcclusionSection
+                ref={(el) => registerSectionRef('occlusion', el)}
+                oclusionDiseno={formData.oclusionDiseno}
+                onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
+                hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+                errorCount={getSectionErrorInfo('occlusion').errorCount}
+              />
+
+              {/* 5. Anexos y Materiales Enviados (Materiales / Escaneos / Fotografías) */}
+              <AnexosYMaterialesSection
+                materialSent={formData.materialSent}
+                onMaterialSentChange={(value) =>
+                  setFormData((prev) => ({ ...prev, materialSent: value }))
+                }
                 isDigitalScan={formData.isDigitalScan}
                 escanerUtilizado={formData.escanerUtilizado ?? undefined}
                 otroEscaner={formData.otroEscaner}
@@ -1242,29 +1253,12 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 onUpperFilesChange={setUpperFiles}
                 onLowerFilesChange={setLowerFiles}
                 onBiteFilesChange={setBiteFiles}
-                onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-                disabled={isLoading}
-              />
-
-              {/* 5. Occlusion Section */}
-              <OcclusionSection
-                ref={(el) => registerSectionRef('occlusion', el)}
-                oclusionDiseno={formData.oclusionDiseno}
-                onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
-                hasErrors={getSectionErrorInfo('occlusion').hasErrors}
-                errorCount={getSectionErrorInfo('occlusion').errorCount}
-              />
-
-              {/* 6. Material Sent Section */}
-              <MaterialSentSection
-                materialSent={formData.materialSent}
-                onChange={(value) => setFormData((prev) => ({ ...prev, materialSent: value }))}
-              />
-
-              {/* 7. Mouth Photos Section - Optional */}
-              <MouthPhotosSection
+                onDigitalScanChange={(updates) =>
+                  setFormData((prev) => ({ ...prev, ...updates }))
+                }
                 photographFiles={photographFiles}
                 onPhotographFilesChange={setPhotographFiles}
+                disabled={isLoading}
               />
 
               {/* 8. Submission Type Section */}

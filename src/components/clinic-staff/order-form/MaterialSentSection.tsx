@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
-import { CollapsibleSubsection } from '@/components/ui/form';
 
 type MaterialSentSectionProps = {
   materialSent?: Record<string, boolean>;
@@ -333,8 +332,7 @@ export function MaterialSentSection({
   const totalSelected = selectedLabels.length;
 
   return (
-    <CollapsibleSubsection icon="upload" title="Materiales Enviados">
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Category chips */}
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((category) => (
@@ -390,10 +388,9 @@ export function MaterialSentSection({
           </div>
         )}
 
-        {errors?.materialSent && (
-          <p className="text-sm text-danger font-medium">{errors.materialSent}</p>
-        )}
-      </div>
-    </CollapsibleSubsection>
+      {errors?.materialSent && (
+        <p className="text-sm text-danger font-medium">{errors.materialSent}</p>
+      )}
+    </div>
   );
 }
