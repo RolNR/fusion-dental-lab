@@ -25,7 +25,7 @@ type CaseTypeSectionProps = {
 
 const CASE_TYPE_OPTIONS: ToggleOption<CaseType>[] = [
   { value: 'nuevo', label: 'Caso Nuevo', icon: 'filePlus' },
-  { value: 'garantia', label: 'Garantía', icon: 'shield' },
+  { value: 'garantia', label: 'Solicitud de Garantía', icon: 'shield' },
   { value: 'regreso_prueba', label: 'Regreso de Prueba', icon: 'undo' },
   { value: 'reparacion_ajuste', label: 'Reparación o Ajuste', icon: 'wrench' },
 ];

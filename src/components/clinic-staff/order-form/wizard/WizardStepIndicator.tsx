@@ -41,7 +41,7 @@ export function WizardStepIndicator({
         <span className="flex items-center justify-center w-6 h-6 rounded-full bg-background/20 text-sm font-bold mr-2">
           1
         </span>
-        <span className="font-medium">Situación Inicial</span>
+        <span className="font-medium">Situación actual</span>
       </Button>
 
       {/* Connector */}
@@ -59,7 +59,7 @@ export function WizardStepIndicator({
         <span className="flex items-center justify-center w-6 h-6 rounded-full bg-background/20 text-sm font-bold mr-2">
           2
         </span>
-        <span className="font-medium">Asignar Trabajos</span>
+        <span className="font-medium">Tipo de trabajo</span>
       </Button>
     </div>
   );
