@@ -31,9 +31,8 @@ export function MouthPhotosSection({
   return (
     <div className="rounded-lg bg-primary/10 p-4">
       <p className="text-sm text-primary">
-        <strong>Nota:</strong> Las fotografías intraorales se pueden subir después de crear la
-        orden usando el botón &quot;Añadir Archivos&quot;. Puedes subir hasta 5 fotografías por
-        orden.
+        <strong>Nota:</strong> Las fotografías intraorales se pueden subir después de crear la orden
+        usando el botón &quot;Añadir Archivos&quot;. Puedes subir hasta 5 fotografías por orden.
       </p>
     </div>
   );

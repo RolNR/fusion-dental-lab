@@ -561,165 +561,163 @@ export function DigitalScanSection({
 
   return (
     <div className="space-y-6">
-        <div className="rounded-lg border border-border bg-muted/30 p-4">
-          <Checkbox
-            label="¿Es un escaneo digital?"
-            checked={isDigitalScan === true}
-            onChange={(e) => handleToggle(e.target.checked)}
+      <div className="rounded-lg border border-border bg-muted/30 p-4">
+        <Checkbox
+          label="¿Es un escaneo digital?"
+          checked={isDigitalScan === true}
+          onChange={(e) => handleToggle(e.target.checked)}
+          disabled={disabled}
+        />
+        <p className="mt-2 ml-6 text-sm text-muted-foreground">
+          Selecciona esta opción si enviarás archivos STL/PLY del escaneo intraoral
+        </p>
+      </div>
+
+      {/* Conditionally render scanner and file upload fields */}
+      {isDigitalScan && (
+        <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+          {/* Unified Drop Zone - first so scanner is detected from files */}
+          <UnifiedDropZone
+            onFilesDrop={handleUnifiedDrop}
+            acceptedTypes={ALLOWED_SCAN_TYPES}
+            maxSizeMB={MAX_FILE_SIZE_MB}
             disabled={disabled}
           />
-          <p className="mt-2 ml-6 text-sm text-muted-foreground">
-            Selecciona esta opción si enviarás archivos STL/PLY del escaneo intraoral
-          </p>
-        </div>
 
-        {/* Conditionally render scanner and file upload fields */}
-        {isDigitalScan && (
-          <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-            {/* Unified Drop Zone - first so scanner is detected from files */}
-            <UnifiedDropZone
-              onFilesDrop={handleUnifiedDrop}
-              acceptedTypes={ALLOWED_SCAN_TYPES}
-              maxSizeMB={MAX_FILE_SIZE_MB}
-              disabled={disabled}
-            />
+          {/* Scanner selector - shown when auto-detected or manually triggered */}
+          <InlineScannerSelector
+            value={escanerUtilizado}
+            otroEscaner={otroEscaner}
+            onChange={(value) => {
+              const scannerValue = value ?? undefined;
+              onChange({ escanerUtilizado: scannerValue });
+              if (value !== ScannerType.Otro) {
+                onChange({ otroEscaner: undefined });
+              }
+            }}
+            onOtroChange={(value) => onChange({ otroEscaner: value })}
+            error={errors?.escanerUtilizado}
+            disabled={disabled}
+            forceShowSelect={showManualScanner}
+          />
 
-            {/* Scanner selector - shown when auto-detected or manually triggered */}
-            <InlineScannerSelector
-              value={escanerUtilizado}
-              otroEscaner={otroEscaner}
-              onChange={(value) => {
-                const scannerValue = value ?? undefined;
-                onChange({ escanerUtilizado: scannerValue });
-                if (value !== ScannerType.Otro) {
-                  onChange({ otroEscaner: undefined });
-                }
-              }}
-              onOtroChange={(value) => onChange({ otroEscaner: value })}
-              error={errors?.escanerUtilizado}
-              disabled={disabled}
-              forceShowSelect={showManualScanner}
-            />
-
-            {/* Manual scanner link - only when no scanner selected and not already showing select */}
-            {!escanerUtilizado && !showManualScanner && (
-              <button
-                type="button"
-                onClick={() => setShowManualScanner(true)}
-                className="flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover transition-colors"
-              >
-                <Icons.edit className="h-3.5 w-3.5" />
-                <span>Seleccionar escáner manualmente</span>
-              </button>
-            )}
-
-            {/* File Sections - Display only with inter-zone drag */}
-            {(upperFiles.length > 0 || lowerFiles.length > 0 || biteFiles.length > 0) && (
-              <div className="space-y-3">
-                {/* Upper Arch */}
-                {onUpperFilesChange && (
-                  <FilePickerSection
-                    title="Arcada Superior (STL/PLY)"
-                    description="Arrastra archivos entre secciones para reorganizar"
-                    acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
-                    maxFiles={MAX_FILES_PER_CATEGORY}
-                    maxSizeMB={MAX_FILE_SIZE_MB}
-                    files={upperFiles}
-                    onFilesChange={onUpperFilesChange}
-                    icon="upload"
-                    category="upper"
-                    onInterZoneDrop={handleInterZoneDrop}
-                    onFileDragStart={handleFileDragStart}
-                    enableInterZoneDrag
-                    hideAddButton
-                  />
-                )}
-
-                {/* Lower Arch */}
-                {onLowerFilesChange && (
-                  <FilePickerSection
-                    title="Arcada Inferior (STL/PLY)"
-                    description="Arrastra archivos entre secciones para reorganizar"
-                    acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
-                    maxFiles={MAX_FILES_PER_CATEGORY}
-                    maxSizeMB={MAX_FILE_SIZE_MB}
-                    files={lowerFiles}
-                    onFilesChange={onLowerFilesChange}
-                    icon="upload"
-                    category="lower"
-                    onInterZoneDrop={handleInterZoneDrop}
-                    onFileDragStart={handleFileDragStart}
-                    enableInterZoneDrag
-                    hideAddButton
-                  />
-                )}
-
-                {/* Bite Scan */}
-                {onBiteFilesChange && (
-                  <FilePickerSection
-                    title="Escaneo de Mordida (STL/PLY)"
-                    description="Arrastra archivos entre secciones para reorganizar"
-                    acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
-                    maxFiles={MAX_FILES_PER_CATEGORY}
-                    maxSizeMB={MAX_FILE_SIZE_MB}
-                    files={biteFiles}
-                    onFilesChange={onBiteFilesChange}
-                    icon="upload"
-                    category="bite"
-                    onInterZoneDrop={handleInterZoneDrop}
-                    onFileDragStart={handleFileDragStart}
-                    enableInterZoneDrag
-                    hideAddButton
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Mismatch Confirmation Modal */}
-        {mismatchConfirmation && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-            onClick={() => handleMismatchConfirm(false)}
-          >
-            <div
-              className="w-full max-w-md rounded-lg bg-background p-6 shadow-xl"
-              onClick={(e) => e.stopPropagation()}
+          {/* Manual scanner link - only when no scanner selected and not already showing select */}
+          {!escanerUtilizado && !showManualScanner && (
+            <button
+              type="button"
+              onClick={() => setShowManualScanner(true)}
+              className="flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover transition-colors"
             >
-              <h3 className="text-lg font-semibold text-foreground mb-3">
-                Confirmar ubicación del archivo
-              </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                El archivo{' '}
-                <span className="font-medium text-foreground">
-                  {mismatchConfirmation.file.name}
-                </span>{' '}
-                parece ser de{' '}
-                <span className="font-medium text-primary">
-                  {SCAN_CATEGORY_LABELS[mismatchConfirmation.detectedCategory]}
-                </span>
-                . ¿Deseas agregarlo a{' '}
-                <span className="font-medium text-primary">
-                  {SCAN_CATEGORY_LABELS[mismatchConfirmation.targetCategory]}
-                </span>{' '}
-                de todos modos?
-              </p>
-              <div className="flex gap-3 justify-end">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => handleMismatchConfirm(false)}
-                >
-                  No, usar {SCAN_CATEGORY_LABELS[mismatchConfirmation.detectedCategory]}
-                </Button>
-                <Button type="button" variant="primary" onClick={() => handleMismatchConfirm(true)}>
-                  Sí, agregar a {SCAN_CATEGORY_LABELS[mismatchConfirmation.targetCategory]}
-                </Button>
-              </div>
+              <Icons.edit className="h-3.5 w-3.5" />
+              <span>Seleccionar escáner manualmente</span>
+            </button>
+          )}
+
+          {/* File Sections - Display only with inter-zone drag */}
+          {(upperFiles.length > 0 || lowerFiles.length > 0 || biteFiles.length > 0) && (
+            <div className="space-y-3">
+              {/* Upper Arch */}
+              {onUpperFilesChange && (
+                <FilePickerSection
+                  title="Arcada Superior (STL/PLY)"
+                  description="Arrastra archivos entre secciones para reorganizar"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={upperFiles}
+                  onFilesChange={onUpperFilesChange}
+                  icon="upload"
+                  category="upper"
+                  onInterZoneDrop={handleInterZoneDrop}
+                  onFileDragStart={handleFileDragStart}
+                  enableInterZoneDrag
+                  hideAddButton
+                />
+              )}
+
+              {/* Lower Arch */}
+              {onLowerFilesChange && (
+                <FilePickerSection
+                  title="Arcada Inferior (STL/PLY)"
+                  description="Arrastra archivos entre secciones para reorganizar"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={lowerFiles}
+                  onFilesChange={onLowerFilesChange}
+                  icon="upload"
+                  category="lower"
+                  onInterZoneDrop={handleInterZoneDrop}
+                  onFileDragStart={handleFileDragStart}
+                  enableInterZoneDrag
+                  hideAddButton
+                />
+              )}
+
+              {/* Bite Scan */}
+              {onBiteFilesChange && (
+                <FilePickerSection
+                  title="Escaneo de Mordida (STL/PLY)"
+                  description="Arrastra archivos entre secciones para reorganizar"
+                  acceptedTypes={ALLOWED_SCAN_TYPES.join(',')}
+                  maxFiles={MAX_FILES_PER_CATEGORY}
+                  maxSizeMB={MAX_FILE_SIZE_MB}
+                  files={biteFiles}
+                  onFilesChange={onBiteFilesChange}
+                  icon="upload"
+                  category="bite"
+                  onInterZoneDrop={handleInterZoneDrop}
+                  onFileDragStart={handleFileDragStart}
+                  enableInterZoneDrag
+                  hideAddButton
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Mismatch Confirmation Modal */}
+      {mismatchConfirmation && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => handleMismatchConfirm(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg bg-background p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-foreground mb-3">
+              Confirmar ubicación del archivo
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              El archivo{' '}
+              <span className="font-medium text-foreground">{mismatchConfirmation.file.name}</span>{' '}
+              parece ser de{' '}
+              <span className="font-medium text-primary">
+                {SCAN_CATEGORY_LABELS[mismatchConfirmation.detectedCategory]}
+              </span>
+              . ¿Deseas agregarlo a{' '}
+              <span className="font-medium text-primary">
+                {SCAN_CATEGORY_LABELS[mismatchConfirmation.targetCategory]}
+              </span>{' '}
+              de todos modos?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => handleMismatchConfirm(false)}
+              >
+                No, usar {SCAN_CATEGORY_LABELS[mismatchConfirmation.detectedCategory]}
+              </Button>
+              <Button type="button" variant="primary" onClick={() => handleMismatchConfirm(true)}>
+                Sí, agregar a {SCAN_CATEGORY_LABELS[mismatchConfirmation.targetCategory]}
+              </Button>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }

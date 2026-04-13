@@ -29,66 +29,126 @@ type Category = {
 };
 
 // Category and options configuration
+//
+// Warranty rule (!): flagged as "no garantizamos resultados" when:
+//   - Any Aluminio option is selected
+//   - Any Modelo corrido option is selected
+//   - Any Impresión parcial option is selected (only within "De trabajo")
+//   - Any "En cera" option is selected
 const CATEGORIES: Category[] = [
   {
-    id: 'impresiones',
-    label: 'Impresiones',
+    id: 'de_trabajo',
+    label: 'De trabajo',
     icon: 'layers',
     options: [
-      { key: 'molde_analogo', label: 'Molde análogo (impresión tradicional)' },
-      { key: 'antagonista', label: 'Antagonista' },
       {
-        key: 'arcada_completa',
-        label: 'Arcada completa',
+        key: 'de_trabajo_arcada_completa',
+        label: 'Impresión arcada completa',
         subOptions: [
-          { key: 'arcada_completa_metalica_rigida', label: 'Metálica rígida' },
-          { key: 'arcada_completa_plastica_rigida', label: 'Plástica rígida' },
-          { key: 'arcada_completa_aluminio', label: 'Aluminio', noGarantizado: true },
-          { key: 'arcada_completa_personalizada', label: 'Personalizada' },
+          {
+            key: 'de_trabajo_arcada_completa_metalica_rigida',
+            label: 'Metálica rígida',
+          },
+          {
+            key: 'de_trabajo_arcada_completa_plastica_rigida',
+            label: 'Plástica rígida',
+          },
+          {
+            key: 'de_trabajo_arcada_completa_aluminio',
+            label: 'Aluminio',
+            noGarantizado: true,
+          },
+          {
+            key: 'de_trabajo_arcada_completa_personalizada',
+            label: 'Personalizada',
+          },
         ],
       },
       {
-        key: 'parcial',
-        label: 'Parcial',
+        key: 'de_trabajo_parcial',
+        label: 'Impresión parcial',
+        noGarantizado: true,
         subOptions: [
-          { key: 'parcial_metalica_rigida', label: 'Metálica rígida' },
-          { key: 'parcial_plastica_rigida', label: 'Plástica rígida' },
-          { key: 'parcial_aluminio', label: 'Aluminio', noGarantizado: true },
+          {
+            key: 'de_trabajo_parcial_metalica_rigida',
+            label: 'Metálica rígida',
+            noGarantizado: true,
+          },
+          {
+            key: 'de_trabajo_parcial_plastica_rigida',
+            label: 'Plástica rígida',
+            noGarantizado: true,
+          },
+          {
+            key: 'de_trabajo_parcial_aluminio',
+            label: 'Aluminio',
+            noGarantizado: true,
+          },
+          {
+            key: 'de_trabajo_parcial_personalizada',
+            label: 'Personalizada',
+            noGarantizado: true,
+          },
         ],
       },
-      { key: 'cucharilla_doble', label: 'Cucharilla doble', noGarantizado: true },
+      {
+        key: 'de_trabajo_modelo_corrido',
+        label: 'Modelo corrido',
+        noGarantizado: true,
+      },
     ],
   },
   {
-    id: 'modelos',
-    label: 'Modelos',
+    id: 'antagonista',
+    label: 'Antagonista',
     icon: 'cube',
     options: [
-      { key: 'modelo_solido', label: 'Modelo sólido' },
-      { key: 'modelo_solido_reingreso', label: 'Modelo sólido (reingreso)' },
-      { key: 'modelo_articulado', label: 'Modelo articulado' },
-      { key: 'modelo_encerado_prototipo', label: 'Modelo con encerado / prototipo' },
+      { key: 'antagonista_impresion_total', label: 'Impresión total' },
+      { key: 'antagonista_impresion_parcial', label: 'Impresión parcial' },
+      {
+        key: 'antagonista_modelo_total',
+        label: 'Modelo total corrido o impreso',
+      },
+      {
+        key: 'antagonista_modelo_parcial',
+        label: 'Modelo parcial corrido o impreso',
+      },
     ],
   },
   {
-    id: 'registros',
-    label: 'Registros',
+    id: 'registro_oclusal',
+    label: 'Registro oclusal',
     icon: 'clipboardList',
     options: [
-      { key: 'registro_mordida', label: 'Mordida' },
-      { key: 'registro_oclusal', label: 'Oclusal' },
-      { key: 'registro_silicon', label: 'Silicón' },
-      { key: 'registro_cera', label: 'Cera', noGarantizado: true },
+      {
+        key: 'registro_total',
+        label: 'Registro total',
+        subOptions: [
+          { key: 'registro_total_silicon', label: 'En silicón' },
+          { key: 'registro_total_cera', label: 'En cera', noGarantizado: true },
+        ],
+      },
+      {
+        key: 'registro_parcial',
+        label: 'Registro parcial',
+        subOptions: [
+          { key: 'registro_parcial_silicon', label: 'En silicón' },
+          { key: 'registro_parcial_cera', label: 'En cera', noGarantizado: true },
+        ],
+      },
     ],
   },
   {
-    id: 'archivos',
-    label: 'Archivos',
+    id: 'modelo_de_estudio',
+    label: 'Modelo de estudio',
     icon: 'folder',
-    options: [
-      { key: 'fotografia', label: 'Fotografía' },
-      { key: 'radiografia', label: 'Radiografía' },
-    ],
+    options: [{ key: 'modelo_de_estudio', label: 'Modelo de estudio' }],
+  },
+  {
+    id: 'otros',
+    label: 'Otros',
+    icon: 'wrench',
+    options: [{ key: 'otros', label: 'Otros' }],
   },
 ];
 
@@ -333,60 +393,60 @@ export function MaterialSentSection({
 
   return (
     <div className="space-y-6">
-        {/* Category chips */}
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((category) => (
-            <CategoryChip
-              key={category.id}
-              category={category}
-              isActive={activeCategories.has(category.id)}
-              selectedCount={countSelectedInCategory(category, materialSent)}
-              onClick={() => handleCategoryToggle(category.id)}
-            />
-          ))}
-        </div>
-
-        {/* Active category options */}
-        {CATEGORIES.filter((cat) => activeCategories.has(cat.id)).map((category) => (
-          <div
+      {/* Category chips */}
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.map((category) => (
+          <CategoryChip
             key={category.id}
-            className="rounded-xl border border-border bg-background p-4 shadow-sm"
-          >
-            <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              {(() => {
-                const Icon = Icons[category.icon];
-                return <Icon className="h-4 w-4 text-primary" />;
-              })()}
-              {category.label}
-            </h4>
-            <div className="space-y-2">
-              {category.options.map((option) => (
-                <MaterialOptionItem
-                  key={option.key}
-                  option={option}
-                  materialSent={materialSent}
-                  onToggle={handleMaterialToggle}
-                />
-              ))}
-            </div>
-          </div>
+            category={category}
+            isActive={activeCategories.has(category.id)}
+            selectedCount={countSelectedInCategory(category, materialSent)}
+            onClick={() => handleCategoryToggle(category.id)}
+          />
         ))}
+      </div>
 
-        {/* Summary */}
-        {totalSelected > 0 && (
-          <div className="rounded-lg bg-primary/5 border border-primary/20 p-4">
-            <div className="flex items-start gap-3">
-              <Icons.check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {totalSelected} material{totalSelected !== 1 ? 'es' : ''} seleccionado
-                  {totalSelected !== 1 ? 's' : ''}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">{selectedLabels.join(', ')}</p>
-              </div>
+      {/* Active category options */}
+      {CATEGORIES.filter((cat) => activeCategories.has(cat.id)).map((category) => (
+        <div
+          key={category.id}
+          className="rounded-xl border border-border bg-background p-4 shadow-sm"
+        >
+          <h4 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
+            {(() => {
+              const Icon = Icons[category.icon];
+              return <Icon className="h-4 w-4 text-primary" />;
+            })()}
+            {category.label}
+          </h4>
+          <div className="space-y-2">
+            {category.options.map((option) => (
+              <MaterialOptionItem
+                key={option.key}
+                option={option}
+                materialSent={materialSent}
+                onToggle={handleMaterialToggle}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* Summary */}
+      {totalSelected > 0 && (
+        <div className="rounded-lg bg-primary/5 border border-primary/20 p-4">
+          <div className="flex items-start gap-3">
+            <Icons.check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {totalSelected} material{totalSelected !== 1 ? 'es' : ''} seleccionado
+                {totalSelected !== 1 ? 's' : ''}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">{selectedLabels.join(', ')}</p>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
       {errors?.materialSent && (
         <p className="text-sm text-danger font-medium">{errors.materialSent}</p>

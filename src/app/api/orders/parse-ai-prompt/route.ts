@@ -139,33 +139,34 @@ Debes devolver ÚNICAMENTE un objeto JSON válido con los siguientes campos (tod
   },
 
   "materialSent": {
-    // IMPRESIONES - marca true solo las que se mencionan explícitamente
-    "molde_analogo": true/false - molde análogo o impresión tradicional,
-    "antagonista": true/false - si envían impresión de antagonista,
-    "arcada_completa_metalica_rigida": true/false - impresión arcada completa en cucharilla metálica rígida,
-    "arcada_completa_plastica_rigida": true/false - impresión arcada completa en cucharilla plástica rígida,
-    "arcada_completa_aluminio": true/false - impresión arcada completa en cucharilla de aluminio,
-    "arcada_completa_personalizada": true/false - impresión arcada completa en cucharilla personalizada,
-    "parcial_metalica_rigida": true/false - impresión parcial en cucharilla metálica rígida,
-    "parcial_plastica_rigida": true/false - impresión parcial en cucharilla plástica rígida,
-    "parcial_aluminio": true/false - impresión parcial en cucharilla de aluminio,
-    "cucharilla_doble": true/false - impresión en cucharilla doble,
+    // DE TRABAJO - impresiones del arco en tratamiento
+    "de_trabajo_arcada_completa_metalica_rigida": true/false - impresión arcada completa en cucharilla metálica rígida,
+    "de_trabajo_arcada_completa_plastica_rigida": true/false - impresión arcada completa en cucharilla plástica rígida,
+    "de_trabajo_arcada_completa_aluminio": true/false - impresión arcada completa en cucharilla de aluminio,
+    "de_trabajo_arcada_completa_personalizada": true/false - impresión arcada completa en cucharilla personalizada,
+    "de_trabajo_parcial_metalica_rigida": true/false - impresión parcial en cucharilla metálica rígida,
+    "de_trabajo_parcial_plastica_rigida": true/false - impresión parcial en cucharilla plástica rígida,
+    "de_trabajo_parcial_aluminio": true/false - impresión parcial en cucharilla de aluminio,
+    "de_trabajo_parcial_personalizada": true/false - impresión parcial en cucharilla personalizada,
+    "de_trabajo_modelo_corrido": true/false - modelo corrido de trabajo,
 
-    // MODELOS - marca true solo los que se mencionan
-    "modelo_solido": true/false - modelo sólido,
-    "modelo_solido_reingreso": true/false - modelo sólido para reingreso,
-    "modelo_articulado": true/false - modelo articulado,
-    "modelo_encerado_prototipo": true/false - modelo con encerado o prototipo,
+    // ANTAGONISTA - impresiones o modelos del arco opuesto
+    "antagonista_impresion_total": true/false - impresión total del antagonista,
+    "antagonista_impresion_parcial": true/false - impresión parcial del antagonista,
+    "antagonista_modelo_total": true/false - modelo total corrido o impreso del antagonista,
+    "antagonista_modelo_parcial": true/false - modelo parcial corrido o impreso del antagonista,
 
-    // REGISTROS - marca true solo los que se mencionan
-    "registro_mordida": true/false - registro de mordida,
-    "registro_oclusal": true/false - registro oclusal,
-    "registro_silicon": true/false - registro en silicón,
-    "registro_cera": true/false - registro en cera,
+    // REGISTRO OCLUSAL - registros de mordida
+    "registro_total_silicon": true/false - registro oclusal total en silicón,
+    "registro_total_cera": true/false - registro oclusal total en cera,
+    "registro_parcial_silicon": true/false - registro oclusal parcial en silicón,
+    "registro_parcial_cera": true/false - registro oclusal parcial en cera,
 
-    // ARCHIVOS - marca true solo los que se mencionan
-    "fotografia": true/false - fotografía del caso,
-    "radiografia": true/false - radiografía del caso
+    // MODELO DE ESTUDIO
+    "modelo_de_estudio": true/false - modelo de estudio,
+
+    // OTROS - material enviado no cubierto por las categorías anteriores
+    "otros": true/false - otros materiales no listados
   }
 }
 
@@ -225,12 +226,14 @@ IMPORTANTE - Formato de valores:
 
 IMPORTANTE - materialSent (Materiales Enviados):
 - SOLO incluye las keys que tengan valor true, NO incluyas las que son false
-- Busca menciones de: impresiones, moldes, modelos, registros de mordida, fotografías, radiografías
+- Busca menciones de: impresiones, moldes, modelos, registros de mordida
 - Palabras clave: "envío", "adjunto", "incluyo", "mando", "llevo", "con impresión", "con modelo", "con registro", "con molde"
-- Si mencionan "molde", "impresión tradicional", "impresión análoga" → molde_analogo: true
-- Si mencionan "impresión en cucharilla metálica" sin especificar arcada, usa "arcada_completa_metalica_rigida"
-- Si mencionan "modelo" sin más detalles, usa "modelo_solido"
-- Si mencionan "registro" o "mordida" sin especificar material, usa "registro_mordida"
+- "De trabajo" se refiere al arco que recibirá el tratamiento; "Antagonista" al arco opuesto
+- Si mencionan "impresión en cucharilla metálica" sin especificar arcada, usa "de_trabajo_arcada_completa_metalica_rigida"
+- Si mencionan "modelo corrido" (sin antagonista), usa "de_trabajo_modelo_corrido"
+- Si mencionan "registro" o "mordida" sin especificar material, usa "registro_total_silicon"
+- Si mencionan material enviado que no encaja en ninguna categoría, usa "otros"
+- Las fotografías y radiografías NO van en materialSent — se suben como archivos adjuntos en la sección de anexos
 
 IMPORTANTE - Productos adicionales por diente:
 - "provisional", "provisionalmente", "necesito provisional" → solicitarProvisional: true en el diente correspondiente

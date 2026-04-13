@@ -1253,9 +1253,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 onUpperFilesChange={setUpperFiles}
                 onLowerFilesChange={setLowerFiles}
                 onBiteFilesChange={setBiteFiles}
-                onDigitalScanChange={(updates) =>
-                  setFormData((prev) => ({ ...prev, ...updates }))
-                }
+                onDigitalScanChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
                 photographFiles={photographFiles}
                 onPhotographFilesChange={setPhotographFiles}
                 disabled={isLoading}
