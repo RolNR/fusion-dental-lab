@@ -500,18 +500,6 @@ export function OdontogramWizard({
     [bridges, teethData, initialStates, setTeethData, setBridges, updateTeethInOrder]
   );
 
-  // Navigation
-  const handleNext = useCallback(() => {
-    setStep1Tool(null);
-    setCurrentStep(2);
-  }, []);
-
-  const handleBack = useCallback(() => {
-    setStep2Tool(null);
-    setBridgeStart(null);
-    setCurrentStep(1);
-  }, []);
-
   const handleStepClick = useCallback((step: 1 | 2) => {
     if (step === 1) {
       setStep2Tool(null);
@@ -532,6 +520,7 @@ export function OdontogramWizard({
 
   return (
     <div className="rounded-xl bg-background p-6 shadow-md border border-border">
+      <h2 className="text-lg font-semibold text-foreground mb-3">Selección de tipo de trabajo</h2>
       {/* Header with Step Indicator and Help Button */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex-1">
@@ -563,7 +552,6 @@ export function OdontogramWizard({
           onToolChange={setStep1Tool}
           onInitialStateToggle={handleInitialStateToggle}
           onImplantUpdate={handleImplantUpdate}
-          onNext={handleNext}
           disabled={disabled}
           shouldShowTooltip={shouldShowTooltip}
           dismissTooltip={dismissTooltip}
@@ -584,7 +572,6 @@ export function OdontogramWizard({
           onToothRemove={handleToothRemove}
           onBridgeUpdate={handleBridgeUpdate}
           onBridgeRemove={handleBridgeRemove}
-          onBack={handleBack}
           disabled={disabled}
         />
       )}

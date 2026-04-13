@@ -3,7 +3,6 @@
 import { useMemo, useCallback, useRef } from 'react';
 import { RestorationType } from '@prisma/client';
 import { Odontogram } from '../Odontogram';
-import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
 import { GuidedTooltip } from '@/components/ui/GuidedTooltip';
 import { WorkTypeToolbar } from './WorkTypeToolbar';
@@ -29,7 +28,6 @@ interface Step2AssignWorkProps {
   onToothRemove: (toothNumber: string) => void;
   onBridgeUpdate: (bridgeId: string, updates: Partial<BridgeDefinition>) => void;
   onBridgeRemove: (bridgeId: string) => void;
-  onBack: () => void;
   disabled?: boolean;
   // Tooltip props
   shouldShowTooltip: (key: keyof TooltipState) => boolean;
@@ -49,7 +47,6 @@ export function Step2AssignWork({
   onToothRemove,
   onBridgeUpdate,
   onBridgeRemove,
-  onBack,
   disabled = false,
   shouldShowTooltip,
   dismissTooltip,
@@ -215,14 +212,6 @@ export function Step2AssignWork({
         }
         onDismiss={() => dismissTooltip('step2SelectTeeth')}
       />
-
-      {/* Back Button */}
-      <div className="flex justify-start">
-        <Button type="button" variant="secondary" onClick={onBack} disabled={disabled}>
-          <Icons.chevronLeft className="h-4 w-4 mr-1" />
-          Anterior
-        </Button>
-      </div>
 
       {/* Assigned Work List */}
       <div className="border-t border-border pt-6">

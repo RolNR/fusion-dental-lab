@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useRef } from 'react';
 import { Odontogram } from '../Odontogram';
-import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Icons } from '@/components/ui/Icons';
 import { GuidedTooltip } from '@/components/ui/GuidedTooltip';
@@ -25,7 +24,6 @@ interface Step1InitialStatesProps {
   onToolChange: (tool: InitialStateTool) => void;
   onInitialStateToggle: (toothNumber: string) => void;
   onImplantUpdate: (toothNumber: string, updates: Partial<ImplantInfo>) => void;
-  onNext: () => void;
   disabled?: boolean;
   // Tooltip props
   shouldShowTooltip: (key: keyof TooltipState) => boolean;
@@ -39,7 +37,6 @@ export function Step1InitialStates({
   onToolChange,
   onInitialStateToggle,
   onImplantUpdate,
-  onNext,
   disabled = false,
   shouldShowTooltip,
   dismissTooltip,
@@ -203,13 +200,6 @@ export function Step1InitialStates({
         </div>
       )}
 
-      {/* Next Button */}
-      <div className="flex justify-end">
-        <Button type="button" variant="primary" onClick={onNext} disabled={disabled || !canProceed}>
-          Siguiente
-          <Icons.chevronRight className="h-4 w-4 ml-1" />
-        </Button>
-      </div>
     </div>
   );
 }
