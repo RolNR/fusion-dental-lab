@@ -36,11 +36,13 @@ export const config = {
      * - /auth (authentication pages)
      * - /api/auth (authentication endpoints)
      * - /api/cron (cron job endpoints - secured by CRON_SECRET)
+     * - /ingest (PostHog reverse proxy rewrite target — must be public so
+     *   posthog-js can fetch array.js and post events without auth redirects)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public assets
      */
-    '/((?!^/$|auth|api/auth|api/cron|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!^/$|auth|api/auth|api/cron|ingest|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

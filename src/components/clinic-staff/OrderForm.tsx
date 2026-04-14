@@ -15,6 +15,7 @@ import { OrderInfoSection } from './order-form/OrderInfoSection';
 import { CaseTypeSection } from './order-form/CaseTypeSection';
 import { OcclusionSection } from './order-form/OcclusionSection';
 import { AnexosYMaterialesSection } from './order-form/AnexosYMaterialesSection';
+import { OrderTicket } from './order-form/OrderTicket';
 import { SubmissionTypeSection } from './order-form/SubmissionTypeSection';
 import { OrderFormProps, OrderFormState } from './order-form/OrderForm.types';
 import {
@@ -28,7 +29,6 @@ import {
   uploadFilesToOrder,
 } from './order-form/orderFormUtils';
 import { AdditionalNotesSection } from './order-form/AdditionalNotesSection';
-import { OrderReviewModal } from '@/components/orders/OrderReviewModal';
 import { FileUploadProgressModal } from '@/components/orders/FileUploadProgressModal';
 import { ValidationErrorSummary } from '@/components/orders/ValidationErrorSummary';
 import {
@@ -100,8 +100,8 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [isParsingAI, setIsParsingAI] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [showReviewModal, setShowReviewModal] = useState(false);
   const [showFullForm, setShowFullForm] = useState(!!orderId); // Show full form only when editing existing order
+  const [showMobileTicket, setShowMobileTicket] = useState(false);
 
   // Refs for scrolling to sections
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map());
@@ -148,14 +148,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     currentFileName: '',
     currentProgress: 0,
   });
-
-  // Pre-submission validation state (shown when user tries to submit)
-  const [preSubmitErrors, setPreSubmitErrors] = useState<{
-    patientName?: string;
-    teeth?: string;
-    teethIncomplete?: string[];
-    digitalScanFiles?: string;
-  }>({});
 
   // AI validation checklist state
   const [showValidationChecklist, setShowValidationChecklist] = useState(false);
@@ -325,9 +317,10 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
       }
 
       if (dashboardData.shouldShowReviewModal) {
-        // Delay to ensure state is updated
+        // Ticket is now always visible when showFullForm is true. On mobile,
+        // surface it in the drawer so the user sees the summary immediately.
         setTimeout(() => {
-          setShowReviewModal(true);
+          setShowMobileTicket(true);
         }, 100);
       }
     }
@@ -495,62 +488,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     return hasImplantWork || hasImplantState;
   }, [teethData, formData.initialToothStates]);
 
-  const computePreSubmitValidation = useCallback(() => {
-    const errors: typeof preSubmitErrors = {};
-    // Merge bridge data into teeth before validation
-    const teethArray = mergeTeethWithBridgeData(teethData, bridges);
-    const isWarrantyCase = formData.tipoCaso === 'garantia';
-
-    if (!formData.patientName || formData.patientName.trim() === '') {
-      errors.patientName = 'El nombre del paciente es requerido';
-    }
-
-    // Skip teeth and scan validation for warranty cases
-    if (!isWarrantyCase) {
-      // Validate teeth selection
-      if (teethArray.length === 0) {
-        errors.teeth = 'Al menos un diente debe ser configurado';
-      } else {
-        // Check if any teeth are missing required fields
-        const incompleteTeeth: string[] = [];
-        for (const tooth of teethArray) {
-          const missingFields: string[] = [];
-          if (!tooth.material) missingFields.push('material');
-          if (!tooth.tipoRestauracion) missingFields.push('tipo de restauración');
-
-          if (missingFields.length > 0) {
-            incompleteTeeth.push(`Diente ${tooth.toothNumber}: falta ${missingFields.join(', ')}`);
-          }
-        }
-        if (incompleteTeeth.length > 0) {
-          errors.teethIncomplete = incompleteTeeth;
-        }
-      }
-
-      // Validate digital scan files - require upper AND lower when isDigitalScan is true
-      if (formData.isDigitalScan) {
-        const missingFiles: string[] = [];
-        if (upperFiles.length === 0) missingFiles.push('arcada superior');
-        if (lowerFiles.length === 0) missingFiles.push('arcada inferior');
-
-        if (missingFiles.length > 0) {
-          errors.digitalScanFiles = `Escaneo digital requiere archivos STL/PLY de: ${missingFiles.join(' y ')}`;
-        }
-      }
-    }
-
-    return errors;
-  }, [
-    formData.patientName,
-    formData.isDigitalScan,
-    formData.tipoCaso,
-    teethData,
-    bridges,
-    upperFiles,
-    lowerFiles,
-  ]);
-
-  // Validate order with AI before showing review modal
+  // Validate order with AI before submission
   const validateOrderWithAI = async (): Promise<ValidationAlert[]> => {
     try {
       const teethArray = mergeTeethWithBridgeData(teethData, bridges);
@@ -582,23 +520,17 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     }
   };
 
-  const handleSubmitForReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Compute basic validation errors
-    const errors = computePreSubmitValidation();
-    setPreSubmitErrors(errors);
-
-    // Check if AI validation is enabled via feature flag
+  const handleSubmitForReview = async () => {
+    // Called by the OrderTicket's primary button. The ticket already surfaces
+    // field-level validation live, so we skip the old pre-submit check and go
+    // straight to the optional AI validation step before submitting.
     const isAIValidationEnabled = process.env.NEXT_PUBLIC_ENABLE_ORDER_AI_VALIDATION !== 'false';
 
     if (!isAIValidationEnabled) {
-      // Skip AI validation, go directly to review modal
-      setShowReviewModal(true);
+      await handleSaveOrder(true, true);
       return;
     }
 
-    // Run AI validation
     setIsValidating(true);
     try {
       const alerts = await validateOrderWithAI();
@@ -608,22 +540,22 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         // Show validation checklist if there are alerts
         setShowValidationChecklist(true);
       } else {
-        // No alerts, go directly to review modal
-        setShowReviewModal(true);
+        // No alerts, submit immediately
+        await handleSaveOrder(true, true);
       }
     } catch (error) {
-      // If validation fails, still show review modal
+      // If validation fails, still try to submit
       console.error('Validation error:', error);
-      setShowReviewModal(true);
+      await handleSaveOrder(true, true);
     } finally {
       setIsValidating(false);
     }
   };
 
-  const handleValidationContinue = () => {
-    // User acknowledged alerts and wants to continue
+  const handleValidationContinue = async () => {
+    // User acknowledged alerts and wants to continue → submit now
     setShowValidationChecklist(false);
-    setShowReviewModal(true);
+    await handleSaveOrder(true, true);
   };
 
   const handleValidationGoBack = () => {
@@ -631,30 +563,15 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     setShowValidationChecklist(false);
   };
 
-  const handleConfirmSubmit = async () => {
-    // Called when user confirms in the review modal
-    // Create order, upload files, and submit for review
-    await handleSaveOrder(true, true); // true = submit for review, true = redirect to detail
-    setShowReviewModal(false);
-  };
-
   const handleSaveAsDraft = async () => {
-    // Called when user clicks "Save as Draft" in the review modal
-    // Clear pre-submit errors when saving as draft
-    setPreSubmitErrors({});
+    // Called by the OrderTicket's "Guardar Borrador" button
     await handleSaveOrder(false, false); // false = don't submit, false = redirect to list
-    setShowReviewModal(false);
   };
 
   const handleSaveOrder = async (submitForReview: boolean, redirectToDetail = false) => {
     setError(null);
     setValidationErrors(new Map());
     setShowErrorSummary(false);
-    // Clear pre-submit errors when attempting to save
-    if (!submitForReview) {
-      setPreSubmitErrors({});
-    }
-
     // Set appropriate loading state
     if (submitForReview) {
       setIsLoading(true);
@@ -953,9 +870,9 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     setAccumulatedAISuggestions([]);
     setAiPromptHistory([]);
 
-    // Show full form and review modal
+    // Show the full form; ticket becomes visible automatically.
     setShowFullForm(true);
-    setShowReviewModal(true);
+    setShowMobileTicket(true);
   };
 
   // Reset AI iteration and go back to initial prompt
@@ -1052,61 +969,46 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
     console.log(`Campo "${suggestion.label}" actualizado con valor:`, suggestion.value);
   };
 
-  const isEditingDraft = orderId && initialData?.status === 'DRAFT';
-  const isEditingNeedsInfo = orderId && initialData?.status === 'NEEDS_INFO';
+  const isEditingDraft = !!(orderId && initialData?.status === 'DRAFT');
+  const isEditingNeedsInfo = !!(orderId && initialData?.status === 'NEEDS_INFO');
   const canSubmit = !orderId || isEditingDraft || isEditingNeedsInfo;
 
   // Hide most sections when case type is "garantia" (warranty)
   const isGarantia = formData.tipoCaso === 'garantia';
 
-  const hasPreSubmitErrors = Object.keys(preSubmitErrors).length > 0;
+  // Build the merged teeth array once per render so the ticket and any
+  // child components can read a consistent snapshot of per-tooth state.
+  const mergedTeeth = mergeTeethWithBridgeData(teethData, bridges);
+
+  const ticketProps = {
+    formData: { ...formData, teeth: mergedTeeth },
+    upperFiles,
+    lowerFiles,
+    biteFiles,
+    photographFiles,
+    onScrollToSection: (sectionId: string) => {
+      setShowMobileTicket(false);
+      scrollToSection(sectionId);
+    },
+    onSubmit: handleSubmitForReview,
+    onSaveDraft: handleSaveAsDraft,
+    onCancel: () => router.back(),
+    isSubmitting: isLoading,
+    isSavingDraft,
+    isValidating,
+    canSubmit,
+    orderId,
+  };
 
   return (
-    <form onSubmit={handleSaveDraft} className="space-y-4 sm:space-y-6">
-      {/* Pre-submission Validation Errors (shown when review modal was opened with issues) */}
-      {hasPreSubmitErrors && !showReviewModal && (
-        <div className="rounded-lg bg-danger/10 border border-danger/30 p-4">
-          <div className="flex items-start gap-3">
-            <Icons.alertCircle className="h-5 w-5 text-danger shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-danger">Información Requerida para Enviar</h3>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setPreSubmitErrors({})}
-                  className="!p-1 !text-danger/60 hover:!text-danger hover:!bg-transparent"
-                  aria-label="Cerrar"
-                >
-                  <Icons.x className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-sm text-danger/80 mt-1 mb-2">
-                Completa los siguientes campos antes de enviar la orden para revisión:
-              </p>
-              <ul className="text-sm text-danger/80 space-y-1">
-                {preSubmitErrors.patientName && <li>• {preSubmitErrors.patientName}</li>}
-                {preSubmitErrors.teeth && <li>• {preSubmitErrors.teeth}</li>}
-                {preSubmitErrors.teethIncomplete && preSubmitErrors.teethIncomplete.length > 0 && (
-                  <li>
-                    • Dientes con información incompleta:
-                    <ul className="ml-4 mt-1 space-y-0.5">
-                      {preSubmitErrors.teethIncomplete.map((error, idx) => (
-                        <li key={idx} className="text-xs">
-                          - {error}
-                        </li>
-                      ))}
-                    </ul>
-                  </li>
-                )}
-                {preSubmitErrors.digitalScanFiles && <li>• {preSubmitErrors.digitalScanFiles}</li>}
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSaveAsDraft();
+      }}
+      className="lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6"
+    >
+      <div className="space-y-4 sm:space-y-6">
       {/* Validation Error Summary */}
       {showErrorSummary && validationErrors.size > 0 && (
         <ValidationErrorSummary
@@ -1239,6 +1141,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
               />
 
               {/* 5. Anexos y Materiales Enviados (Materiales / Escaneos / Fotografías) */}
+              <div ref={(el) => registerSectionRef('anexos', el)}>
               <AnexosYMaterialesSection
                 materialSent={formData.materialSent}
                 onMaterialSentChange={(value) =>
@@ -1258,6 +1161,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
                 onPhotographFilesChange={setPhotographFiles}
                 disabled={isLoading}
               />
+              </div>
 
               {/* 8. Submission Type Section */}
               <SubmissionTypeSection
@@ -1303,44 +1207,58 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             </div>
           )}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-            <Button
-              type="submit"
-              variant="secondary"
-              isLoading={isLoading}
-              fullWidth
-              className="sm:w-auto"
-            >
-              {orderId ? 'Guardar Cambios' : 'Guardar Borrador'}
-            </Button>
-            {canSubmit && (
+        </>
+      )}
+      </div>
+
+      {/* Desktop ticket sidebar */}
+      {showFullForm && (
+        <div className="hidden lg:block">
+          <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+            <OrderTicket {...ticketProps} />
+          </div>
+        </div>
+      )}
+
+      {/* Mobile floating receipt button */}
+      {showFullForm && (
+        <button
+          type="button"
+          onClick={() => setShowMobileTicket(true)}
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 lg:hidden"
+          aria-label="Ver resumen de orden"
+        >
+          <Icons.clipboardList className="h-6 w-6" />
+        </button>
+      )}
+
+      {/* Mobile ticket drawer */}
+      {showFullForm && showMobileTicket && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-black/50 lg:hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowMobileTicket(false);
+            }
+          }}
+        >
+          <div className="mt-auto max-h-[90vh] overflow-y-auto rounded-t-2xl bg-background p-4 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Resumen</h2>
               <Button
                 type="button"
-                variant="primary"
-                onClick={handleSubmitForReview}
-                isLoading={isLoading || isValidating}
-                fullWidth
-                className="sm:w-auto"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileTicket(false)}
+                aria-label="Cerrar"
+                className="!p-1"
               >
-                {isValidating
-                  ? 'Validando...'
-                  : orderId
-                    ? 'Guardar y Enviar'
-                    : 'Vista Previa de Orden'}
+                <Icons.x className="h-5 w-5" />
               </Button>
-            )}
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => router.back()}
-              disabled={isLoading}
-              fullWidth
-              className="sm:w-auto"
-            >
-              Cancelar
-            </Button>
+            </div>
+            <OrderTicket {...ticketProps} />
           </div>
-        </>
+        </div>
       )}
 
       {/* AI Validation Checklist */}
@@ -1349,34 +1267,6 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
           alerts={validationAlerts}
           onContinue={handleValidationContinue}
           onGoBack={handleValidationGoBack}
-        />
-      )}
-
-      {/* Order Review Modal */}
-      {showReviewModal && (
-        <OrderReviewModal
-          formData={{
-            ...formData,
-            teeth: mergeTeethWithBridgeData(teethData, bridges),
-          }}
-          suggestions={aiSuggestions}
-          onApplySuggestion={handleApplySuggestion}
-          upperFiles={upperFiles}
-          lowerFiles={lowerFiles}
-          biteFiles={biteFiles}
-          photographFiles={photographFiles}
-          otherFiles={otherFiles}
-          onUpperFilesChange={setUpperFiles}
-          onLowerFilesChange={setLowerFiles}
-          onBiteFilesChange={setBiteFiles}
-          onPhotographFilesChange={setPhotographFiles}
-          onOtherFilesChange={setOtherFiles}
-          onFormDataChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-          onConfirm={handleConfirmSubmit}
-          onCancel={() => setShowReviewModal(false)}
-          onSaveAsDraft={handleSaveAsDraft}
-          isSubmitting={isLoading}
-          isSavingDraft={isSavingDraft}
         />
       )}
 

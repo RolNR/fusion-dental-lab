@@ -260,6 +260,11 @@ export async function POST(request: NextRequest) {
       posthog: getPostHogClient(),
     });
 
+    // Provide today's date so Claude doesn't flag near-future delivery dates
+    // as suspicious. Without this, Claude uses its training cutoff year and
+    // incorrectly warns on valid dates in the current year.
+    const todayISO = new Date().toISOString().split('T')[0];
+
     // Call Claude API for validation
     const message = await anthropic.messages.create({
       model: AI_MODEL,
@@ -267,7 +272,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'user',
-          content: `Analiza esta orden de laboratorio dental y reporta problemas:\n\n${formattedData}`,
+          content: `Hoy es ${todayISO}. Analiza esta orden de laboratorio dental y reporta problemas. NO reportes la fecha de entrega como sospechosa si cae dentro de los próximos 3 meses desde hoy.\n\n${formattedData}`,
         },
       ],
       system: getValidationSystemPrompt(),

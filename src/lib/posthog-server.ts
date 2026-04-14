@@ -35,8 +35,7 @@ export function captureApiError(
   try {
     const posthog = getPostHogClient();
     const normalized = error instanceof Error ? error : new Error(String(error));
-    const distinctId =
-      typeof extra?.userId === 'string' ? extra.userId : 'server-side-error';
+    const distinctId = typeof extra?.userId === 'string' ? extra.userId : 'server-side-error';
 
     posthog.captureException(normalized, distinctId, {
       context,

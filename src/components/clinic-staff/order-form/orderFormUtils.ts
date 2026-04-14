@@ -168,7 +168,9 @@ export function initializeFormState(initialData?: OrderFormData): OrderFormState
     teethNumbers: initialData?.teethNumbers || '',
     initialToothStates: initialData?.initialToothStates || {},
     isDigitalScan: initialData?.isDigitalScan || false,
-    tipoCaso: initialData?.tipoCaso || null,
+    // Default to 'nuevo' so the ticket's "Tipo de caso" row starts valid
+    // and the Caso Nuevo radio is pre-selected. Users can still change it.
+    tipoCaso: initialData?.tipoCaso ?? 'nuevo',
     motivoGarantia: initialData?.motivoGarantia || '',
     seDevuelveTrabajoOriginal: initialData?.seDevuelveTrabajoOriginal || false,
     escanerUtilizado: initialData?.escanerUtilizado || null,
