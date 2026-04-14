@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Role } from '@prisma/client';
 import eventBus, { NewOrderEventPayload } from '@/lib/sse/eventBus';
+import { captureApiError } from '@/lib/posthog-server';
 
 // Ensure this route is not cached and is treated as dynamic
 export const dynamic = 'force-dynamic';
@@ -63,7 +64,7 @@ export async function GET() {
         controller.enqueue(encoder.encode(`event: connected\n`));
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ connected: true })}\n\n`));
       } catch (e) {
-        console.error('SSE Error: Failed to send connection event', e);
+        captureApiError(e, 'SSE Error: Failed to send connection event');
       }
     },
     cancel() {

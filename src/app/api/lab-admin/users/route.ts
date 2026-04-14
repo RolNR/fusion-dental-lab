@@ -6,7 +6,7 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 
 // Validation schema for creating users
 const createUserSchema = z.object({
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    captureApiError(error, 'Error fetching users');
     return NextResponse.json({ error: 'Error al obtener usuarios' }, { status: 500 });
   }
 }
@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Error creating user:', error);
+    captureApiError(error, 'Error creating user');
     return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 });
   }
 }

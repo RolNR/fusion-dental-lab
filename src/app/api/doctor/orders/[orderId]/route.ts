@@ -7,6 +7,7 @@ import { orderUpdateSchema } from '@/types/order';
 import { canEditOrder, canDeleteOrder } from '@/lib/api/orderEditValidation';
 import { orderDetailInclude } from '@/lib/api/orderQueries';
 import { updateOrderWithTeeth } from '@/lib/api/orderUpdate';
+import { captureApiError } from '@/lib/posthog-server';
 
 // GET /api/doctor/orders/[orderId] - Get a specific order
 export async function GET(
@@ -40,7 +41,7 @@ export async function GET(
 
     return NextResponse.json({ order });
   } catch (error) {
-    console.error('Error fetching order:', error);
+    captureApiError(error, 'Error fetching order');
     return NextResponse.json({ error: 'Error al cargar orden' }, { status: 500 });
   }
 }
@@ -105,7 +106,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
-    console.error('Error updating order:', err);
+    captureApiError(err, 'Error updating order');
     return NextResponse.json({ error: 'Error al actualizar orden' }, { status: 500 });
   }
 }
@@ -149,7 +150,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting order:', error);
+    captureApiError(error, 'Error deleting order');
     return NextResponse.json({ error: 'Error al eliminar orden' }, { status: 500 });
   }
 }

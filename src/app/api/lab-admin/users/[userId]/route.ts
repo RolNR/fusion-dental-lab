@@ -6,6 +6,7 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
+import { captureApiError } from '@/lib/posthog-server';
 
 // Validation schema for updating users
 const updateUserSchema = z.object({
@@ -70,7 +71,7 @@ export async function GET(
 
     return NextResponse.json({ user }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    captureApiError(error, 'Error fetching user');
     return NextResponse.json({ error: 'Error al obtener usuario' }, { status: 500 });
   }
 }
@@ -190,7 +191,7 @@ export async function PATCH(
       );
     }
 
-    console.error('Error updating user:', error);
+    captureApiError(error, 'Error updating user');
     return NextResponse.json({ error: 'Error al actualizar usuario' }, { status: 500 });
   }
 }
@@ -246,7 +247,7 @@ export async function DELETE(
 
     return NextResponse.json({ message: 'Usuario eliminado exitosamente' }, { status: 200 });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    captureApiError(error, 'Error deleting user');
     return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 });
   }
 }

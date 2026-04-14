@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cleanupCompletedOrders } from '@/lib/services/orderCleanup';
+import { captureApiError } from '@/lib/posthog-server';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -96,7 +97,7 @@ async function handleCleanup(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Cleanup cron error:', error);
+    captureApiError(error, 'Cleanup cron error');
     return NextResponse.json(
       {
         success: false,

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
 import { generateStorageKey, generateUploadUrl } from '@/lib/r2';
 import { z } from 'zod';
+import { captureApiError } from '@/lib/posthog-server';
 import {
   FileCategory,
   ALLOWED_SCAN_TYPES,
@@ -131,7 +132,7 @@ export async function POST(
       return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
-    console.error('Error generating upload URL:', err);
+    captureApiError(err, 'Error generating upload URL');
     return NextResponse.json({ error: 'Error al generar URL de carga' }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { buildOrderWhereClause } from '@/lib/api/orderFilters';
+import { captureApiError } from '@/lib/posthog-server';
 
 const queryParamsSchema = z.object({
   search: z.string().optional(),
@@ -110,7 +111,7 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    captureApiError(error, 'Error fetching orders');
     return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
   }
 }

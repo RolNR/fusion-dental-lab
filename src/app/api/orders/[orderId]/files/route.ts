@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
 import { prisma } from '@/lib/prisma';
+import { captureApiError } from '@/lib/posthog-server';
 
 export async function GET(
   request: NextRequest,
@@ -61,7 +62,7 @@ export async function GET(
 
     return NextResponse.json({ files }, { status: 200 });
   } catch (err) {
-    console.error('Error fetching files:', err);
+    captureApiError(err, 'Error fetching files');
     return NextResponse.json({ error: 'Error al cargar archivos' }, { status: 500 });
   }
 }

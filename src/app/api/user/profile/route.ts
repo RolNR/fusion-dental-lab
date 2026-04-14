@@ -5,6 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { createAuditLog, getAuditContext } from '@/lib/audit';
 import { profileUpdateSchema } from '@/lib/schemas/userSchemas';
+import { captureApiError } from '@/lib/posthog-server';
 import {
   AUTH_ERRORS,
   PROFILE_ERRORS,
@@ -125,7 +126,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    console.error('Error updating profile:', error);
+    captureApiError(error, 'Error updating profile');
     return NextResponse.json({ error: GENERIC_ERRORS.INTERNAL_SERVER_ERROR }, { status: 500 });
   }
 }

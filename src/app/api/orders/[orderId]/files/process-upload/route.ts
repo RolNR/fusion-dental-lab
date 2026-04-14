@@ -8,6 +8,7 @@ import { processImage, requiresProcessing } from '@/lib/imageProcessing';
 import { logFileEvent, getAuditContext } from '@/lib/audit';
 import { z } from 'zod';
 import { FileCategory } from '@/types/file';
+import { captureApiError } from '@/lib/posthog-server';
 
 const processUploadSchema = z.object({
   storageKey: z.string().min(1),
@@ -61,7 +62,7 @@ export async function POST(
         thumbnailUrl = getPublicUrl(thumbnailKey);
         isProcessed = true;
       } catch (err) {
-        console.error('Image processing failed:', err);
+        captureApiError(err, 'Image processing failed');
         // Continue without thumbnail - don't fail the upload
         isProcessed = true;
       }
@@ -111,7 +112,7 @@ export async function POST(
       return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
-    console.error('Error processing upload:', err);
+    captureApiError(err, 'Error processing upload');
     return NextResponse.json({ error: 'Error al procesar carga' }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
 import { Role } from '@prisma/client';
 import { logAuthEvent, getAuditContext } from '@/lib/audit';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 
 const registerSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Error in registration:', error);
+    captureApiError(error, 'Error in registration');
     return NextResponse.json({ error: 'Error al crear la cuenta' }, { status: 500 });
   }
 }

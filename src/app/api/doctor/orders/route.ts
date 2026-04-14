@@ -7,7 +7,7 @@ import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
 import { DEFAULT_PAGE_SIZE, MAX_DRAFTS_PER_DOCTOR } from '@/lib/constants';
 import { logOrderEvent, getAuditContext } from '@/lib/audit';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    captureApiError(error, 'Error fetching orders');
     return NextResponse.json({ error: 'Error al obtener órdenes' }, { status: 500 });
   }
 }
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Error creating order:', error);
+    captureApiError(error, 'Error creating order');
     return NextResponse.json({ error: 'Error al crear orden' }, { status: 500 });
   }
 }

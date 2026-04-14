@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import { AlertStatus, Role } from '@prisma/client';
 import { deleteAlert } from '@/lib/api/alertActions';
+import { captureApiError } from '@/lib/posthog-server';
 
 const alertUpdateSchema = z.object({
   status: z.nativeEnum(AlertStatus),
@@ -71,7 +72,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Datos inválidos', details: err.issues }, { status: 400 });
     }
 
-    console.error('Error updating alert:', err);
+    captureApiError(err, 'Error updating alert');
     return NextResponse.json({ error: 'Error al actualizar alerta' }, { status: 500 });
   }
 }
@@ -102,7 +103,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Error deleting alert:', err);
+    captureApiError(err, 'Error deleting alert');
     return NextResponse.json({ error: 'Error al eliminar alerta' }, { status: 500 });
   }
 }

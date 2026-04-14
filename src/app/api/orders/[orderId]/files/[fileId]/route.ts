@@ -7,6 +7,7 @@ import { deleteFile as deleteFromR2 } from '@/lib/r2';
 import { logFileEvent, getAuditContext } from '@/lib/audit';
 import { OrderStatus } from '@prisma/client';
 import { THUMBNAIL_SUFFIX } from '@/lib/imageProcessing';
+import { captureApiError } from '@/lib/posthog-server';
 
 export async function DELETE(
   request: NextRequest,
@@ -61,14 +62,14 @@ export async function DELETE(
 
     // Delete from R2 (async, don't await)
     deleteFromR2(file.storageKey).catch((err) => {
-      console.error('Failed to delete file from R2:', err);
+      captureApiError(err, 'Failed to delete file from R2');
     });
 
     // Also delete thumbnail if exists
     if (file.thumbnailUrl) {
       const thumbnailKey = file.storageKey.replace(/\.[^.]+$/, THUMBNAIL_SUFFIX);
       deleteFromR2(thumbnailKey).catch((err) => {
-        console.error('Failed to delete thumbnail from R2:', err);
+        captureApiError(err, 'Failed to delete thumbnail from R2');
       });
     }
 
@@ -84,7 +85,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err) {
-    console.error('Error deleting file:', err);
+    captureApiError(err, 'Error deleting file');
     return NextResponse.json({ error: 'Error al eliminar archivo' }, { status: 500 });
   }
 }

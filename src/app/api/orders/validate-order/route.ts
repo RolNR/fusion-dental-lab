@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Anthropic } from '@posthog/ai';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 
 // AI Configuration
 const AI_MODEL = 'claude-sonnet-4-20250514';
@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
         parsedResponse = JSON.parse(responseText);
       }
     } catch (parseError) {
-      console.error('Error parsing validation response:', responseText);
+      captureApiError(parseError, 'Error parsing validation response', { responseText });
       // Return empty alerts if parsing fails (don't block the user)
       parsedResponse = { alerts: [] };
     }
@@ -312,7 +312,7 @@ export async function POST(request: NextRequest) {
       } as ValidationResponse,
     });
   } catch (error) {
-    console.error('Error in validate-order:', error);
+    captureApiError(error, 'Error in validate-order');
     // Don't block the user if validation fails
     return NextResponse.json({
       success: true,

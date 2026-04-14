@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { captureApiError } from '@/lib/posthog-server';
 
 // GET /api/doctor/alerts - Get all alerts for the logged-in doctor
 export async function GET(request: NextRequest) {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ alerts });
   } catch (err) {
-    console.error('Error fetching alerts:', err);
+    captureApiError(err, 'Error fetching alerts');
     return NextResponse.json({ error: 'Error al cargar alertas' }, { status: 500 });
   }
 }

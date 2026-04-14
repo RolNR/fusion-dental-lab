@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Role } from '@prisma/client';
 import { z } from 'zod';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
+import { captureApiError } from '@/lib/posthog-server';
 
 // POST /api/orders/[orderId]/comments - Create a new comment on an order
 export async function POST(
@@ -97,7 +98,7 @@ export async function POST(
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {
-    console.error('Error creating comment:', error);
+    captureApiError(error, 'Error creating comment');
     return NextResponse.json({ error: 'Error al crear el comentario' }, { status: 500 });
   }
 }
@@ -156,7 +157,7 @@ export async function GET(
 
     return NextResponse.json({ comments }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    captureApiError(error, 'Error fetching comments');
     return NextResponse.json({ error: 'Error al obtener los comentarios' }, { status: 500 });
   }
 }

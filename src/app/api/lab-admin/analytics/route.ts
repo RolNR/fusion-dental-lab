@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Role } from '@prisma/client';
+import { captureApiError } from '@/lib/posthog-server';
 import {
   getOrderAnalytics,
   getDailyOrderStats,
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching analytics:', error);
+    captureApiError(error, 'Error fetching analytics');
     return NextResponse.json({ error: 'Error al obtener analíticas' }, { status: 500 });
   }
 }

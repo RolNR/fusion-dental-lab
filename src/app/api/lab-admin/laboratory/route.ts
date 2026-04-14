@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Role } from '@prisma/client';
 import { z } from 'zod';
+import { captureApiError } from '@/lib/posthog-server';
 
 // Validation schema for updating laboratory
 const updateLaboratorySchema = z.object({
@@ -51,7 +52,7 @@ export async function GET() {
 
     return NextResponse.json({ laboratory }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching laboratory:', error);
+    captureApiError(error, 'Error fetching laboratory');
     return NextResponse.json({ error: 'Error al obtener laboratorio' }, { status: 500 });
   }
 }
@@ -120,7 +121,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    console.error('Error updating laboratory:', error);
+    captureApiError(error, 'Error updating laboratory');
     return NextResponse.json({ error: 'Error al actualizar laboratorio' }, { status: 500 });
   }
 }

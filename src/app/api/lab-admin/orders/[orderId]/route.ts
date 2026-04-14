@@ -6,7 +6,7 @@ import { Role, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { updateOrderStatus } from '@/lib/api/orderStatusUpdate';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 
 // GET /api/lab-admin/orders/[orderId] - Get specific order details
 export async function GET(
@@ -92,7 +92,7 @@ export async function GET(
 
     return NextResponse.json({ order }, { status: 200 });
   } catch (error) {
-    console.error('Error fetching order:', error);
+    captureApiError(error, 'Error fetching order');
     return NextResponse.json({ error: 'Error al obtener orden' }, { status: 500 });
   }
 }
@@ -192,7 +192,7 @@ export async function PATCH(
 
     return NextResponse.json(updateResult.order);
   } catch (error) {
-    console.error('Error updating order status:', error);
+    captureApiError(error, 'Error updating order status');
     return NextResponse.json(
       { error: 'Error al actualizar el estado de la orden' },
       { status: 500 }

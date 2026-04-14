@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { Anthropic } from '@posthog/ai';
-import { getPostHogClient } from '@/lib/posthog-server';
+import { captureApiError, getPostHogClient } from '@/lib/posthog-server';
 
 // AI Configuration
 const AI_MODEL = 'claude-sonnet-4-20250514';
@@ -453,7 +453,7 @@ REGLAS DE ITERACIÓN:
         parsedResponse = JSON.parse(responseText);
       }
     } catch (parseError) {
-      console.error('Error parsing Claude response:', responseText);
+      captureApiError(parseError, 'Error parsing Claude response', { responseText });
       return NextResponse.json(
         {
           error: 'Error al procesar la respuesta de la IA',
@@ -475,7 +475,7 @@ REGLAS DE ITERACIÓN:
       },
     });
   } catch (error) {
-    console.error('Error in parse-ai-prompt:', error);
+    captureApiError(error, 'Error in parse-ai-prompt');
     return NextResponse.json(
       {
         error: 'Error al procesar el prompt con IA',
