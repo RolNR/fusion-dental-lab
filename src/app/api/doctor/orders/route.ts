@@ -7,6 +7,7 @@ import { orderDraftSchema, orderCreateSchema } from '@/types/order';
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
 import { DEFAULT_PAGE_SIZE, MAX_DRAFTS_PER_DOCTOR } from '@/lib/constants';
 import { logOrderEvent, getAuditContext } from '@/lib/audit';
+import { getPostHogClient } from '@/lib/posthog-server';
 import { z } from 'zod';
 
 // GET /api/doctor/orders - Get all orders for the logged-in doctor
@@ -190,6 +191,20 @@ export async function POST(request: NextRequest) {
         },
       }
     );
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: doctorId,
+      event: 'order_created',
+      properties: {
+        order_id: order.id,
+        order_number: order.orderNumber,
+        is_draft: isDraft,
+        teeth_count: teeth?.length || 0,
+        ai_generated: hasAiPrompt,
+      },
+    });
+    await posthog.shutdown();
 
     return NextResponse.json({ message: 'Orden creada exitosamente', order }, { status: 201 });
   } catch (error) {

@@ -8,6 +8,7 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button } from '@/components/ui/Button';
 import { getRoleBasedRedirect } from '@/lib/redirect-helpers';
 import { Role } from '@prisma/client';
+import posthog from 'posthog-js';
 
 export function LoginForm() {
   const router = useRouter();
@@ -36,6 +37,17 @@ export function LoginForm() {
         // Fetch session to get user role
         const response = await fetch('/api/auth/session');
         const session = await response.json();
+
+        if (session?.user?.id) {
+          posthog.identify(session.user.id, {
+            email: session.user.email,
+            name: session.user.name,
+            role: session.user.role,
+          });
+          posthog.capture('user_logged_in', {
+            role: session.user.role,
+          });
+        }
 
         // Redirect based on role
         if (session?.user?.role) {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import Anthropic from '@anthropic-ai/sdk';
+import { Anthropic } from '@posthog/ai';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 // AI Configuration
 const AI_MODEL = 'claude-sonnet-4-20250514';
@@ -380,9 +381,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'API key de Anthropic no configurada' }, { status: 500 });
     }
 
-    // Initialize Anthropic client
+    // Initialize Anthropic client wrapped with PostHog LLM analytics
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
+      posthog: getPostHogClient(),
     });
 
     // Build system prompt, appending iteration context if provided
@@ -427,9 +429,17 @@ REGLAS DE ITERACIÓN:
         },
       ],
       system: systemPrompt,
+      posthogDistinctId: session.user.id,
+      posthogProperties: {
+        feature: 'ai_order_extraction',
+        is_iteration: Boolean(context?.previousValues),
+      },
     });
 
-    // Extract the text content from Claude's response
+    // Extract the text content from Claude's response (non-streaming response)
+    if (!('content' in message)) {
+      throw new Error('Unexpected streaming response from Anthropic API');
+    }
     const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
 
     // Parse the JSON response

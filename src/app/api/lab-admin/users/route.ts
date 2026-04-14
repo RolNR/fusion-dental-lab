@@ -6,6 +6,7 @@ import { Role } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 // Validation schema for creating users
 const createUserSchema = z.object({
@@ -147,6 +148,18 @@ export async function POST(request: NextRequest) {
         phone: true,
       },
     });
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: session.user.id,
+      event: 'doctor_created_by_admin',
+      properties: {
+        new_user_id: user.id,
+        new_user_role: user.role,
+        clinic_name: user.clinicName,
+      },
+    });
+    await posthog.shutdown();
 
     return NextResponse.json(
       {

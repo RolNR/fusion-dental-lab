@@ -43,4 +43,12 @@ next-env.d.ts
 
 /src/generated/prisma
 .claude/attn_state.json
+.claude/scheduled_tasks.lock
 .env*.local
+.env.local
+
+# playwright MCP test artifacts
+.playwright-mcp/
+
+# local tool reports
+posthog-setup-report.md

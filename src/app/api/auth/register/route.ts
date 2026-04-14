@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import { BCRYPT_SALT_ROUNDS } from '@/lib/constants';
 import { Role } from '@prisma/client';
 import { logAuthEvent, getAuditContext } from '@/lib/audit';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 const registerSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -75,6 +76,26 @@ export async function POST(request: NextRequest) {
       ...getAuditContext(request),
       metadata: { name: user.name, clinicName: validatedData.clinicName },
     });
+
+    const posthog = getPostHogClient();
+    posthog.identify({
+      distinctId: user.id,
+      properties: {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        clinicName: validatedData.clinicName,
+      },
+    });
+    posthog.capture({
+      distinctId: user.id,
+      event: 'user_signed_up',
+      properties: {
+        role: user.role,
+        clinic_name: validatedData.clinicName,
+      },
+    });
+    await posthog.shutdown();
 
     return NextResponse.json({ message: 'Cuenta creada exitosamente', user }, { status: 201 });
   } catch (error) {

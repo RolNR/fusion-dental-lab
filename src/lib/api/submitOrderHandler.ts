@@ -10,6 +10,7 @@ import {
   orderSubmitWarrantySchema,
   orderSubmitRepairSchema,
 } from '@/types/order';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 /**
  * Factory function to create a submit order handler with role-based permissions
@@ -133,6 +134,20 @@ export function createSubmitOrderHandler(allowedRoles: Role[]) {
           { status: updateResult.statusCode }
         );
       }
+
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: userId,
+        event: 'order_submitted',
+        properties: {
+          order_id: orderId,
+          submitted_by_role: userRole,
+          teeth_count: orderData.teeth.length,
+          tipo_caso: orderData.tipoCaso,
+          ai_generated: Boolean(orderData.aiPrompt),
+        },
+      });
+      await posthog.shutdown();
 
       return NextResponse.json(updateResult.order);
     } catch (error) {

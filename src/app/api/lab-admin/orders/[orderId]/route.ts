@@ -6,6 +6,7 @@ import { Role, OrderStatus } from '@prisma/client';
 import { z } from 'zod';
 import { updateOrderStatus } from '@/lib/api/orderStatusUpdate';
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 // GET /api/lab-admin/orders/[orderId] - Get specific order details
 export async function GET(
@@ -175,6 +176,19 @@ export async function PATCH(
     if (!updateResult.success) {
       return NextResponse.json({ error: updateResult.error }, { status: updateResult.statusCode });
     }
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userId,
+      event: 'order_status_updated',
+      properties: {
+        order_id: orderId,
+        new_status: newStatus,
+        updated_by_role: userRole,
+        has_comment: Boolean(comment),
+      },
+    });
+    await posthog.shutdown();
 
     return NextResponse.json(updateResult.order);
   } catch (error) {
