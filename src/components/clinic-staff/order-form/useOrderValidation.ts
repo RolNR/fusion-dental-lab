@@ -61,9 +61,7 @@ export function useOrderValidation({
           if (!tooth.material) missing.push('material');
           if (!tooth.tipoRestauracion) missing.push('tipo de restauración');
           if (missing.length > 0) {
-            incompleteTeethLabels.push(
-              `Diente ${tooth.toothNumber}: falta ${missing.join(', ')}`
-            );
+            incompleteTeethLabels.push(`Diente ${tooth.toothNumber}: falta ${missing.join(', ')}`);
           }
         }
       }

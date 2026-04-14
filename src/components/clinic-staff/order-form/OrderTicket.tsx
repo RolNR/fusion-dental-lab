@@ -57,6 +57,10 @@ interface OrderTicketProps {
   isValidating: boolean;
   canSubmit: boolean;
   orderId?: string;
+  /** When true, removes the outer card chrome (border/shadow/rounded) — used
+   * when the ticket is embedded in a container that already provides a card
+   * look, such as the mobile drawer. */
+  flush?: boolean;
 }
 
 export function OrderTicket({
@@ -74,6 +78,7 @@ export function OrderTicket({
   isValidating,
   canSubmit,
   orderId,
+  flush = false,
 }: OrderTicketProps) {
   const validation = useOrderValidation({ formData, upperFiles, lowerFiles });
 
@@ -103,7 +108,11 @@ export function OrderTicket({
   return (
     <aside
       aria-label="Resumen de orden"
-      className="flex flex-col gap-4 rounded-xl border border-border bg-background p-4 shadow-sm"
+      className={
+        flush
+          ? 'flex flex-col gap-4'
+          : 'flex flex-col gap-4 rounded-xl border border-border bg-background p-4 shadow-sm'
+      }
     >
       {/* Header */}
       <div className="flex items-start justify-between gap-2 border-b border-border pb-3">
@@ -207,9 +216,7 @@ export function OrderTicket({
             <div className="space-y-2">
               <AnexoLine
                 label="Materiales"
-                countLabel={
-                  materialsCount > 0 ? `${materialsCount} seleccionados` : undefined
-                }
+                countLabel={materialsCount > 0 ? `${materialsCount} seleccionados` : undefined}
                 onJump={() => onScrollToSection('anexos')}
               />
               <AnexoLine
@@ -232,10 +239,7 @@ export function OrderTicket({
                   totalFiles={totalScanFiles}
                 />
               </AnexoLine>
-              <AnexoLine
-                label="Fotografías"
-                onJump={() => onScrollToSection('anexos')}
-              >
+              <AnexoLine label="Fotografías" onJump={() => onScrollToSection('anexos')}>
                 <FilesList
                   groups={[{ label: 'Fotos', files: photographFiles }]}
                   onJump={() => onScrollToSection('anexos')}
@@ -407,16 +411,10 @@ function AnexoLine({
     <div className="rounded-md border border-border bg-muted/20 p-2">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span
-            className={`text-xs font-semibold ${
-              missing ? 'text-danger' : 'text-foreground'
-            }`}
-          >
+          <span className={`text-xs font-semibold ${missing ? 'text-danger' : 'text-foreground'}`}>
             {label}
           </span>
-          {countLabel && (
-            <span className="text-xs text-muted-foreground">· {countLabel}</span>
-          )}
+          {countLabel && <span className="text-xs text-muted-foreground">· {countLabel}</span>}
         </div>
         <button
           type="button"
@@ -426,21 +424,13 @@ function AnexoLine({
           Agregar
         </button>
       </div>
-      {missing && missingText && (
-        <p className="mt-1 text-xs text-danger">{missingText}</p>
-      )}
+      {missing && missingText && <p className="mt-1 text-xs text-danger">{missingText}</p>}
       {children}
     </div>
   );
 }
 
-function ToothDetailList({
-  teeth,
-  onJump,
-}: {
-  teeth: ToothData[];
-  onJump: () => void;
-}) {
+function ToothDetailList({ teeth, onJump }: { teeth: ToothData[]; onJump: () => void }) {
   // Sort by tooth number for stable, readable order
   const sorted = [...teeth].sort((a, b) => {
     const an = parseInt(a.toothNumber, 10);
@@ -457,13 +447,7 @@ function ToothDetailList({
   );
 }
 
-function ToothDetailItem({
-  tooth,
-  onJump,
-}: {
-  tooth: ToothData;
-  onJump: () => void;
-}) {
+function ToothDetailItem({ tooth, onJump }: { tooth: ToothData; onJump: () => void }) {
   const missing: string[] = [];
   if (!tooth.material) missing.push('material');
   if (!tooth.tipoRestauracion) missing.push('tipo');
@@ -486,11 +470,9 @@ function ToothDetailItem({
 
   let colorLabel: string | null = null;
   if (colorInfo?.useZoneShading) {
-    const parts = [
-      colorInfo.cervicalShade,
-      colorInfo.medioShade,
-      colorInfo.incisalShade,
-    ].filter(Boolean);
+    const parts = [colorInfo.cervicalShade, colorInfo.medioShade, colorInfo.incisalShade].filter(
+      Boolean
+    );
     if (parts.length > 0) colorLabel = parts.join('/');
   } else if (colorInfo?.shadeCode) {
     colorLabel = colorInfo.shadeCode;
@@ -506,9 +488,7 @@ function ToothDetailItem({
         {/* Tooth number badge */}
         <span
           className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-            isIncomplete
-              ? 'bg-danger/15 text-danger'
-              : 'bg-primary/15 text-primary'
+            isIncomplete ? 'bg-danger/15 text-danger' : 'bg-primary/15 text-primary'
           }`}
         >
           {tooth.toothNumber}
@@ -532,9 +512,7 @@ function ToothDetailItem({
               {tooth.material}
             </span>
           )}
-          {colorLabel && (
-            <span className="text-xs text-muted-foreground">Color: {colorLabel}</span>
-          )}
+          {colorLabel && <span className="text-xs text-muted-foreground">Color: {colorLabel}</span>}
           {isIncomplete && (
             <span className="flex items-center gap-1 text-xs font-medium text-danger">
               <Icons.alertCircle className="h-3 w-3 shrink-0" />

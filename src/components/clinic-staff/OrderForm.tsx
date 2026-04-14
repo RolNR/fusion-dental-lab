@@ -1006,209 +1006,212 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         e.preventDefault();
         handleSaveAsDraft();
       }}
-      className="lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6"
+      className={
+        showFullForm ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6' : undefined
+      }
     >
       <div className="space-y-4 sm:space-y-6">
-      {/* Validation Error Summary */}
-      {showErrorSummary && validationErrors.size > 0 && (
-        <ValidationErrorSummary
-          errorsBySection={validationErrors}
-          onSectionClick={scrollToSection}
-          onToothClick={(toothNumber) => {
-            // Select the tooth in the odontogram
-            setSelectedToothNumber(toothNumber);
-          }}
-          onDismiss={() => setShowErrorSummary(false)}
-        />
-      )}
+        {/* Validation Error Summary */}
+        {showErrorSummary && validationErrors.size > 0 && (
+          <ValidationErrorSummary
+            errorsBySection={validationErrors}
+            onSectionClick={scrollToSection}
+            onToothClick={(toothNumber) => {
+              // Select the tooth in the odontogram
+              setSelectedToothNumber(toothNumber);
+            }}
+            onDismiss={() => setShowErrorSummary(false)}
+          />
+        )}
 
-      {/* Generic Error (fallback for non-validation errors) */}
-      {error && !showErrorSummary && (
-        <div className="rounded-lg bg-danger/10 p-3 sm:p-4 text-sm sm:text-base text-danger">
-          {error}
-        </div>
-      )}
+        {/* Generic Error (fallback for non-validation errors) */}
+        {error && !showErrorSummary && (
+          <div className="rounded-lg bg-danger/10 p-3 sm:p-4 text-sm sm:text-base text-danger">
+            {error}
+          </div>
+        )}
 
-      {showFullForm && role === 'assistant' && (
-        <div>
-          <Select
-            label="Doctor"
-            id="doctorId"
-            value={formData.doctorId}
-            onChange={(e) => setFormData((prev) => ({ ...prev, doctorId: e.target.value }))}
-            required
-            disabled={isLoading || !!orderId || doctors.length === 0}
-          >
-            <option value="">Seleccionar doctor</option>
-            {doctors.map((doctor) => (
-              <option key={doctor.id} value={doctor.id}>
-                {doctor.name} ({doctor.email})
-              </option>
-            ))}
-          </Select>
-          {doctors.length === 0 && (
-            <p className="mt-2 text-sm text-warning">
-              No tienes doctores asignados. Contacta al administrador de la clínica para que te
-              asigne doctores.
-            </p>
-          )}
-        </div>
-      )}
+        {showFullForm && role === 'assistant' && (
+          <div>
+            <Select
+              label="Doctor"
+              id="doctorId"
+              value={formData.doctorId}
+              onChange={(e) => setFormData((prev) => ({ ...prev, doctorId: e.target.value }))}
+              required
+              disabled={isLoading || !!orderId || doctors.length === 0}
+            >
+              <option value="">Seleccionar doctor</option>
+              {doctors.map((doctor) => (
+                <option key={doctor.id} value={doctor.id}>
+                  {doctor.name} ({doctor.email})
+                </option>
+              ))}
+            </Select>
+            {doctors.length === 0 && (
+              <p className="mt-2 text-sm text-warning">
+                No tienes doctores asignados. Contacta al administrador de la clínica para que te
+                asigne doctores.
+              </p>
+            )}
+          </div>
+        )}
 
-      {/* AI Prompt - Highlighted Section */}
-      {showAISummary && accumulatedAIValues ? (
-        <>
-          <AIResultsSummary
-            confirmedValues={accumulatedAIValues}
-            suggestions={accumulatedAISuggestions}
-            onFollowUp={handleAIFollowUp}
-            onApply={handleApplyAIValues}
-            onStartOver={handleAIStartOver}
-            isProcessing={isParsingAI}
+        {/* AI Prompt - Highlighted Section */}
+        {showAISummary && accumulatedAIValues ? (
+          <>
+            <AIResultsSummary
+              confirmedValues={accumulatedAIValues}
+              suggestions={accumulatedAISuggestions}
+              onFollowUp={handleAIFollowUp}
+              onApply={handleApplyAIValues}
+              onStartOver={handleAIStartOver}
+              isProcessing={isParsingAI}
+              speechSupported={speechSupported}
+              isListening={isListening}
+              onToggleSpeechRecognition={handleToggleSpeechRecognition}
+            />
+            {aiError && <p className="mt-2 text-sm text-danger font-medium">{aiError}</p>}
+          </>
+        ) : (
+          <AIPromptInput
+            value={formData.aiPrompt}
+            onChange={(value) => setFormData((prev) => ({ ...prev, aiPrompt: value }))}
+            onParse={handleParseAIPrompt}
+            isParsingAI={isParsingAI}
+            isLoading={isLoading}
+            aiError={aiError}
             speechSupported={speechSupported}
             isListening={isListening}
             onToggleSpeechRecognition={handleToggleSpeechRecognition}
+            showFullForm={showFullForm}
+            onShowFullForm={() => setShowFullForm(true)}
           />
-          {aiError && <p className="mt-2 text-sm text-danger font-medium">{aiError}</p>}
-        </>
-      ) : (
-        <AIPromptInput
-          value={formData.aiPrompt}
-          onChange={(value) => setFormData((prev) => ({ ...prev, aiPrompt: value }))}
-          onParse={handleParseAIPrompt}
-          isParsingAI={isParsingAI}
-          isLoading={isLoading}
-          aiError={aiError}
-          speechSupported={speechSupported}
-          isListening={isListening}
-          onToggleSpeechRecognition={handleToggleSpeechRecognition}
-          showFullForm={showFullForm}
-          onShowFullForm={() => setShowFullForm(true)}
-        />
-      )}
+        )}
 
-      {/* Show full form only after AI processing or when editing */}
-      {showFullForm && (
-        <>
-          {/* 1. Case Type Section */}
-          <CaseTypeSection
-            ref={(el) => registerSectionRef('caseType', el)}
-            tipoCaso={formData.tipoCaso ?? undefined}
-            motivoGarantia={formData.motivoGarantia}
-            onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-            hasErrors={getSectionErrorInfo('caseType').hasErrors}
-            errorCount={getSectionErrorInfo('caseType').errorCount}
-          />
+        {/* Show full form only after AI processing or when editing */}
+        {showFullForm && (
+          <>
+            {/* 1. Case Type Section */}
+            <CaseTypeSection
+              ref={(el) => registerSectionRef('caseType', el)}
+              tipoCaso={formData.tipoCaso ?? undefined}
+              motivoGarantia={formData.motivoGarantia}
+              onChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
+              hasErrors={getSectionErrorInfo('caseType').hasErrors}
+              errorCount={getSectionErrorInfo('caseType').errorCount}
+            />
 
-          {/* 2. Patient Info Section */}
-          <OrderInfoSection
-            ref={(el) => registerSectionRef('patient', el)}
-            patientName={formData.patientName}
-            fechaEntregaDeseada={formData.fechaEntregaDeseada}
-            onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-            disabled={isLoading}
-            hasErrors={getSectionErrorInfo('patient').hasErrors}
-            errorCount={getSectionErrorInfo('patient').errorCount}
-          />
+            {/* 2. Patient Info Section */}
+            <OrderInfoSection
+              ref={(el) => registerSectionRef('patient', el)}
+              patientName={formData.patientName}
+              fechaEntregaDeseada={formData.fechaEntregaDeseada}
+              onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+              disabled={isLoading}
+              hasErrors={getSectionErrorInfo('patient').hasErrors}
+              errorCount={getSectionErrorInfo('patient').errorCount}
+            />
 
-          {/* Sections hidden when case type is "garantia" (warranty) */}
-          {!isGarantia && (
-            <>
-              {/* 3. Tooth Configuration Section (Odontogram Wizard - 2 steps) */}
-              <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
-                <OdontogramWizard
-                  initialStates={formData.initialToothStates}
-                  teethData={teethData}
-                  bridges={bridges}
-                  onInitialStatesChange={(states) =>
-                    setFormData((prev) => ({ ...prev, initialToothStates: states }))
-                  }
-                  onTeethDataChange={(data) => setTeethData(data)}
-                  onBridgesChange={setBridges}
-                  onTeethInOrderChange={setTeethNumbers}
-                  disabled={isLoading}
-                  initialStep={odontogramInitialStep}
-                />
-              </div>
-
-              {/* 4. Occlusion Section */}
-              <OcclusionSection
-                ref={(el) => registerSectionRef('occlusion', el)}
-                oclusionDiseno={formData.oclusionDiseno}
-                onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
-                hasErrors={getSectionErrorInfo('occlusion').hasErrors}
-                errorCount={getSectionErrorInfo('occlusion').errorCount}
-              />
-
-              {/* 5. Anexos y Materiales Enviados (Materiales / Escaneos / Fotografías) */}
-              <div ref={(el) => registerSectionRef('anexos', el)}>
-              <AnexosYMaterialesSection
-                materialSent={formData.materialSent}
-                onMaterialSentChange={(value) =>
-                  setFormData((prev) => ({ ...prev, materialSent: value }))
-                }
-                isDigitalScan={formData.isDigitalScan}
-                escanerUtilizado={formData.escanerUtilizado ?? undefined}
-                otroEscaner={formData.otroEscaner}
-                upperFiles={upperFiles}
-                lowerFiles={lowerFiles}
-                biteFiles={biteFiles}
-                onUpperFilesChange={setUpperFiles}
-                onLowerFilesChange={setLowerFiles}
-                onBiteFilesChange={setBiteFiles}
-                onDigitalScanChange={(updates) => setFormData((prev) => ({ ...prev, ...updates }))}
-                photographFiles={photographFiles}
-                onPhotographFilesChange={setPhotographFiles}
-                disabled={isLoading}
-              />
-              </div>
-
-              {/* 8. Submission Type Section */}
-              <SubmissionTypeSection
-                ref={(el) => registerSectionRef('submission', el)}
-                submissionType={formData.submissionType ?? undefined}
-                articulatedBy={formData.articulatedBy ?? undefined}
-                onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
-                hasErrors={getSectionErrorInfo('submission').hasErrors}
-                errorCount={getSectionErrorInfo('submission').errorCount}
-                hasImplant={hasImplant}
-              />
-            </>
-          )}
-
-          <AdditionalNotesSection
-            ref={(el) => registerSectionRef('notes', el)}
-            additionalNotes={formData.notes}
-            onChange={(value) => setFormData((prev) => ({ ...prev, notes: value }))}
-            hasErrors={getSectionErrorInfo('notes').hasErrors}
-            errorCount={getSectionErrorInfo('notes').errorCount}
-          />
-
-          {/* Urgent Order Checkbox - hidden for warranty cases */}
-          {!isGarantia && (
-            <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
-              <div className="flex items-start gap-3">
-                <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <Checkbox
-                    id="isUrgent"
-                    label="Orden Urgente"
-                    checked={formData.isUrgent || false}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))
+            {/* Sections hidden when case type is "garantia" (warranty) */}
+            {!isGarantia && (
+              <>
+                {/* 3. Tooth Configuration Section (Odontogram Wizard - 2 steps) */}
+                <div id="teeth-section" ref={(el) => registerSectionRef('teeth', el)}>
+                  <OdontogramWizard
+                    initialStates={formData.initialToothStates}
+                    teethData={teethData}
+                    bridges={bridges}
+                    onInitialStatesChange={(states) =>
+                      setFormData((prev) => ({ ...prev, initialToothStates: states }))
                     }
+                    onTeethDataChange={(data) => setTeethData(data)}
+                    onBridgesChange={setBridges}
+                    onTeethInOrderChange={setTeethNumbers}
+                    disabled={isLoading}
+                    initialStep={odontogramInitialStep}
+                  />
+                </div>
+
+                {/* 4. Occlusion Section */}
+                <OcclusionSection
+                  ref={(el) => registerSectionRef('occlusion', el)}
+                  oclusionDiseno={formData.oclusionDiseno}
+                  onChange={(value) => setFormData((prev) => ({ ...prev, oclusionDiseno: value }))}
+                  hasErrors={getSectionErrorInfo('occlusion').hasErrors}
+                  errorCount={getSectionErrorInfo('occlusion').errorCount}
+                />
+
+                {/* 5. Anexos y Materiales Enviados (Materiales / Escaneos / Fotografías) */}
+                <div ref={(el) => registerSectionRef('anexos', el)}>
+                  <AnexosYMaterialesSection
+                    materialSent={formData.materialSent}
+                    onMaterialSentChange={(value) =>
+                      setFormData((prev) => ({ ...prev, materialSent: value }))
+                    }
+                    isDigitalScan={formData.isDigitalScan}
+                    escanerUtilizado={formData.escanerUtilizado ?? undefined}
+                    otroEscaner={formData.otroEscaner}
+                    upperFiles={upperFiles}
+                    lowerFiles={lowerFiles}
+                    biteFiles={biteFiles}
+                    onUpperFilesChange={setUpperFiles}
+                    onLowerFilesChange={setLowerFiles}
+                    onBiteFilesChange={setBiteFiles}
+                    onDigitalScanChange={(updates) =>
+                      setFormData((prev) => ({ ...prev, ...updates }))
+                    }
+                    photographFiles={photographFiles}
+                    onPhotographFilesChange={setPhotographFiles}
                     disabled={isLoading}
                   />
-                  <p className="text-sm text-warning/80 mt-2 ml-6">
-                    Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
-                  </p>
+                </div>
+
+                {/* 8. Submission Type Section */}
+                <SubmissionTypeSection
+                  ref={(el) => registerSectionRef('submission', el)}
+                  submissionType={formData.submissionType ?? undefined}
+                  articulatedBy={formData.articulatedBy ?? undefined}
+                  onChange={(field, value) => setFormData((prev) => ({ ...prev, [field]: value }))}
+                  hasErrors={getSectionErrorInfo('submission').hasErrors}
+                  errorCount={getSectionErrorInfo('submission').errorCount}
+                  hasImplant={hasImplant}
+                />
+              </>
+            )}
+
+            <AdditionalNotesSection
+              ref={(el) => registerSectionRef('notes', el)}
+              additionalNotes={formData.notes}
+              onChange={(value) => setFormData((prev) => ({ ...prev, notes: value }))}
+              hasErrors={getSectionErrorInfo('notes').hasErrors}
+              errorCount={getSectionErrorInfo('notes').errorCount}
+            />
+
+            {/* Urgent Order Checkbox - hidden for warranty cases */}
+            {!isGarantia && (
+              <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
+                <div className="flex items-start gap-3">
+                  <Icons.zap className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <Checkbox
+                      id="isUrgent"
+                      label="Orden Urgente"
+                      checked={formData.isUrgent || false}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, isUrgent: e.target.checked }))
+                      }
+                      disabled={isLoading}
+                    />
+                    <p className="text-sm text-warning/80 mt-2 ml-6">
+                      Las órdenes urgentes tienen un recargo del 30% sobre el precio base.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-        </>
-      )}
+            )}
+          </>
+        )}
       </div>
 
       {/* Desktop ticket sidebar */}
@@ -1242,21 +1245,18 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
             }
           }}
         >
-          <div className="mt-auto max-h-[90vh] overflow-y-auto rounded-t-2xl bg-background p-4 shadow-2xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-foreground">Resumen</h2>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowMobileTicket(false)}
-                aria-label="Cerrar"
-                className="!p-1"
-              >
-                <Icons.x className="h-5 w-5" />
-              </Button>
-            </div>
-            <OrderTicket {...ticketProps} />
+          <div className="relative mt-auto max-h-[90vh] overflow-y-auto rounded-t-2xl bg-background p-4 pt-2 shadow-2xl">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileTicket(false)}
+              aria-label="Cerrar"
+              className="!absolute !right-3 !top-3 !z-10 !p-1"
+            >
+              <Icons.x className="h-5 w-5" />
+            </Button>
+            <OrderTicket {...ticketProps} flush />
           </div>
         </div>
       )}
