@@ -4,1046 +4,401 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**LabWiseLink** - Multi-tenant dental lab order management platform connecting ONE laboratory with multiple dental clinics.
+**LabWiseLink** - Dental lab order management platform connecting ONE laboratory with the doctors (dentists) who send it work.
 
-- **Tech Stack**: Next.js 16 (App Router), TypeScript, Prisma 6, PostgreSQL, NextAuth.js, Tailwind CSS 4, Cloudflare R2
+- **Tech Stack**: Next.js 16 (App Router, Turbopack), React 19, TypeScript, Prisma 6, PostgreSQL (Neon), NextAuth.js v4, Tailwind CSS 4, Cloudflare R2
+- **Other services**: Anthropic Claude (AI order parsing/validation, via `@posthog/ai` wrapper), PostHog (product + LLM analytics, error tracking), SendPulse (email), Three.js (3D STL preview), Sharp (image thumbnails)
+- **Deploy**: Vercel (`vercel.json` defines a daily cron)
 - **Language**: All user-facing content MUST be in Spanish
-- **Authentication**: JWT sessions (30-day expiry), role-based access control
-- **Business Model**: Single laboratory manages multiple clinics as clients
+- **Authentication**: Credentials provider, JWT sessions (30-day expiry), role-based access control
+- **Business Model**: Single laboratory; doctors are its clients. There is no Clinic entity — a doctor's clinic info lives as plain fields on `User` (`clinicName`, `clinicAddress`, `razonSocial`, `fiscalAddress`)
 
 ## Development Commands
 
 ```bash
 # Development
-npm run dev                    # Start dev server with Turbopack (hostname 0.0.0.0)
-npm run build                  # Production build (MUST pass before commits)
-npm run start                  # Start production server
+npm run dev                    # Dev server with Turbopack (hostname 0.0.0.0)
+npm run build                  # prisma generate + next build (MUST pass before commits)
+npm run start                  # Production server
 
 # Database
-npm run db:generate            # Generate Prisma Client
-npm run db:push               # Push schema to database (dev only)
-npm run db:migrate            # Create migration (before production deploy)
-npm run db:studio             # Open Prisma Studio on localhost:5555
+npm run db:generate            # Generate Prisma Client (also runs on postinstall)
+npm run db:push                # Push schema to database (dev only)
+npm run db:migrate             # prisma migrate dev
+npm run db:studio              # Prisma Studio on localhost:5555
 
 # Code Quality
-npm run lint                  # Run ESLint
-npm run format                # Format with Prettier (includes Tailwind class sorting)
+npm run lint                   # ESLint
+npm run format                 # Prettier (includes Tailwind class sorting)
 
 # Initial Setup
-npm run create-lab-admin      # Interactive CLI to create Laboratory + LAB_ADMIN user
+npm run create-lab-admin       # Interactive CLI to create Laboratory + LAB_ADMIN user
 ```
 
-## Multi-Tenant Architecture
+Husky is installed (`prepare` script) for git hooks. Other scripts in `scripts/`: `export-data.ts`, `fix-relation-names.sh`.
 
-### Organizational Hierarchy
+## Architecture
 
-```
-Laboratory (single instance)
-  ├── Lab Admins (manage everything)
-  ├── Lab Collaborators (view orders, read-only)
-  └── Clinics (multiple)
-      ├── Clinic Admins (manage clinic users)
-      ├── Doctors (create own orders)
-      └── Clinic Assistants (create orders for assigned doctors)
-```
+### Roles
 
-### Five Roles Explained
+Only two roles exist (`enum Role` in `prisma/schema.prisma`):
 
-**1. LAB_ADMIN** - Super admin of laboratory
-- Creates/manages clinics and lab collaborators
-- Views ALL orders from ALL clinics
-- Full CRUD on everything
-- Database: `user.laboratoryId → Laboratory.id`
+**1. LAB_ADMIN** - Laboratory administrator
+- Views and manages ALL orders from doctors of their laboratory
+- Changes order status (see state machine), sends alerts to doctors
+- Manages users (creates doctors), laboratory settings, analytics
+- Database: `user.laboratoryId → Laboratory.id` (relation `LaboratoryAdmins`)
 
-**2. LAB_COLLABORATOR** - Lab employee (read-only)
-- Views all orders (read-only)
-- Updates order status (IN_PROGRESS, COMPLETED)
-- Sends alerts to clinics
-- Database: `user.labCollaboratorId → Laboratory.id`
+**2. DOCTOR** - Dentist
+- Creates, edits, submits and views ONLY their own orders
+- Uploads files, answers lab info requests, receives alerts
+- Can self-register at `/auth/register` (`POST /api/auth/register` links them to the single `Laboratory` via `findFirst()`)
+- Database: `user.doctorLaboratoryId → Laboratory.id` (relation `LaboratoryDoctors`)
 
-**3. CLINIC_ADMIN** - Clinic administrator
-- Creates/manages doctors and assistants for their clinic
-- Assigns assistants to doctors
-- Views ALL orders from their clinic
-- Creates orders for any doctor
-- Database: `user.clinicId → Clinic.id`
+In the session, both are normalized to `session.user.laboratoryId` (set in `authorize()` in `src/lib/auth.ts`).
 
-**4. DOCTOR** - Dentist
-- Can belong to MULTIPLE clinics via `DoctorClinic` junction table
-- Selects active clinic at login (if multiple clinics assigned)
-- Can switch between clinics during session without re-login
-- Creates orders for currently active clinic (auto-assigned to self)
-- Views ONLY their own orders
-- Uploads files, submits orders
-- Database: `user.activeClinicId → Clinic.id` (current session context)
+### Data Model (`prisma/schema.prisma`)
 
-**5. CLINIC_ASSISTANT** - Dental assistant
-- Creates orders ON BEHALF of assigned doctors
-- Views orders of assigned doctors only
-- Many-to-many assignment via `DoctorAssistant` table
-- Database: `user.assistantClinicId → Clinic.id`
+- `Laboratory` → `labAdmins`, `doctors`
+- `User` (role, org links, doctor clinic/fiscal fields)
+- `Order` → `doctor` (owner), `createdBy`, `teeth`, `files`, `comments`, `alerts`, `auditLogs`. Soft delete via `deletedAt`. Many fields in Spanish (`tipoCaso`, `fechaEntregaDeseada`, `escanerUtilizado`, `submissionType`, `oclusionDiseno`, `materialSent`, `isUrgent`, `aiPrompt`, `initialToothStates`)
+- `Tooth` - per-tooth configuration (`toothNumber`, `material`, `colorInfo`, `categoriaRestauracion`, `tipoRestauracion`, implant info, provisional, jig). `@@unique([orderId, toothNumber])`
+- `File` - R2 metadata (`storageKey`, `storageUrl`, `category`, `thumbnailUrl`, `isProcessed`, `expiresAt`, `deletedAt`)
+- `OrderComment` - with `isInternal` flag for lab-only comments
+- `Alert` - lab → doctor messages (`UNREAD | READ | RESOLVED`)
+- `AuditLog`
 
-### Key Database Relationships
+Domain enums are lowercase Spanish (`CaseType`, `RestorationType`, `RestorationCategory`, `SubmissionType`, `ArticulatedBy`, `ProvisionalMaterial`); `ScannerType` lists iTero, Medit, ThreeShape, etc.
 
-```typescript
-// Order ownership
-Order.doctorId → User.id (doctor who owns the order)
-Order.createdById → User.id (who created it - doctor/assistant/clinic_admin)
-Order.clinicId → Clinic.id
-
-// Doctor-Clinic many-to-many relationship
-DoctorClinic {
-  doctorId → User.id
-  clinicId → Clinic.id
-  isPrimary: boolean  // One clinic marked as primary
-  unique([doctorId, clinicId])
-}
-
-// Doctor-Assistant assignment
-DoctorAssistant {
-  doctorId → User.id
-  assistantId → User.id
-  unique([doctorId, assistantId])
-}
-
-// User organizational links (mutually exclusive except for doctors)
-User.laboratoryId → Laboratory.id (LAB_ADMIN)
-User.labCollaboratorId → Laboratory.id (LAB_COLLABORATOR)
-User.clinicId → Clinic.id (CLINIC_ADMIN)
-User.activeClinicId → Clinic.id (DOCTOR - current session context)
-User.assistantClinicId → Clinic.id (CLINIC_ASSISTANT)
-
-// Doctor clinic memberships (via junction table)
-User.clinicMemberships → DoctorClinic[] (DOCTOR - all assigned clinics)
-```
-
-## Multi-Clinic Support for Doctors
-
-### Overview
-
-Doctors can belong to multiple clinics and switch between them during their session without re-login. The active clinic context is stored in the database (not JWT) for instant switching.
-
-### Key Components
-
-**DoctorClinic Junction Table:**
-```typescript
-model DoctorClinic {
-  id        String   @id @default(cuid())
-  doctorId  String
-  clinicId  String
-  isPrimary Boolean  @default(false)  // One clinic marked as primary
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-
-  @@unique([doctorId, clinicId])
-  @@index([doctorId])
-  @@index([clinicId])
-}
-```
-
-### Login Flow
-
-1. Doctor logs in
-2. Middleware checks `activeClinicId` in session
-3. If `null` (first login or no active clinic set):
-   - Redirect to `/doctor/select-clinic`
-   - Display all assigned clinics (from `DoctorClinic` table)
-   - Auto-select primary clinic if exists
-   - User selects clinic → `activeClinicId` updated in database
-   - Redirect to `/doctor` dashboard
-4. If `activeClinicId` exists:
-   - Proceed to dashboard
-   - Show active clinic name in header
-   - ClinicSelector visible in navbar
-
-### Clinic Switching
-
-**UI Component:** `ClinicSelector` in NavBar
-- Dropdown on desktop, full-width menu on mobile
-- Shows current clinic name
-- Lists all assigned clinics
-- Marks primary clinic with badge
-- Calls `/api/doctor/active-clinic` on selection
-- Updates session via `update()` from `next-auth/react`
-- Reloads page to refresh data
-
-**API Endpoints:**
-```typescript
-// GET /api/doctor/clinics
-// Returns all clinics for logged-in doctor
-{
-  clinics: [
-    { id, name, isPrimary, isActive, isCurrent }
-  ]
-}
-
-// POST /api/doctor/active-clinic
-// Body: { clinicId: string }
-// Updates: user.activeClinicId in database
-// Triggers: session update via NextAuth
-```
-
-### Middleware Logic
-
-```typescript
-// Redirect doctors without active clinic to clinic selection
-if (
-  token?.role === Role.DOCTOR &&
-  !token?.activeClinicId &&
-  path.startsWith('/doctor') &&
-  path !== '/doctor/select-clinic'
-) {
-  return NextResponse.redirect(new URL('/doctor/select-clinic', req.url));
-}
-
-// Redirect doctors with active clinic away from clinic selection
-if (
-  token?.role === Role.DOCTOR &&
-  token?.activeClinicId &&
-  path === '/doctor/select-clinic'
-) {
-  return NextResponse.redirect(new URL('/doctor', req.url));
-}
-```
-
-### Session Management
-
-**NextAuth Configuration:**
-```typescript
-// src/lib/auth.ts
-jwt: async ({ token, user, trigger }) => {
-  if (user) {
-    token.activeClinicId = user.activeClinicId;
-  }
-
-  // Refresh activeClinicId on clinic switch
-  if (trigger === 'update') {
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: token.id },
-      select: { activeClinicId: true },
-    });
-    token.activeClinicId = updatedUser?.activeClinicId;
-  }
-
-  return token;
-}
-
-session: async ({ session, token }) => {
-  session.user.activeClinicId = token.activeClinicId;
-  return session;
-}
-```
-
-### Order Context
-
-All doctor order operations use `activeClinicId`:
-
-```typescript
-// Creating an order
-const doctor = await prisma.user.findUnique({
-  where: { id: session.user.id },
-  select: { activeClinicId: true },
-});
-
-if (!doctor?.activeClinicId) {
-  return NextResponse.json(
-    { error: 'Debes seleccionar una clínica para crear órdenes' },
-    { status: 400 }
-  );
-}
-
-// Verify clinic membership
-const membership = await prisma.doctorClinic.findUnique({
-  where: {
-    doctorId_clinicId: {
-      doctorId: session.user.id,
-      clinicId: doctor.activeClinicId,
-    },
-  },
-});
-```
-
-### Creating Doctors (Admin)
-
-When creating a doctor, use atomic transaction to ensure consistency:
-
-```typescript
-const doctor = await prisma.$transaction(async (tx) => {
-  // Create user with activeClinicId
-  const newDoctor = await tx.user.create({
-    data: {
-      role: Role.DOCTOR,
-      activeClinicId: clinicId,
-      // ... other fields
-    },
-  });
-
-  // Create DoctorClinic membership with isPrimary: true
-  await tx.doctorClinic.create({
-    data: {
-      doctorId: newDoctor.id,
-      clinicId: clinicId,
-      isPrimary: true,
-    },
-  });
-
-  return newDoctor;
-});
-```
+`order.doctorId` and `order.createdById` are both the doctor's id in the current flow.
 
 ## Order State Machine
 
-### Status Flow
+File: `src/lib/orderStateMachine.ts`
 
 ```
 DRAFT → PENDING_REVIEW → IN_PROGRESS → COMPLETED
-  ↓           ↓              ↓
-CANCELLED   NEEDS_INFO ────→ (cycles back)
-            MATERIALS_SENT
+            ↓    ↑
+         NEEDS_INFO
+(MATERIALS_SENT → IN_PROGRESS | NEEDS_INFO)
+Any non-terminal → CANCELLED (subject to role rules)
 ```
 
-### Role-Based Transitions
+**DOCTOR:** `DRAFT → PENDING_REVIEW | CANCELLED`, `NEEDS_INFO → PENDING_REVIEW`
 
-**Clinic users (DOCTOR/CLINIC_ASSISTANT/CLINIC_ADMIN):**
-- `DRAFT → PENDING_REVIEW` (submit)
-- `NEEDS_INFO → PENDING_REVIEW` (respond to lab)
-
-**Lab users (LAB_COLLABORATOR):**
-- `PENDING_REVIEW → IN_PROGRESS` (start work)
-- `PENDING_REVIEW → NEEDS_INFO` (request info)
-- `IN_PROGRESS → COMPLETED` (finish)
-
-**LAB_ADMIN:** Can force any transition including CANCELLED
-
-### State Machine Enforcement
+**LAB_ADMIN:** `PENDING_REVIEW | MATERIALS_SENT → IN_PROGRESS | NEEDS_INFO | CANCELLED`, `IN_PROGRESS → COMPLETED | CANCELLED`, `NEEDS_INFO → CANCELLED`
 
 ```typescript
-// File: src/lib/orderStateMachine.ts
-import { canUserTransition, getValidNextStatesForRole } from '@/lib/orderStateMachine';
+import { canUserTransition, getValidNextStatesForRole, getTimestampUpdates } from '@/lib/orderStateMachine';
 
-// Check if transition allowed
 if (!canUserTransition(userRole, currentStatus, newStatus)) {
   return NextResponse.json({ error: 'Transición no permitida' }, { status: 403 });
 }
-
-// Get valid next states for UI
-const validStates = getValidNextStatesForRole(userRole, currentStatus);
 ```
+
+Status changes go through `updateOrderStatus()` in `src/lib/api/orderStatusUpdate.ts`, which also sets timestamps, writes audit logs, emits SSE events, and sends email notifications (`src/lib/order-notifications.ts`). Edit/delete permissions per status: `src/lib/api/orderEditValidation.ts`.
+
+## Routes
+
+### Pages
+
+```
+src/app/
+├── page.tsx                         # Public home
+├── auth/{login,register,error,signout}
+├── unauthorized/
+├── doctor/
+│   ├── page.tsx                     # Dashboard (includes AI prompt to start an order)
+│   ├── orders/ (list, new, [orderId], [orderId]/edit)
+│   └── settings/
+└── lab-admin/
+    ├── page.tsx                     # Dashboard
+    ├── orders/ (list, [orderId])
+    ├── users/ (list, new, [userId], [userId]/edit)
+    ├── laboratory/
+    ├── analytics/
+    └── settings/
+```
+
+### API
+
+```
+/api/auth/[...nextauth]                     NextAuth
+/api/auth/register                          Doctor self-registration
+/api/doctor/orders[/orderId[/submit]]       Doctor order CRUD + submit
+/api/doctor/alerts[/alertId]                Doctor alerts
+/api/lab-admin/orders[/orderId]             Lab order list/detail/status
+/api/lab-admin/users[/userId]               User management (creates DOCTOR)
+/api/lab-admin/laboratory                   Lab settings
+/api/lab-admin/analytics                    Analytics (src/lib/analytics.ts)
+/api/orders/[orderId]/comments              Shared comments
+/api/orders/[orderId]/files[/fileId]        File list/delete
+/api/orders/[orderId]/files/upload-url      Presigned R2 PUT URL
+/api/orders/[orderId]/files/process-upload  Save metadata + generate thumbnail
+/api/orders/parse-ai-prompt                 Claude: free text → order fields
+/api/orders/validate-order                  Claude: pre-submit validation
+/api/alerts/events                          SSE: new alerts (doctor)
+/api/lab/order-events                       SSE: new orders (lab)
+/api/user/profile                           Profile update
+/api/cron/cleanup-orders                    Daily cleanup (secured by CRON_SECRET)
+```
+
+### Middleware
+
+`src/middleware.ts` (NextAuth `withAuth`):
+- Unauthenticated → `/auth/login`
+- `/lab-admin/*` requires LAB_ADMIN, `/doctor/*` requires DOCTOR, otherwise → `/unauthorized`
+- Excluded from matcher: `/`, `/auth`, `/api/auth`, `/api/cron`, `/ingest` (PostHog reverse proxy, see `next.config.ts` rewrites), static assets
 
 ## API Route Patterns
 
-### Structure
-
-```
-/api/[role]/[resource]/[id?]/[action?]/route.ts
-```
-
-### Standard CRUD Pattern
+### Standard Pattern
 
 ```typescript
-// GET collection with auth + filters
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
 
-  // Auth check
   if (!session?.user) {
     return NextResponse.json({ error: 'No autenticado' }, { status: 401 });
   }
 
-  // Role check
-  if (session.user.role !== Role.EXPECTED_ROLE) {
+  if (session.user.role !== Role.LAB_ADMIN) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
-  // Organization check
-  const organizationId = session.user.laboratoryId || session.user.clinicId;
-  if (!organizationId) {
-    return NextResponse.json({ error: 'Usuario no asociado' }, { status: 400 });
-  }
-
-  // Query with filters
-  const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status');
-
-  const records = await prisma.model.findMany({
-    where: {
-      organizationId,
-      ...(status && { status }),
-    },
-    include: { /* related data */ },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  return NextResponse.json({ records }, { status: 200 });
+  // ... query using session.user.laboratoryId / session.user.id
 }
 ```
 
-### Zod Validation
-
-```typescript
-import { z } from 'zod';
-import { OrderStatus, ScanType } from '@prisma/client';
-
-// IMPORTANT: Use z.nativeEnum() for Prisma enums
-const schema = z.object({
-  patientName: z.string().min(1, 'Nombre requerido'),
-  scanType: z.nativeEnum(ScanType).optional(), // NOT z.enum(['DIGITAL_SCAN', ...])
-  status: z.nativeEnum(OrderStatus),
-});
-
-// In route handler
-try {
-  const body = await request.json();
-  const validatedData = schema.parse(body);
-} catch (error) {
-  if (error instanceof z.ZodError) {
-    return NextResponse.json({
-      error: 'Validación fallida',
-      details: error.issues.map((err) => ({
-        field: err.path.join('.'),
-        message: err.message,
-      })),
-    }, { status: 400 });
-  }
-}
-```
+Unexpected errors in routes should be reported with `captureApiError()` from `src/lib/posthog-server.ts`.
 
 ### Order Access Control
 
 ```typescript
-// File: src/lib/api/orderAuthorization.ts
 import { checkOrderAccess } from '@/lib/api/orderAuthorization';
 
+// LAB_ADMIN: order.doctor.doctorLaboratoryId must match laboratoryId
+// DOCTOR: order.doctorId must match userId
 const result = await checkOrderAccess({
-  orderId: params.orderId,
+  orderId,
   userId: session.user.id,
   userRole: session.user.role,
   laboratoryId: session.user.laboratoryId,
-  clinicId: session.user.clinicId,
 });
 
 if (!result.hasAccess) {
   return NextResponse.json({ error: result.error }, { status: result.statusCode });
 }
-
-const order = result.order; // Pre-fetched with access verified
+const order = result.order;
 ```
 
 ### Order Creation with Retry
 
 ```typescript
-// File: src/lib/api/orderCreation.ts
 import { createOrderWithRetry } from '@/lib/api/orderCreation';
 
-// Handles race conditions in order number generation
+// Retries on orderNumber unique collisions (P2002)
 const order = await createOrderWithRetry({
-  orderData: {
-    ...validatedData,
-    clinic: { connect: { id: clinicId } },
-    doctor: { connect: { id: doctorId } },
-    createdBy: { connect: { id: session.user.id } },
-    status: 'DRAFT',
-  },
-  clinicId,
+  orderData: { ...validatedData, doctor: { connect: { id } }, createdBy: { connect: { id } } },
+  doctorId,
   patientName: validatedData.patientName,
 });
 ```
 
-## Authentication Helpers
+Other helpers in `src/lib/api/`: `orderQueries.ts` (`orderDetailInclude`), `orderFilters.ts` (`buildOrderWhereClause`), `orderUpdate.ts` (`updateOrderWithTeeth`), `submitOrderHandler.ts` (`createSubmitOrderHandler`), `paths.ts`, `alertActions.ts`, `orderFormHelpers.ts` (client-side fetch helpers).
 
-### Server Components
+### Zod Validation
 
 ```typescript
-// File: src/lib/auth-helpers.ts
-import { requireAuth, requireRole, getCurrentUser } from '@/lib/auth-helpers';
-import { Role } from '@prisma/client';
+import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 
-// Require any auth (redirects to /auth/login if not authenticated)
-const session = await requireAuth();
+// IMPORTANT: Use z.nativeEnum() for Prisma enums, NOT z.enum([...])
+const schema = z.object({
+  patientName: z.string().min(1, 'Nombre requerido'),
+  status: z.nativeEnum(OrderStatus),
+});
 
-// Require specific role(s) (redirects to /unauthorized if wrong role)
-const session = await requireRole([Role.LAB_ADMIN, Role.LAB_COLLABORATOR]);
-
-// Optional auth check (returns null if not authenticated)
-const user = await getCurrentUser();
+// On error
+if (error instanceof z.ZodError) {
+  return NextResponse.json({
+    error: 'Validación fallida',
+    details: error.issues.map((err) => ({ field: err.path.join('.'), message: err.message })),
+  }, { status: 400 });
+}
 ```
 
-### Middleware Protection
+Shared schemas: `src/lib/schemas/userSchemas.ts`, `src/lib/validations/auth.ts`.
 
-**File**: `src/middleware.ts` - Protects all routes except home, auth, API auth, and static assets
+## Authentication Helpers
 
-- Redirects to `/auth/login` if not authenticated
-- Redirects to `/unauthorized` if wrong role for path prefix
-- Path-role mapping:
-  - `/lab-admin/*` → LAB_ADMIN
-  - `/lab-collaborator/*` → LAB_COLLABORATOR
-  - `/clinic-admin/*` → CLINIC_ADMIN
-  - `/doctor/*` → DOCTOR
-  - `/assistant/*` → CLINIC_ASSISTANT
+```typescript
+import { requireAuth, requireRole, getCurrentUser, hasRole, isAuthenticated } from '@/lib/auth-helpers';
+
+const session = await requireAuth();                 // redirects to /auth/login
+const session = await requireRole([Role.LAB_ADMIN]); // redirects to /unauthorized
+const user = await getCurrentUser();                 // null if not authenticated
+```
+
+Session type augmentation: `src/types/next-auth.d.ts`. On `update()` trigger the JWT refreshes `name`/`email` from DB.
+
+## Order Form & AI
+
+- Main form: `src/components/clinic-staff/OrderForm.tsx` with sections in `clinic-staff/order-form/` (odontogram, per-tooth configuration, implants, occlusion, materials sent, scans, photos, etc.)
+- `OrderTicket.tsx` - live order summary sidebar (replaced the old review modal); `components/orders/review-sections/` renders order summary blocks
+- `DashboardAIPrompt.tsx` / `AIPromptInput.tsx` - doctor describes the case in natural language (text or voice) → `/api/orders/parse-ai-prompt` → fields prefilled
+- `/api/orders/validate-order` - AI pre-submit validation, gated by `NEXT_PUBLIC_ENABLE_ORDER_AI_VALIDATION` (enabled unless `'false'`)
+- Both AI routes use `Anthropic` from `@posthog/ai` (LLM analytics) with the `AI_MODEL` constant defined per route
+- Domain lookups: `materialsByRestoration.ts`, `shadeSystemLookup.ts`, `materialWarrantyUtils.ts`, `scannerDetection.ts`, `orderSummaryGenerator.ts`
+- Draft limit per doctor: `MAX_DRAFTS_PER_DOCTOR` (default 5) in `src/lib/constants.ts`
+
+## File Storage (Cloudflare R2)
+
+Upload flow (direct browser → R2):
+1. Client requests presigned PUT URL: `POST /api/orders/[orderId]/files/upload-url` (`generateUploadUrl` in `src/lib/r2.ts`, 5-min expiry)
+2. Client uploads file directly to R2
+3. Client calls `POST /api/orders/[orderId]/files/process-upload` → stores `File` metadata; images get a thumbnail via Sharp (`src/lib/imageProcessing.ts`)
+
+Other R2 helpers: `generateDownloadUrl`, `deleteFile`, `getPublicUrl`, `uploadBuffer`, `batchDeleteFiles` (`r2-batch.ts`).
+
+## Background Jobs
+
+`/api/cron/cleanup-orders` runs daily at 03:00 (`vercel.json`), secured by `CRON_SECRET`. Logic in `src/lib/services/orderCleanup.ts`: deletes completed orders older than `COMPLETED_ORDER_RETENTION_DAYS` (default 10) and their R2 files/thumbnails. Supports dry-run.
+
+## Real-Time Features
+
+In-process event bus `src/lib/sse/eventBus.ts`:
+- `new-alert` → `/api/alerts/events` (doctors; hooks `useAlerts`, `useAlertActions`)
+- `new-order` → `/api/lab/order-events` (lab admin; hook `useLabOrderEvents`, component `LabOrderNotifications`)
+
+Events are emitted from `orderStatusUpdate.ts`. Note: the bus is in-memory, so events only reach clients connected to the same server instance.
+
+### Toasts
+
+```typescript
+import { useToast } from '@/contexts/ToastContext';
+const { showToast } = useToast();
+showToast('Orden creada exitosamente', 'success'); // success | error | info | warning
+```
+
+## Audit Logging
+
+```typescript
+import { logAuthEvent, logOrderEvent, logFileEvent, logAlertEvent, getAuditContext } from '@/lib/audit';
+
+await logOrderEvent('STATUS_CHANGE', userId, orderId,
+  { status: oldStatus },
+  { status: newStatus },
+  getAuditContext(request) // { ipAddress, userAgent }
+);
+```
+
+LOGIN/LOGOUT are logged automatically from NextAuth `events`.
+
+## Analytics (PostHog)
+
+- Client: `instrumentation-client.ts` (`posthog-js`, `api_host: '/ingest'`, exception capture on)
+- Server: `src/lib/posthog-server.ts` (`getPostHogClient`, `captureApiError`)
+- LLM calls traced via `@posthog/ai`
+
+## Environment Variables
+
+See `.env.example`: `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `R2_*`, `ANTHROPIC_API_KEY`, `SENDPULSE_*`, `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`, `NEXT_PUBLIC_ENABLE_ORDER_AI_VALIDATION`, `MAX_DRAFTS_PER_DOCTOR`, `COMPLETED_ORDER_RETENTION_DAYS`, `CRON_SECRET`.
 
 ## UI Component System
 
 ### CRITICAL RULES
 
-1. **ALWAYS use custom UI components** - Never create inline `<input>`, `<select>`, `<button>`, `<textarea>`
-2. **ALL icons in Icons.tsx** - Never inline `<svg>` elements
+1. **ALWAYS use custom UI components** - Never inline `<input>`, `<select>`, `<button>`, `<textarea>`
+2. **ALL icons in `src/components/ui/Icons.tsx`** - Never inline `<svg>` elements
 3. **ALWAYS use semantic colors** - Never hardcoded colors like `bg-blue-600`, `text-gray-900`
 
-### Core Components
+### Components (`src/components/ui/`)
 
-```typescript
-import { Input } from '@/components/ui/Input';
-import { PasswordInput } from '@/components/ui/PasswordInput';
-import { Select } from '@/components/ui/Select';
-import { Button } from '@/components/ui/Button';
-import { Icons } from '@/components/ui/Icons';
+`Input`, `PasswordInput`, `Select`, `Textarea`, `Checkbox`, `Radio`, `Range`, `Button` (variants: primary | secondary | danger | ghost; sizes: sm | md | lg; `isLoading`), `Modal`, `Table`, `Pagination`, `PageHeader`, `FileUpload`, `Toast`, `GuidedTooltip`, charts (`PieChart`, `HorizontalBarChart`), and form layout helpers in `ui/form/` (`SectionContainer`, `SectionHeader`, `FieldLabel`, `ButtonCard`, `ToggleButtonGroup`, `CollapsibleSubsection`).
 
-// Input with label, error, helper text
+```tsx
 <Input
   label="Correo electrónico"
   required
   value={formData.email}
   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
   error={errors.email}
-  placeholder="tu@ejemplo.com"
 />
 
-// Password with show/hide toggle
-<PasswordInput
-  label="Contraseña"
-  required
-  value={formData.password}
-  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-  error={errors.password}
-/>
+<Button type="submit" variant="primary" isLoading={isLoading}>Guardar</Button>
 
-// Select dropdown
-<Select
-  label="Rol"
-  required
-  value={formData.role}
-  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-  error={errors.role}
->
-  <option value="">Selecciona una opción</option>
-  <option value="option1">Opción 1</option>
-</Select>
-
-// Button with variants and loading state
-<Button
-  type="submit"
-  variant="primary" // primary | secondary | danger | ghost
-  size="md"         // sm | md | lg
-  isLoading={isLoading}
->
-  Guardar
-</Button>
-
-// Icons (centralized)
 <Icons.alertCircle className="h-6 w-6 text-warning" />
-<Icons.spinner className="h-4 w-4 animate-spin" />
 ```
 
-### Available Icons
-
-```typescript
-Icons.spinner, Icons.check, Icons.x, Icons.alertCircle
-Icons.eye, Icons.eyeOff
-Icons.user, Icons.mail, Icons.lock
-// Add new icons to src/components/ui/Icons.tsx
-```
-
-## Design System - Semantic Colors
-
-### NEVER Use Hardcoded Colors
-
-```tsx
-// ❌ WRONG - Hardcoded colors
-<button className="bg-blue-600 text-white hover:bg-blue-700">
-<div className="text-gray-900 bg-gray-100">
-<input className="border-gray-300 focus:ring-blue-500">
-
-// ✅ CORRECT - Semantic colors
-<button className="bg-primary text-primary-foreground hover:bg-primary-hover">
-<div className="text-foreground bg-muted">
-<input className="border-border-input focus:ring-primary">
-```
-
-### Semantic Color Classes
-
-**Primary (brand actions):**
-- `bg-primary`, `text-primary`, `border-primary`, `focus:ring-primary`
-- `bg-primary-hover`, `text-primary-foreground`
-
-**Danger (errors, delete):**
-- `bg-danger`, `text-danger`, `border-danger`
-- `bg-danger-hover`, `text-danger-foreground`
-- `bg-danger/10` (light error background)
-
-**Success:**
-- `bg-success`, `text-success`, `bg-success/10`
-
-**Warning:**
-- `bg-warning`, `text-warning`, `bg-warning/10`
-
-**UI/Neutral:**
-- `bg-background`, `text-foreground` (main content)
-- `bg-muted`, `text-muted-foreground` (secondary)
-- `border-border`, `border-border-input`
-
-### Common UI Patterns
-
-```tsx
-// Error message
-{error && (
-  <div className="rounded-md bg-danger/10 p-4">
-    <p className="text-sm text-danger">{error}</p>
-  </div>
-)}
-
-// Success message
-{success && (
-  <div className="rounded-md bg-success/10 p-6">
-    <p className="text-sm text-success">{message}</p>
-  </div>
-)}
-
-// Card container
-<div className="rounded-lg bg-background p-6 shadow border border-border">
-  <h2 className="text-lg font-semibold text-foreground mb-4">Título</h2>
-  <p className="text-sm text-muted-foreground">Contenido</p>
-</div>
-
-// Page layout
-<div className="min-h-screen bg-muted py-12 px-4">
-  <div className="mx-auto max-w-7xl">
-    <h1 className="text-3xl font-bold text-foreground">Título</h1>
-    <p className="mt-2 text-muted-foreground">Descripción</p>
-  </div>
-</div>
-```
-
-## Spanish Language Requirement
-
-**ALL user-facing content MUST be in Spanish.**
-
-### Common Translations
-
-```typescript
-// UI Text
-Login → Iniciar sesión
-Sign up → Registrarse
-Email → Correo electrónico
-Password → Contraseña
-Submit → Enviar
-Cancel → Cancelar
-Save → Guardar
-Delete → Eliminar
-Edit → Editar
-Create → Crear
-Update → Actualizar
-Loading → Cargando
-
-// Validation
-"El correo electrónico es requerido"
-"La contraseña debe tener al menos 8 caracteres"
-"Campo requerido"
-"Formato de correo inválido"
-
-// Status Messages
-"Orden creada exitosamente"
-"Error al crear orden"
-"Procesando..."
-```
-
-## Audit Logging
-
-```typescript
-// File: src/lib/audit.ts
-import { logAuthEvent, logOrderEvent, getAuditContext } from '@/lib/audit';
-
-// Auth events
-await logAuthEvent('LOGIN', userId, email, {
-  ...getAuditContext(request),
-  metadata: { name: user.name },
-});
-
-// Order events (with old/new values)
-await logOrderEvent('STATUS_CHANGE', userId, orderId,
-  { status: oldStatus },
-  { status: newStatus },
-  getAuditContext(request)
-);
-
-// Get context from NextRequest
-const context = getAuditContext(request);
-// Returns: { ipAddress, userAgent }
-```
-
-## File Storage (Cloudflare R2)
-
-### Environment Variables
-
-```env
-R2_ACCESS_KEY_ID="..."
-R2_SECRET_ACCESS_KEY="..."
-R2_ENDPOINT="https://...r2.cloudflarestorage.com"
-R2_BUCKET_NAME="dental-lab-files"
-R2_PUBLIC_URL="https://...r2.dev"
-NEXT_PUBLIC_R2_PUBLIC_URL="https://...r2.dev"
-```
-
-### File Upload Pattern
-
-1. Client uploads multipart form data
-2. Server validates file (type, size)
-3. Generate unique storage key
-4. Upload to R2 using AWS SDK
-5. Store metadata in PostgreSQL `File` table
-6. Return public URL to client
-
-### File Metadata
-
-```typescript
-File {
-  fileName: string;        // Generated unique name
-  originalName: string;    // User's original filename
-  fileType: string;        // Extension (stl, jpg, pdf)
-  fileSize: number;        // Bytes
-  mimeType: string;        // MIME type
-  storageKey: string;      // R2 object key (unique)
-  storageUrl: string;      // Public URL
-  orderId: string;         // FK to Order
-  uploadedById: string;    // FK to User
-  createdAt: DateTime;
-  expiresAt?: DateTime;    // Optional auto-cleanup
-  deletedAt?: DateTime;    // Soft delete
-}
-```
-
-## Code Quality Checklist
-
-### Before Committing
-
-1. ✅ Use custom UI components (Input, PasswordInput, Select, Button)
-2. ✅ All icons in Icons.tsx (no inline SVG)
-3. ✅ Semantic colors only (no hardcoded colors)
-4. ✅ Spanish language for all user-facing text
-5. ✅ Zod validation with `z.nativeEnum()` for Prisma enums
-6. ✅ Proper error handling (401/403/400/500 status codes)
-7. ✅ TypeScript strict mode (no `any`, use `unknown` in catch blocks)
-8. ✅ Audit logging for important actions
-9. ✅ **Run `npm run build` - MUST PASS**
-
-### Error Handling HTTP Status Codes
-
-- `200`: Success (GET, PUT, DELETE)
-- `201`: Created (POST)
-- `400`: Bad request (validation errors, business logic errors)
-- `401`: Unauthorized (not authenticated)
-- `403`: Forbidden (authenticated but not authorized)
-- `404`: Not found
-- `500`: Internal server error (unexpected errors)
-
-## Key Workflows
-
-### Initial Setup
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Setup environment variables
-cp .env.example .env
-# Fill in DATABASE_URL, R2_*, NEXTAUTH_SECRET (openssl rand -base64 32)
-
-# 3. Push schema to database
-npm run db:push
-
-# 4. Create laboratory + admin user
-npm run create-lab-admin
-```
-
-### Creating Data Hierarchy
-
-1. **LAB_ADMIN creates clinic**: `POST /api/lab-admin/clinics`
-2. **LAB_ADMIN creates CLINIC_ADMIN**: `POST /api/lab-admin/users` with `clinicId`
-3. **CLINIC_ADMIN creates doctors**: `POST /api/clinic-admin/doctors`
-4. **CLINIC_ADMIN creates assistants**: `POST /api/clinic-admin/assistants`
-5. **CLINIC_ADMIN assigns assistants to doctors**: `POST /api/clinic-admin/assistants/{assistantId}/doctors/{doctorId}`
-
-### Order Lifecycle
-
-1. **Doctor/Assistant creates order**: `POST /api/doctor/orders` → Status: `DRAFT`
-2. **Upload files** (optional): Multipart upload to R2
-3. **Submit order**: `POST /api/doctor/orders/{orderId}/submit` → Status: `PENDING_REVIEW`
-4. **Lab reviews**: Visible in `/lab-admin/orders` or `/lab-collaborator/orders`
-5. **Lab accepts**: `PUT /api/lab-admin/orders/{orderId}` → Status: `IN_PROGRESS`
-6. **Lab completes**: `PUT /api/lab-admin/orders/{orderId}` → Status: `COMPLETED`
-
-**If info needed:**
-- Lab: `PUT /api/lab-admin/orders/{orderId}` → Status: `NEEDS_INFO`
-- Clinic responds: `PUT /api/doctor/orders/{orderId}` → Status: `PENDING_REVIEW`
-
-## Common Gotchas
-
-### Prisma Enum Validation
-
-```typescript
-// ❌ WRONG - Creates separate enum type
-const schema = z.object({
-  status: z.enum(['DRAFT', 'PENDING_REVIEW', 'COMPLETED']),
-});
-
-// ✅ CORRECT - Uses Prisma enum type
-import { OrderStatus } from '@prisma/client';
-const schema = z.object({
-  status: z.nativeEnum(OrderStatus),
-});
-```
-
-### User Organization IDs
-
-Users have **multiple nullable organization fields** - only ONE should be populated:
-
-```typescript
-// LAB_ADMIN
-user.laboratoryId !== null
-user.labCollaboratorId === null
-user.clinicId === null
-user.doctorClinicId === null
-user.assistantClinicId === null
-
-// DOCTOR
-user.laboratoryId === null
-user.labCollaboratorId === null
-user.clinicId === null
-user.doctorClinicId !== null  // Links to Clinic
-user.assistantClinicId === null
-```
-
-### Order doctorId vs createdById
-
-```typescript
-// DOCTOR creates own order
-order.doctorId = session.user.id
-order.createdById = session.user.id
-
-// ASSISTANT creates order for doctor
-order.doctorId = selectedDoctorId  // Must be assigned to this doctor
-order.createdById = session.user.id // Assistant's ID
-
-// CLINIC_ADMIN creates order
-order.doctorId = selectedDoctorId  // Any doctor in clinic
-order.createdById = session.user.id // Clinic admin's ID
-```
-
-## Important Files & Locations
-
-### Key Utilities
-
-- `src/lib/auth-helpers.ts` - Server-side auth helpers
-- `src/lib/orderStateMachine.ts` - Order status transitions
-- `src/lib/api/orderAuthorization.ts` - Order access control
-- `src/lib/api/orderCreation.ts` - Order creation with retry logic
-- `src/lib/api/submitOrderHandler.ts` - Shared submit logic
-- `src/lib/audit.ts` - Audit logging helpers
-- `src/lib/prisma.ts` - Prisma client singleton
-- `src/lib/auth.ts` - NextAuth configuration
+Icons include general UI (spinner, check, x, alertCircle, eye, upload, trash, mic…) and dental ones (tooth, crown, bridge, inlay, veneer, implant, abutment, denture, surgicalGuide, guard…). Add new icons to `Icons.tsx`.
 
 ### Component Organization
 
 ```
 src/components/
-├── ui/                  # Shared primitives (ALWAYS use these)
-├── lab-admin/          # Lab admin specific
-├── lab-collaborator/   # Lab collaborator specific
-├── clinic-admin/       # Clinic admin specific
-├── clinic-staff/       # Shared by DOCTOR + CLINIC_ASSISTANT
-├── orders/             # Order-related (shared)
-└── providers/          # Context providers
+├── ui/              # Shared primitives (ALWAYS use these)
+├── auth/            # Login/Register forms
+├── clinic-staff/    # Doctor-side: nav, order form, dashboard AI prompt
+├── lab-admin/       # Lab admin nav, orders table, user & lab forms
+├── lab-shared/      # Lab order detail page, order notifications
+├── orders/          # Shared order detail/edit, files, comments, status control
+├── settings/        # Profile settings
+└── providers/       # SessionProvider
 ```
 
-### Route Structure
+Hooks in `src/hooks/` (`useApi`, `useOrderDetail`, `useSubmitOrder`, `useAlerts`, `useLabOrderEvents`, `useProfileUpdate`, `useGuidedTooltips`); shared types in `src/types/`.
 
+## Design System - Semantic Colors
+
+```tsx
+// ❌ WRONG
+<button className="bg-blue-600 text-white hover:bg-blue-700">
+
+// ✅ CORRECT
+<button className="bg-primary text-primary-foreground hover:bg-primary-hover">
 ```
-src/app/
-├── (auth)/
-│   └── auth/
-│       ├── login/page.tsx
-│       └── error/page.tsx
-├── lab-admin/
-│   ├── page.tsx                    # Dashboard
-│   ├── clinics/
-│   ├── users/
-│   └── orders/
-├── lab-collaborator/
-│   └── orders/
-├── clinic-admin/
-│   ├── page.tsx                    # Dashboard
-│   ├── doctors/
-│   ├── assistants/
-│   └── orders/
-├── doctor/
-│   ├── page.tsx                    # Dashboard
-│   └── orders/
-└── assistant/
-    ├── page.tsx                    # Dashboard
-    └── orders/
-```
+
+- **Primary**: `bg-primary`, `text-primary`, `border-primary`, `bg-primary-hover`, `text-primary-foreground`
+- **Danger**: `bg-danger`, `text-danger`, `bg-danger-hover`, `text-danger-foreground`, `bg-danger/10`
+- **Success / Warning**: `bg-success`, `text-success`, `bg-success/10`, `bg-warning`, `text-warning`, `bg-warning/10`
+- **Neutral**: `bg-background`, `text-foreground`, `bg-muted`, `text-muted-foreground`, `border-border`, `border-border-input`
+
+See `docs/design-system.md`.
+
+## Spanish Language Requirement
+
+**ALL user-facing content MUST be in Spanish** (labels, errors, API error messages, toasts, emails).
+
+Common: Iniciar sesión, Correo electrónico, Contraseña, Enviar, Cancelar, Guardar, Eliminar, Editar, Crear, Cargando…
+
+## Code Quality Checklist
+
+1. ✅ Custom UI components (no raw form elements)
+2. ✅ Icons only from Icons.tsx
+3. ✅ Semantic colors only
+4. ✅ Spanish user-facing text
+5. ✅ Zod with `z.nativeEnum()` for Prisma enums
+6. ✅ Proper status codes: 200/201/400/401/403/404/500
+7. ✅ TypeScript strict (no `any`, `unknown` in catch)
+8. ✅ Audit logging for important actions
+9. ✅ **`npm run build` MUST PASS**
+
+## Pendientes
+
+Known issues to review (not yet resolved):
+
+- [ ] **`docs/new-business-model.md` is stale** - describes the clinics/assistants/collaborators design that was never implemented. Update it or archive it.
+- [ ] **SSE event bus is in-memory** (`src/lib/sse/eventBus.ts`) - on Vercel, events only reach clients connected to the same function instance. Consider a shared pub/sub (e.g. Redis) or polling fallback.
+- [ ] **LAB_ADMIN cannot move `NEEDS_INFO` back to review** - `ROLE_TRANSITIONS` only allows `NEEDS_INFO → CANCELLED` for the lab. Confirm this is intended.
 
 ## Documentation
 
-- `README.md` - Project setup and overview
-- `docs/deployment-guide.md` - Complete deployment instructions (Vercel + Neon + R2)
-- `docs/design-system.md` - Design system details
-- `docs/new-business-model.md` - Multi-tenant architecture design
-- `.claude/instructions.md` - Detailed component usage and conventions
+- `README.md` - Setup and overview
+- `docs/deployment-guide.md` - Deployment (Vercel + Neon + R2)
+- `docs/design-system.md` - Design system
+- `docs/feature-flags.md` - Feature flag conventions
+- `docs/new-business-model.md` - Earlier multi-tenant design (clinics/assistants) — **not implemented**; current model is lab + doctors only
+- `database-schema.md` - Schema notes
 - `CODE_REVIEW_CHECKLIST.md` - Code quality checklist
-
-## Real-Time Features
-
-### Server-Sent Events (SSE)
-
-```typescript
-// Alert event bus: src/lib/sse/eventBus.ts
-import { eventBus } from '@/lib/sse/eventBus';
-
-// When alert created, emit event
-eventBus.emit('newAlert', alertPayload);
-
-// Client subscribes
-const eventSource = new EventSource(`/api/alerts/events?userId=${userId}`);
-eventSource.onmessage = (event) => {
-  const alert = JSON.parse(event.data);
-  // Update UI
-};
-```
-
-### Toast Notifications
-
-```typescript
-import { useToast } from '@/contexts/ToastContext';
-
-const { showToast } = useToast();
-
-showToast('Orden creada exitosamente', 'success');
-showToast('Error al guardar', 'error');
-showToast('Procesando...', 'info');
-showToast('Advertencia', 'warning');
-```
-
-## Architecture Summary
-
-LabWiseLink is a **multi-tenant dental lab platform** where:
-
-1. **One Laboratory** owns the deployment
-2. Laboratory manages **multiple Clinics** as clients
-3. **Five roles** with hierarchical access:
-   - LAB_ADMIN (full control)
-   - LAB_COLLABORATOR (read-only orders)
-   - CLINIC_ADMIN (manages clinic users)
-   - DOCTOR (creates own orders)
-   - CLINIC_ASSISTANT (creates orders for assigned doctors)
-4. **Orders flow** through a state machine (DRAFT → PENDING_REVIEW → IN_PROGRESS → COMPLETED)
-5. **Access control** enforced at API, middleware, and database levels
-6. **Audit logging** tracks all important actions
-7. **File storage** in Cloudflare R2 with metadata in PostgreSQL
-8. **Real-time alerts** via Server-Sent Events
-9. **Semantic design system** for easy theming
-
-**Total codebase**: ~14,500 lines of TypeScript across 152 files.
-
-## Claude Cognitive - Context Management System
-
-This project uses **Claude Cognitive** for intelligent context management and multi-instance coordination.
-
-### What It Does
-
-Claude Cognitive provides:
-- **Context Router**: Automatically manages which files stay in context (HOT/WARM/COLD)
-- **Pool Coordinator**: Allows multiple Claude instances to share work status and avoid duplicate work
-- **Token Savings**: Reduces token usage by 50-95% through intelligent file attention tracking
-
-### Context Documentation Structure
-
-The project uses **fractal documentation** in `.claude/` directory:
-
-**Systems** (`.claude/systems/`)
-- Hardware, deployment, infrastructure
-- Changes slowly
-- Example: production environment, development setup
-
-**Modules** (`.claude/modules/`)
-- Core code systems documentation
-- Changes frequently
-- Example: API layer, database layer, authentication
-
-**Integrations** (`.claude/integrations/`)
-- Cross-system communication
-- Example: external APIs, real-time features
-
-### How It Works
-
-**Automatic context management:**
-1. Files you mention become HOT (full content injected)
-2. Related files become WARM (headers only)
-3. Unmentioned files decay to COLD (evicted from context)
-4. State persists across sessions in `~/.claude/attn_state.json`
-
-**Hook triggers:**
-- `UserPromptSubmit`: Runs context router and pool updater
-- `SessionStart`: Loads pool state from other instances
-- `Stop`: Extracts and saves current work status
-
-### Multi-Instance Coordination
-
-If running multiple Claude Code instances:
-
-**1. Set instance ID:**
-```bash
-# Add to ~/.bashrc or ~/.zshrc for persistence
-export CLAUDE_INSTANCE=A  # Or B, C, D, etc.
-```
-
-**2. Signal work completion in prompts:**
-```
-pool
-INSTANCE: A
-ACTION: completed
-TOPIC: User authentication refactor
-SUMMARY: Migrated to NextAuth.js v5 with JWT sessions
-AFFECTS: src/lib/auth.ts, src/app/api/auth/[...nextauth]/route.ts
-BLOCKS: none
-```
-
-**3. Query pool status:**
-```bash
-python3 ~/.claude/scripts/pool-query.py --since 1h
-```
-
-### Useful Commands
-
-```bash
-# View attention state
-cat ~/.claude/attn_state.json
-
-# View pool state
-cat ~/.claude/pool/instance_state.jsonl
-
-# Query recent activity
-python3 ~/.claude/scripts/pool-query.py --since 1h
-
-# View attention history (v1.1+)
-tail -20 ~/.claude/attention_history.jsonl
-```
-
-### Best Practices
-
-1. **Organize documentation**: Use `.claude/systems/`, `.claude/modules/`, `.claude/integrations/` for detailed docs
-2. **Reference files explicitly**: Mention files you're working on to keep them HOT
-3. **Use pool coordination**: Signal completion status when working across multiple instances
-4. **Check pool state**: Before starting work, check if another instance is already working on it
+- `.claude/instructions.md` and `.claude/{systems,modules,integrations}/` - Additional context docs
