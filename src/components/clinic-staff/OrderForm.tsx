@@ -1006,9 +1006,7 @@ export function OrderForm({ initialData, orderId, role, onSuccess }: OrderFormPr
         e.preventDefault();
         handleSaveAsDraft();
       }}
-      className={
-        showFullForm ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6' : undefined
-      }
+      className={showFullForm ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6' : undefined}
     >
       <div className="space-y-4 sm:space-y-6">
         {/* Validation Error Summary */}
